@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1100">
+<meta name="robots" content="noindex">
+<title>PBS/Web – Vogt &amp; Cie Privatbankiers</title>
+<link rel="stylesheet" href="css/pbs.css">
+</head>
+<body>
+
+<!-- Symbolbibliothek 16x16 -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-home" viewBox="0 0 16 16"><path d="M1.5 8.5 8 2l6.5 6.5" fill="none" stroke="#7a3b10" stroke-width="1.5"/><path d="M3 8v6.5h10V8L8 3z" fill="#f4e4b0" stroke="#8a6a20"/><rect x="6.5" y="10" width="3" height="4.5" fill="#9a4b1b"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="13" height="13" fill="#fff" stroke="#6b7f99"/><path d="M3.5 13h2V9h-2zM7 13h2V6H7zm3.5 0h2V3.5h-2z" fill="#2a5aa0"/></symbol>
+  <symbol id="i-list" viewBox="0 0 16 16"><rect x="2.5" y="1.5" width="11" height="13" fill="#fff" stroke="#6b7f99"/><path d="M4.5 4.5h7m-7 2.5h7m-7 2.5h7m-7 2.5h4" stroke="#6b7f99"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="#fff" stroke="#5a6b85"/><path d="M8 4v4l3 2" fill="none" stroke="#0b2a55" stroke-width="1.4"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 16 16"><path d="M8 1.5 2.5 3.5v4c0 3.5 2.5 6 5.5 7 3-1 5.5-3.5 5.5-7v-4z" fill="#3a6db5" stroke="#0b2a55"/><path d="M5.5 8l2 2 3.5-4" fill="none" stroke="#fff" stroke-width="1.5"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 16 16"><rect x="1.5" y="3.5" width="13" height="9" fill="#fffbe6" stroke="#8a7a3a"/><path d="m1.5 3.5 6.5 5 6.5-5" fill="none" stroke="#8a7a3a"/></symbol>
+  <symbol id="i-mail-open" viewBox="0 0 16 16"><path d="M1.5 7 8 2.5 14.5 7v6.5h-13z" fill="#fff" stroke="#8a8a8a"/><path d="m1.5 7 6.5 4 6.5-4" fill="none" stroke="#8a8a8a"/></symbol>
+  <symbol id="i-fax" viewBox="0 0 16 16"><rect x="4.5" y="1.5" width="7" height="5" fill="#fff" stroke="#666"/><rect x="1.5" y="6.5" width="13" height="7" rx="1" fill="#c9c6bd" stroke="#555"/><rect x="3" y="8" width="5" height="2" fill="#7fa36a"/><path d="M10 9h3m-3 2h3" stroke="#555"/></symbol>
+  <symbol id="i-cash" viewBox="0 0 16 16"><rect x="1.5" y="4.5" width="13" height="7" fill="#cfe6c0" stroke="#3d7a2a"/><circle cx="8" cy="8" r="2" fill="none" stroke="#3d7a2a"/><path d="M3.5 6.5v3m9-3v3" stroke="#3d7a2a"/></symbol>
+  <symbol id="i-queue" viewBox="0 0 16 16"><path d="M1.5 9.5 3.5 3h9l2 6.5v4h-13z" fill="#e8edf5" stroke="#5a6b85"/><path d="M1.5 9.5h4l1 2h3l1-2h4" fill="none" stroke="#5a6b85"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 16 16"><path d="M8 1.5 15 14.5H1z" fill="#ffd21f" stroke="#8a6a00"/><path d="M8 6v4.5" stroke="#000" stroke-width="1.6"/><circle cx="8" cy="12.3" r=".9"/></symbol>
+  <symbol id="i-plane" viewBox="0 0 16 16"><path d="M14.5 2.5c-1-1-2.5 0-3.5 1L9 5.5 3 4 1.5 5.5l5 2.5L4.5 10 2.5 9.5 1.5 10.5l3 1.5 1.5 3 1-1-.5-2 2-2 2.5 5 1.5-1.5L12 7.5l2-2c1-1 2-2.5.5-3z" fill="#e6ecf5" stroke="#0b2a55" stroke-width=".9"/></symbol>
+  <symbol id="i-info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="#2a5aa0" stroke="#0b2a55"/><path d="M8 7v5" stroke="#fff" stroke-width="1.8"/><circle cx="8" cy="4.6" r="1.1" fill="#fff"/></symbol>
+  <symbol id="i-user" viewBox="0 0 16 16"><circle cx="8" cy="5" r="3" fill="#f2d3b3" stroke="#7a5a3a"/><path d="M2.5 15c0-4 2.5-5.5 5.5-5.5s5.5 1.5 5.5 5.5z" fill="#3a5f95" stroke="#0b2a55"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 16 16"><path d="M3.5 1.5h6l3 3v10h-9z" fill="#fff" stroke="#6b7f99"/><path d="M9.5 1.5v3h3" fill="#dde4ee" stroke="#6b7f99"/><path d="M5 7h5.5M5 9h5.5M5 11h4" stroke="#9aa8bc"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="#4b9a3a" stroke="#2a6020"/><path d="M8 4.5v7M4.5 8h7" stroke="#fff" stroke-width="1.8"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 16 16"><path d="M2 5h10m-3-3 3 3-3 3M14 11H4m3-3-3 3 3 3" fill="none" stroke="#0b2a55" stroke-width="1.5"/></symbol>
+  <symbol id="i-building" viewBox="0 0 16 16"><path d="M1.5 5.5 8 1.5l6.5 4z" fill="#d9d2bd" stroke="#6a5a30"/><path d="M3 6.5v6m2.5-6v6m2.5-6v6m2.5-6v6m2.5-6v6" stroke="#6a5a30"/><rect x="1.5" y="12.5" width="13" height="2" fill="#d9d2bd" stroke="#6a5a30"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 16 16"><path d="m2 14 1-4 8-8 3 3-8 8z" fill="#f2c94c" stroke="#7a5a10"/><path d="m2 14 1-4 3 3z" fill="#e9d6b0" stroke="#7a5a10"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 16 16"><path d="M1.5 3.5h5l1.5 1.5h6.5v8.5h-13z" fill="#f5d76e" stroke="#a07e14"/><path d="M1.5 6.5h13" stroke="#a07e14"/></symbol>
+  <symbol id="i-print" viewBox="0 0 16 16"><rect x="4.5" y="1.5" width="7" height="4" fill="#fff" stroke="#555"/><rect x="1.5" y="5.5" width="13" height="6" fill="#c9c6bd" stroke="#555"/><rect x="4.5" y="9.5" width="7" height="5" fill="#fff" stroke="#555"/></symbol>
+  <symbol id="i-check" viewBox="0 0 16 16"><path d="m2.5 8.5 3.5 3.5 7.5-8" fill="none" stroke="#2a7a1a" stroke-width="2.2"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 16 16"><path d="M3.5 1.5v13" stroke="#444" stroke-width="1.4"/><path d="M4 2h9l-2 3 2 3H4z" fill="#c8322a" stroke="#7a1a12"/></symbol>
+  <symbol id="i-search" viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4.5" fill="#e8f0fb" stroke="#0b2a55" stroke-width="1.4"/><path d="m10 10 4.5 4.5" stroke="#0b2a55" stroke-width="2"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 16 16"><path d="M5 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="#7a6a2a" stroke-width="1.5"/><rect x="3.5" y="7" width="9" height="7" fill="#e8c34c" stroke="#7a6a2a"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 16 16"><path d="M8 2v12M4 14h8M3 4h10" stroke="#5a4a20" stroke-width="1.3"/><path d="M3 4 1 9h4zm10 0-2 5h4z" fill="#e9d9a6" stroke="#5a4a20"/></symbol>
+  <symbol id="i-net" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="13" height="9" fill="#bcd3ee" stroke="#3a4a60"/><path d="M5 14.5h6M8 11.5v3" stroke="#3a4a60"/></symbol>
+  <symbol id="i-err" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#d42a1f" stroke="#7a0e08"/><path d="m10 10 12 12m0-12L10 22" stroke="#fff" stroke-width="3.5"/></symbol>
+  <symbol id="i-ques" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#fff" stroke="#2a5aa0" stroke-width="2"/><text x="16" y="23" text-anchor="middle" font-family="Georgia,serif" font-size="20" font-weight="bold" fill="#2a5aa0">?</text></symbol>
+  <symbol id="i-bigwarn" viewBox="0 0 32 32"><path d="M16 2 31 29H1z" fill="#ffd21f" stroke="#8a6a00"/><path d="M16 11v10" stroke="#000" stroke-width="3"/><circle cx="16" cy="25" r="1.8"/></symbol>
+  <symbol id="i-biginfo" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#fff" stroke="#2a5aa0" stroke-width="2"/><path d="M16 14v10" stroke="#2a5aa0" stroke-width="3.5"/><circle cx="16" cy="9" r="2.2" fill="#2a5aa0"/></symbol>
+  <symbol id="crest" viewBox="0 0 40 46"><path d="M2 2h36v20c0 12-8 19-18 22C10 41 2 34 2 22z" fill="#0b2a55" stroke="#a8873a" stroke-width="2"/><path d="M6 6h28v16c0 9-6 15-14 18C12 37 6 31 6 22z" fill="none" stroke="#a8873a" stroke-width=".7"/><text x="20" y="27" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="18" fill="#fff" font-style="italic">V</text><text x="20" y="35.5" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="6" fill="#d9c27a" letter-spacing=".5">&amp; CIE</text><text x="20" y="12.5" text-anchor="middle" font-family="Georgia,serif" font-size="4.5" fill="#d9c27a" letter-spacing=".6">1871</text></symbol>
+</svg>
+
+<!-- Anmeldung -->
+<div id="login" class="screen">
+  <div class="lg-top">
+    <div class="logo"><svg class="crest" width="34" height="39"><use href="#crest"/></svg><div><div class="wm">VOGT &amp; CIE</div><div class="wms">Privatbankiers · Zürich · seit 1871</div></div></div>
+    <div class="lg-app">PBS/Web<br><span>Private Banking System · Release 4.2.1</span></div>
+  </div>
+  <div class="lg-band">INTRANET · Mandant 001 Zürich · Server PBSPRD01</div>
+  <div class="lg-main">
+    <div class="lg-box">
+      <div class="dlg-tb"><span>Sign on – PBS/Web</span></div>
+      <form id="loginform" autocomplete="off">
+        <div class="lg-intro"><svg class="ico32"><use href="#i-biginfo"/></svg><div>Please identify yourself with your user ID, your Windows password and the code currently shown on your security token.</div></div>
+        <table class="frm">
+          <tr><th><label for="lg-user">User ID</label></th><td><input id="lg-user" class="inp req up" value="E10001" maxlength="8" size="12"></td></tr>
+          <tr><th><label for="lg-pw">Password</label></th><td><input id="lg-pw" type="password" class="inp req" size="20"></td></tr>
+          <tr><th><label for="lg-tok">Token code</label></th><td><input id="lg-tok" class="inp req" maxlength="6" size="8" inputmode="numeric"> <span class="small muted">6 digits</span></td></tr>
+          <tr><th>Mandant</th><td><select class="inp"><option>001 – Zürich (head office)</option></select></td></tr>
+        </table>
+        <div id="lg-err" class="errbox hidden"></div>
+        <div id="lg-save" class="small muted lg-save hidden"></div>
+        <div class="btnbar"><button class="btn def" type="submit">Sign on</button> <button class="btn" type="button" id="lg-cancel">Cancel</button></div>
+      </form>
+      <div class="lg-legal">Access is restricted to authorised employees of Bankhaus Vogt &amp; Cie. All sign-on attempts are logged. Unauthorised access to data processing systems is a criminal offence (Art. 143<sup>bis</sup> StGB). Client data is subject to banking secrecy (Art. 47 BankG).</div>
+    </div>
+    <div class="desk" aria-label="Security token on the desk">
+      <div class="fob">
+        <div class="fob-brand">VOGT &amp; CIE</div>
+        <div class="lcd"><div class="lcd-bars" id="fob-bars"><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="lcd-num" id="fob-code">------</div></div>
+        <div class="fob-ser">S/N 000417 233 81 · EXP 07/2005</div>
+      </div>
+      <div class="fob-cap">Your token (on the keyring)</div>
+      <div class="postit">Helpdesk 4411<br>neues PW alle 90 Tage!!<br><span>– R.G.</span></div>
+    </div>
+  </div>
+  <div class="lg-foot">© 2003 Bankhaus Vogt &amp; Cie · Informatik / IT-Services · Helpdesk intern 4411 · Optimised for Microsoft Internet Explorer 5.5 / 6.0 at 1024×768 · <a href="#" id="lg-reset">Reset game data</a></div>
+</div>
+
+<!-- Verbindungsaufbau -->
+<div id="connecting" class="screen hidden">
+  <div class="dlg conn"><div class="dlg-tb"><span>PBS/Web</span></div>
+    <div class="dlg-body"><div class="conn-row"><svg class="ico32"><use href="#crest"/></svg><div><b>Bankhaus Vogt &amp; Cie</b><br><span id="conn-text">Connecting…</span></div></div>
+      <div class="prog"><div id="conn-bar"></div></div></div></div>
+</div>
+
+<!-- Applikation -->
+<div id="app" class="screen hidden">
+  <div id="hdr">
+    <div class="logo"><svg class="crest" width="30" height="35"><use href="#crest"/></svg><div><div class="wm">VOGT &amp; CIE</div><div class="wms">Privatbankiers · Zürich · seit 1871</div></div><div class="appname">PBS/Web<span>Private Banking System</span></div></div>
+    <div class="hdr-r" id="hdr-r"></div>
+  </div>
+  <div id="menubar"></div>
+  <div id="ticker"><span class="tk-l">TELEKURS</span><div class="tk-w"><div class="tk-t" id="tk"></div></div></div>
+  <div id="toolbar">
+    <div id="crumbs"></div>
+    <div id="tools">
+      <button class="btn tb" type="button" data-act="handbook"><svg class="ico"><use href="#i-info"/></svg> Handbook</button>
+      <button class="btn tb" type="button" data-act="print"><svg class="ico"><use href="#i-print"/></svg> Print</button>
+      <button class="btn tb" type="button" data-act="newgame">New game</button>
+      <button class="btn tb" type="button" data-act="logout"><svg class="ico"><use href="#i-lock"/></svg> Sign off</button>
+      <button class="btn tb eod" type="button" data-act="eod"><svg class="ico"><use href="#i-clock"/></svg> End of day ▸</button>
+    </div>
+  </div>
+  <div id="bodywrap"><div id="nav"></div><div id="content"></div></div>
+  <div id="statusbar"></div>
+</div>
+
+<div id="dlg-layer"></div>
+<div id="gameover" class="hidden"></div>
+
+<script src="js/util.js"></script>
+<script src="js/data.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/views.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
