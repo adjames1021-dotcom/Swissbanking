@@ -468,7 +468,7 @@
     html = html.replace(/(<\/(div|tr|table|p|h1|h2|li|ul|form|thead|tbody)>)/g, '$1\n').replace(/\n{2,}/g, '\n');
     if (html.length > 60000) html = html.slice(0, 60000) + '\n<!-- … -->';
     const name = (B.cur.url.split('/').pop() || 'default').split('?')[0].replace(/\.\w+$/, '');
-    const src = '<!-- PBS/Web 4.2.1 · generated ' + (G.state ? U.fmtDate(G.state.date) + ' ' + U.fmtTime(G.state.clock) : '') + ' · node PBSPRD01 -->\n<html>\n<head>\n<title>' + e(B.cur.title) + '</title>\n<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">\n<link rel="stylesheet" type="text/css" href="/pbs/css/pbs.css">\n<script language="JavaScript" src="/pbs/js/pbs.js"></' + 'script>\n</head>\n<body>\n' + html + '\n</body>\n</html>\n';
+    const src = '<!-- PS 14.02.2003: Testmodul Fakturierung liegt noch unter /pbs/fakt.do – vor Go-live entfernen! -->\n<!-- PBS/Web 4.2.1 · generated ' + (G.state ? U.fmtDate(G.state.date) + ' ' + U.fmtTime(G.state.clock) : '') + ' · node PBSPRD01 -->\n<html>\n<head>\n<title>' + e(B.cur.title) + '</title>\n<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">\n<link rel="stylesheet" type="text/css" href="/pbs/css/pbs.css">\n<script language="JavaScript" src="/pbs/js/pbs.js"></' + 'script>\n</head>\n<body>\n' + html + '\n</body>\n</html>\n';
     Dlg.open({
       title: name + '[1] - Notepad', width: 760, cls: 'notepad', icon: 'i-doc', buttons: [],
       body: '<div class="np-menu"><span><u>F</u>ile</span><span><u>E</u>dit</span><span>F<u>o</u>rmat</span><span><u>H</u>elp</span></div><textarea class="np" readonly spellcheck="false">' + e(src) + '</textarea>'
@@ -719,7 +719,11 @@
     ev.preventDefault();
     runSearch($('xs-q').value.trim());
   });
-  $('ie-url').addEventListener('focus', function () { setTimeout(function () { $('ie-url').select(); }, 0); });
+  // Wie im IE: ein Klick in die Adressleiste markiert die ganze Adresse sofort
+  let urlFocus = false;
+  $('ie-url').addEventListener('focus', function () { $('ie-url').select(); urlFocus = true; });
+  $('ie-url').addEventListener('mouseup', function (ev) { if (urlFocus) { ev.preventDefault(); urlFocus = false; } });
+  $('ie-url').addEventListener('blur', function () { urlFocus = false; });
 
   // Fenster verschieben (nur im wiederhergestellten Zustand)
   $('ie-tb').addEventListener('mousedown', function (ev) {

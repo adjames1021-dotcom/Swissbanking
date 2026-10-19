@@ -112,6 +112,7 @@
     UI.recent = [];
     UI.tickerKey = '';
     UI.snoozed = {};
+    UI.inv = null;
     UI.lastMsg = G.state ? G.state.ctr.msg : 0;
     $('gameover').classList.add('hidden');
     $('gameover').innerHTML = '';
@@ -250,6 +251,12 @@
     if (!UI.session || !G.state) {
       UI.afterLogin = location.hash;
       if (UI.screen !== 'connecting') showLogin();
+      return;
+    }
+    if (r.path === 'fakt') {
+      UI.inv = UI.inv || V.invoiceDefault('fee');
+      const p = V.invoicePage(UI.inv);
+      standalone(p.html, p.title);
       return;
     }
     let view = null;
@@ -560,6 +567,27 @@
       D.CLASS_KEYS.forEach(function (k) { view.alloc[st][k] = U.parseAmount(val(f, 'w_' + st + '_' + k)) || 0; });
     });
     return view;
+  }
+
+  // Testsystem FAKT: Formular lesen, Vorschau neu zeichnen
+  function readInvoice(f) {
+    const inv = UI.inv;
+    const fmt = f.querySelector('input[name=fmt]:checked');
+    if (fmt) inv.fmt = fmt.value;
+    inv.from = val(f, 'from');
+    inv.to = val(f, 'to');
+    inv.no = val(f, 'no').trim();
+    const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(val(f, 'date').trim());
+    if (m && +m[2] >= 1 && +m[2] <= 12 && +m[1] >= 1 && +m[1] <= 31) inv.date = m[3] + '-' + U.pad(+m[2], 2) + '-' + U.pad(+m[1], 2);
+    inv.due = +val(f, 'due') || 30;
+    inv.ccy = val(f, 'ccy');
+    const v = U.parseAmount(val(f, 'vat'));
+    inv.vat = v >= 0 && v <= 30 ? v : 0;
+    inv.subject = val(f, 'subject');
+    inv.note = val(f, 'note');
+    const num = function (x) { x = x.trim(); if (!x) return ''; const n = U.parseAmount(x); return isNaN(n) ? '' : n; };
+    inv.lines = inv.lines.map(function (l, i) { return { d: val(f, 'd' + i), q: num(val(f, 'q' + i)), p: num(val(f, 'p' + i)) }; });
+    $('inv-preview').innerHTML = V.invoiceDoc(inv);
   }
 
   const FORMS = {
@@ -928,6 +956,8 @@
     },
     findcorr: function () { done(G.findCorrespondent(), 'Search completed.', 'USD correspondent'); },
     dd: function (el) { done(G.dueDiligence(el.dataset.id), 'Due diligence completed – see the table.'); },
+    invprint: function () { window.print(); },
+    invreset: function () { UI.inv = V.invoiceDefault('fee'); route(); setStatus('Invoice reset.'); },
     acquire: function (el) {
       const t = byId('targets', el.dataset.id);
       if (!t) return;
@@ -982,6 +1012,7 @@
       $('bankname').innerHTML = b ? e(b.name + ', ' + b.city) : '<span class="muted">' + (el.value.length >= 8 ? 'BIC not in directory – check entry' : '– enter BIC –') + '</span>';
       if (b) f.elements.country.value = b.c;
     }
+    if (f.id === 'invform' && UI.inv) { readInvoice(f); return; }
     if (f.dataset.form === 'transfer') transferPreview(f);
     if (f.dataset.form === 'house' && /^w_/.test(el.name)) {
       const st = el.name.split('_')[1];
@@ -1000,6 +1031,10 @@
       return;
     }
     const f = el.form;
+    if (f && f.id === 'invform' && UI.inv) {
+      if (el.name === 'tpl') { UI.inv = V.invoiceDefault(el.value, UI.inv.fmt); route(); } else readInvoice(f);
+      return;
+    }
     if (f && f.dataset.form === 'transfer') transferPreview(f);
   });
 
@@ -1056,6 +1091,8 @@
   });
 
   window.addEventListener('hashchange', navigate);
+  window.addEventListener('beforeprint', function () { document.body.classList.toggle('print-inv', UI.screen === 'intra' && !!$('inv-preview')); });
+  window.addEventListener('afterprint', function () { document.body.classList.remove('print-inv'); });
 
   /* ---------- Start ---------- */
   $('lg-cancel').addEventListener('click', function () {

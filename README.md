@@ -62,6 +62,8 @@ Everything happens inside an Internet Explorer 6 window on a Windows 2000 deskto
   animations and page transitions.
 - The **Links** bar leads to the bank's intranet: telephone directory, canteen menu and internal
   directives (Weisungen), which follow the game's calendar.
+- Not every page of the intranet is linked from a menu. Developers sometimes leave notes in the
+  page source.
 - The **taskbar** shows the game clock. Click the speaker icon for volume and mute. The window can
   be minimised, restored, moved and closed; double-click *PBS/Web* on the desktop to reopen it.
 
