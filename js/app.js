@@ -570,8 +570,16 @@
   }
 
   // Testsystem FAKT: Formular lesen, Vorschau neu zeichnen
-  function readInvoice(f) {
+  function readInvoice(f, el) {
     const inv = UI.inv;
+    const paper = val(f, 'paper');
+    if (paper !== inv.paper) {
+      inv.paper = paper;
+      if (paper !== 'custom') { const pp = V.invoicePaper(inv); inv.pw = pp.w; inv.ph = pp.h; f.elements.pw.value = pp.w; f.elements.ph.value = pp.h; }
+    } else if (el && (el.name === 'pw' || el.name === 'ph')) {
+      const pw = U.parseAmount(val(f, 'pw')), ph = U.parseAmount(val(f, 'ph'));
+      if (pw >= 74 && pw <= 600 && ph >= 74 && ph <= 600) { inv.paper = 'custom'; inv.pw = pw; inv.ph = ph; f.elements.paper.value = 'custom'; }
+    }
     const fmt = f.querySelector('input[name=fmt]:checked');
     if (fmt) inv.fmt = fmt.value;
     inv.from = val(f, 'from');
@@ -957,7 +965,7 @@
     findcorr: function () { done(G.findCorrespondent(), 'Search completed.', 'USD correspondent'); },
     dd: function (el) { done(G.dueDiligence(el.dataset.id), 'Due diligence completed – see the table.'); },
     invprint: function () { window.print(); },
-    invreset: function () { UI.inv = V.invoiceDefault('fee'); route(); setStatus('Invoice reset.'); },
+    invreset: function () { UI.inv = V.invoiceDefault('fee', { fmt: 'letter', paper: UI.inv.paper, pw: UI.inv.pw, ph: UI.inv.ph }); route(); setStatus('Invoice reset.'); },
     acquire: function (el) {
       const t = byId('targets', el.dataset.id);
       if (!t) return;
@@ -1012,7 +1020,7 @@
       $('bankname').innerHTML = b ? e(b.name + ', ' + b.city) : '<span class="muted">' + (el.value.length >= 8 ? 'BIC not in directory – check entry' : '– enter BIC –') + '</span>';
       if (b) f.elements.country.value = b.c;
     }
-    if (f.id === 'invform' && UI.inv) { readInvoice(f); return; }
+    if (f.id === 'invform' && UI.inv) { readInvoice(f, el); return; }
     if (f.dataset.form === 'transfer') transferPreview(f);
     if (f.dataset.form === 'house' && /^w_/.test(el.name)) {
       const st = el.name.split('_')[1];
@@ -1032,7 +1040,7 @@
     }
     const f = el.form;
     if (f && f.id === 'invform' && UI.inv) {
-      if (el.name === 'tpl') { UI.inv = V.invoiceDefault(el.value, UI.inv.fmt); route(); } else readInvoice(f);
+      if (el.name === 'tpl') { UI.inv = V.invoiceDefault(el.value, UI.inv); route(); } else readInvoice(f, el);
       return;
     }
     if (f && f.dataset.form === 'transfer') transferPreview(f);
@@ -1091,8 +1099,18 @@
   });
 
   window.addEventListener('hashchange', navigate);
-  window.addEventListener('beforeprint', function () { document.body.classList.toggle('print-inv', UI.screen === 'intra' && !!$('inv-preview')); });
-  window.addEventListener('afterprint', function () { document.body.classList.remove('print-inv'); });
+  // Rechnung drucken: nur das Blatt, Seitengrösse = gewähltes Papier, ohne Ränder
+  window.addEventListener('beforeprint', function () {
+    const inv = UI.screen === 'intra' && $('inv-preview') && UI.inv;
+    document.body.classList.toggle('print-inv', !!inv);
+    let st = $('inv-page');
+    if (!st) { st = document.createElement('style'); st.id = 'inv-page'; document.head.appendChild(st); }
+    st.textContent = inv ? V.invoicePageCSS(UI.inv) : '';
+  });
+  window.addEventListener('afterprint', function () {
+    document.body.classList.remove('print-inv');
+    if ($('inv-page')) $('inv-page').textContent = '';
+  });
 
   /* ---------- Start ---------- */
   $('lg-cancel').addEventListener('click', function () {

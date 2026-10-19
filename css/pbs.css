@@ -640,16 +640,21 @@ label.ngopt.inl { display: block; }
 .fakt-ed label.opt.inl { display: block; margin: 3px 0; }
 .inv-lines td { vertical-align: middle; }
 .fakt-pv { flex: 1; min-width: 0; background: #7d838c; border: 1px solid; border-color: #404040 #d4d0c8 #d4d0c8 #404040; padding: 18px; overflow: auto; }
-.inv-doc { position: relative; background: #fff; width: 640px; min-height: 880px; margin: 0 auto; padding: 40px 48px 50px; box-shadow: 4px 4px 0 rgba(0,0,0,.35); overflow: hidden; font: 12px/1.5 Arial, Helvetica, sans-serif; color: #111; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.inv-wm { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 2; }
-.inv-wm div { position: absolute; left: -40%; top: -10%; width: 180%; transform: rotate(-30deg); display: flex; flex-wrap: wrap; gap: 90px 70px; justify-content: center; }
-.inv-wm span { font: bold 32px Arial, sans-serif; color: rgba(180,0,0,.13); letter-spacing: 4px; white-space: nowrap; }
-.inv-spec { position: absolute; left: 0; right: 0; bottom: 12px; text-align: center; font: bold 9px Verdana, sans-serif; color: #b00000; letter-spacing: .4px; }
+.inv-cap { color: #fff; font: 11px Tahoma, Verdana, sans-serif; text-align: center; margin: -8px 0 8px; }
+.inv-sheet { position: relative; background: #fff; margin: 0 auto; box-shadow: 4px 4px 0 rgba(0,0,0,.35); overflow: hidden; }
+.inv-fit { position: absolute; top: 0; transform-origin: 0 0; }
+.inv-doc { position: relative; background: #fff; width: 210mm; height: 297mm; margin: 0; padding: 18mm 20mm 24mm; overflow: hidden; font: 12px/1.5 Arial, Helvetica, sans-serif; color: #111; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.inv-warn, .inv-spec { border: 1px solid #b00000; background: #fff4f4; color: #b00000; font: bold 9px/1.35 Verdana, sans-serif; letter-spacing: .6px; text-align: center; padding: 4px 8px; }
+.inv-warn { margin: -7mm 0 8mm; }
+.inv-spec { position: absolute; left: 20mm; right: 20mm; bottom: 9mm; letter-spacing: .3px; }
+.inv-fax .inv-spec { left: 18mm; right: 18mm; }
+.inv-tag { display: inline-block; border: 1px solid #b00000; color: #b00000; font: bold 9px/1.2 Verdana, sans-serif; letter-spacing: 1px; padding: 1px 4px; margin-left: 6px; vertical-align: 2px; }
+.inv-fax .inv-warn { font-family: Verdana, sans-serif; }
 .inv-lh { border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 24px; }
 .inv-co { font: 22px Georgia, "Times New Roman", serif; letter-spacing: 1px; color: #1a1a1a; }
 .inv-coa { font-size: 9px; color: #555; letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; }
 .inv-letter .lh { margin-bottom: 24px; }
-.inv-addr { margin: 6px 0 26px 330px; min-height: 70px; }
+.inv-addr { margin: 6px 0 26px 52%; min-height: 70px; }
 .inv-place { text-align: right; margin-bottom: 18px; }
 .inv-letter h2 { font: bold 15px Arial, sans-serif; margin: 0 0 4px; color: #000; }
 .inv-subj { font-weight: bold; margin-bottom: 12px; }
@@ -660,13 +665,15 @@ label.ngopt.inl { display: block; }
 .inv-t tfoot td { border-bottom: 0; }
 .inv-t tr.tot td { border-top: 1px solid #000; border-bottom: 3px double #000; }
 .inv-sig { margin-top: 40px; font-style: italic; }
-.inv-doc.doc.fax { max-width: none; width: 640px; margin: 0 auto; padding: 34px 40px 50px; font: 13px/1.5 "Courier New", Courier, monospace; }
-.inv-matrix { width: 760px; padding: 30px 52px 40px; background: repeating-linear-gradient(#fff 0 36px, #e2f0e2 36px 72px); min-height: 880px; }
+.inv-doc.doc.fax { max-width: none; width: 210mm; margin: 0; padding: 18mm 18mm 24mm; border: 0; box-shadow: none; font: 13px/1.5 "Courier New", Courier, monospace; }
+.inv-matrix { padding: 12mm 14mm 12mm; background: repeating-linear-gradient(#fff 0 36px, #e2f0e2 36px 72px); }
 .inv-matrix::before, .inv-matrix::after { content: ""; position: absolute; top: 0; bottom: 0; width: 24px; background: radial-gradient(circle, #7d838c 4px, transparent 5px) 0 6px / 24px 24px repeat-y; }
 .inv-matrix::before { left: 4px; border-right: 1px dashed #bbb; }
 .inv-matrix::after { right: 4px; border-left: 1px dashed #bbb; }
 .inv-matrix pre { margin: 0; font: 12px/18px "Courier New", Courier, monospace; color: #262638; letter-spacing: .3px; text-shadow: 0 0 .6px #444; white-space: pre; position: relative; z-index: 1; }
-.inv-advice { min-height: 0; height: 470px; background: #fdf2f2; border: 1px solid #c99; font: 11px/1.45 Verdana, sans-serif; }
+.inv-advice { height: 148mm; padding: 14mm 18mm 20mm; background: #fdf2f2; border: 1px solid #c99; font: 11px/1.45 Verdana, sans-serif; }
+.inv-advice .inv-warn { margin: -6mm 0 6mm; }
+.inv-advice .inv-spec { left: 18mm; right: 18mm; bottom: 6mm; }
 .adv-h { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #8a1a12; padding-bottom: 6px; margin-bottom: 12px; }
 .adv-h .wm { font: 18px Georgia, serif; letter-spacing: 3px; color: #0b2a55; }
 .adv-h .wms { font-size: 8px; letter-spacing: 2px; color: #7a6a3a; }
@@ -677,8 +684,9 @@ label.ngopt.inl { display: block; }
 .adv-g th { background: #f6e0e0; font-weight: normal; color: #6a1a12; width: 22%; }
 .adv-g tr.tot th, .adv-g tr.tot td { font-size: 13px; }
 @media print {
-  body.print-inv * { visibility: hidden !important; }
-  body.print-inv #inv-preview, body.print-inv #inv-preview * { visibility: visible !important; }
-  body.print-inv #inv-preview { position: absolute; left: 0; top: 0; width: 100%; padding: 0; border: 0; background: none; }
-  body.print-inv .inv-doc { box-shadow: none; margin: 0 auto; }
+  body.print-inv > *:not(#desktop):not(.sprite), body.print-inv #desktop > *:not(#ie), body.print-inv #ie > *:not(#ie-main),
+  body.print-inv #ie-main > *:not(#ie-view), body.print-inv #ie-view > *:not(#intra), body.print-inv .fakt > *:not(.cols),
+  body.print-inv .fakt .cols > *:not(.fakt-pv), body.print-inv .inv-cap { display: none !important; }
+  body.print-inv #intra, body.print-inv .fakt, body.print-inv .fakt .cols, body.print-inv .fakt-pv, body.print-inv #inv-preview { display: block !important; padding: 0 !important; margin: 0 !important; border: 0 !important; background: none !important; min-width: 0 !important; min-height: 0 !important; overflow: visible !important; }
+  body.print-inv .inv-sheet { margin: 0; box-shadow: none; height: calc(var(--ph) - 1mm) !important; break-after: avoid; }
 }

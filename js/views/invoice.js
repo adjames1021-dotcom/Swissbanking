@@ -59,7 +59,25 @@
     const q = 'Q' + (Math.floor((+iso.slice(5, 7) - 1) / 3) + 1) + ' ' + iso.slice(0, 4);
     return String(t).replace('{q}', q).replace('{y}', iso.slice(0, 4)).replace('{m}', U.monthName(iso) + ' ' + iso.slice(0, 4));
   }
-  V.invoiceDefault = function (tplKey, fmt) {
+  /* ---------- Papierformate ---------- */
+  // Jedes Format ist auf ein Musterblatt gesetzt (A4 hoch, Belastungsanzeige A5 quer) und wird auf das gewählte Papier eingepasst
+  const PAPER = { a4: ['A4', 210, 297], a5p: ['A5 portrait', 148, 210], a5l: ['A5 landscape', 210, 148], letter: ['US Letter', 215.9, 279.4], legal: ['US Legal', 215.9, 355.6], custom: ['Custom', 0, 0] };
+  V.INVOICE_PAPER = PAPER;
+  V.invoicePaper = function (inv) {
+    const p = PAPER[inv.paper] || PAPER.a4;
+    return inv.paper === 'custom' ? { w: inv.pw, h: inv.ph, label: p[0] } : { w: p[1], h: p[2], label: p[0] };
+  };
+  function fit(inv) {
+    const pp = V.invoicePaper(inv);
+    const dw = 210, dh = inv.fmt === 'advice' ? 148 : 297;
+    const z = Math.min(pp.w / dw, pp.h / dh);
+    return { w: pp.w, h: pp.h, dw: dw, dh: dh, z: z, left: (pp.w - dw * z) / 2, label: pp.label };
+  }
+  V.invoicePageCSS = function (inv) { const pp = V.invoicePaper(inv); return '@page { size: ' + pp.w + 'mm ' + pp.h + 'mm; margin: 0; }'; };
+
+  // keep: bisheriger Entwurf, dessen Format und Papier erhalten bleiben
+  V.invoiceDefault = function (tplKey, keep) {
+    const fmt = keep && keep.fmt;
     const s = G.state, t = TPL[tplKey] || TPL.fee;
     const pick = function (x) { return x.slice(-1) === ':' ? firstOf(x) : x; };
     const from = pick(t.from), to = pick(t.to);
@@ -70,7 +88,8 @@
       fmt: fmt || 'letter', tpl: tplKey, from: from, to: to, ccy: t.ccy === 'EUR' && s.date < D.EURO_DATE ? 'DEM' : t.ccy,
       no: (from === 'vogt' ? 'VC' : 'R') + '-' + s.date.slice(0, 4) + '-' + U.pad(100 + (s.dayNo * 37) % 900, 4),
       date: s.date, due: 30, subject: fill(t.subject, s.date), lines: lines,
-      vat: f.vat && r.c === 'CH' ? vatRate(s.date) : 0, note: 'Payable without deduction.'
+      vat: f.vat && r.c === 'CH' ? vatRate(s.date) : 0, note: 'Payable without deduction.',
+      paper: keep ? keep.paper : 'a4', pw: keep ? keep.pw : 210, ph: keep ? keep.ph : 297
     };
   };
 
@@ -97,8 +116,12 @@
     if (r.ent) { const a = s.accounts.find(function (x) { return x.entity === r.ent && !x.closed && x.type === 'CUR'; }); if (a) return a.id; }
     return '–';
   }
-  const SPEC = 'SPECIMEN – printed from the game PBS/Web. All companies are fictitious. Not a valid invoice.';
-  function wm() { let x = ''; for (let i = 0; i < 14; i++) x += '<span>SPECIMEN · PBS/Web</span>'; return '<div class="inv-wm" aria-hidden="true"><div>' + x + '</div></div>'; }
+  // Kennzeichnung: Warnzeile oben und unten, Vermerk beim Titel – auf jedem Format, nicht abschaltbar
+  const SITE = 'swissbanking.lilbeans.workers.dev';
+  const TOP = 'SPECIMEN · GAME DOCUMENT FROM PBS/Web · FICTITIOUS COMPANIES · NOT A VALID INVOICE';
+  const SPEC = 'SPECIMEN – printed from the game PBS/Web at ' + SITE + '. All companies are fictitious. Not a valid invoice.';
+  const TAG = ' <span class="inv-tag">SPECIMEN</span>';
+  function warn() { return '<div class="inv-warn">' + TOP + '</div>'; }
 
   /* ---------- Formate ---------- */
   function letter(inv, f, r, t) {
@@ -107,10 +130,10 @@
     const rows = used(inv).map(function (l, i) {
       return '<tr><td>' + (i + 1) + '</td><td>' + e(l.d) + '</td><td class="num">' + (l.q === '' ? '' : U.fmt(+l.q || 0, (+l.q % 1) ? 2 : 0)) + '</td><td class="num">' + U.fmt(+l.p || 0, 2) + '</td><td class="num">' + U.fmt((+l.q || 0) * (+l.p || 0), 2) + '</td></tr>';
     }).join('');
-    return '<div class="inv-doc inv-letter">' + wm() + head +
+    return '<div class="inv-doc inv-letter">' + warn() + head +
       '<div class="inv-addr">' + e(r.name) + '<br>' + r.addr.map(e).join('<br>') + '</div>' +
       '<div class="inv-place">' + e(f.city || 'Zürich') + ', ' + U.longDate(inv.date).replace(/^\w+, /, '') + '</div>' +
-      '<h2>Invoice no. ' + e(inv.no) + '</h2>' + (inv.subject ? '<div class="inv-subj">' + e(inv.subject) + '</div>' : '') +
+      '<h2>Invoice no. ' + e(inv.no) + TAG + '</h2>' + (inv.subject ? '<div class="inv-subj">' + e(inv.subject) + '</div>' : '') +
       '<table class="inv-t"><thead><tr><th>Pos.</th><th>Description</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount ' + e(inv.ccy) + '</th></tr></thead><tbody>' + rows + '</tbody>' +
       '<tfoot><tr><td></td><td colspan="3">Subtotal</td><td class="num">' + U.fmt(t.net, 2) + '</td></tr>' + (+inv.vat ? '<tr><td></td><td colspan="3">VAT ' + U.fmt(+inv.vat, 1) + '%</td><td class="num">' + U.fmt(t.vat, 2) + '</td></tr>' : '') +
       '<tr class="tot"><td></td><td colspan="3"><b>Total ' + e(inv.ccy) + '</b></td><td class="num"><b>' + U.fmt(t.total, 2) + '</b></td></tr></tfoot></table>' +
@@ -119,17 +142,23 @@
   }
   function fax(inv, f, r, t) {
     const lines = used(inv).map(function (l, i) { return (i + 1) + '. ' + e(l.d) + ' – ' + inv.ccy + ' ' + U.fmt((+l.q || 0) * (+l.p || 0), 2); }).join('<br>');
-    return '<div class="inv-doc doc fax inv-fax">' + wm() + '<div class="faxhdr">' + U.faxDate(inv.date) + ' 16:4' + (inv.no.length % 10) + '  FROM: ' + e(f.name.toUpperCase()) + '  TO: ' + e(r.name.toUpperCase()) + '  P.01/01</div>' +
-      '<div class="faxbody"><b>INVOICE ' + e(inv.no) + '</b><br>' + e(f.name) + ', ' + e(f.city) + '<br>to: ' + e(r.name) + ', ' + r.addr.map(e).join(', ') + '<br>Date: ' + U.fmtDate(inv.date) + (inv.subject ? '<br>Re: ' + e(inv.subject) : '') + '<br><br>' +
+    return '<div class="inv-doc doc fax inv-fax">' + warn() + '<div class="faxhdr">' + U.faxDate(inv.date) + ' 16:4' + (inv.no.length % 10) + '  FROM: ' + e(f.name.toUpperCase()) + '  TO: ' + e(r.name.toUpperCase()) + '  P.01/01</div>' +
+      '<div class="faxbody"><b>INVOICE ' + e(inv.no) + ' (SPECIMEN)</b><br>' + e(f.name) + ', ' + e(f.city) + '<br>to: ' + e(r.name) + ', ' + r.addr.map(e).join(', ') + '<br>Date: ' + U.fmtDate(inv.date) + (inv.subject ? '<br>Re: ' + e(inv.subject) : '') + '<br><br>' +
       lines + '<br><br>' + (+inv.vat ? 'Subtotal ' + inv.ccy + ' ' + U.fmt(t.net, 2) + '<br>VAT ' + U.fmt(+inv.vat, 1) + '%: ' + U.fmt(t.vat, 2) + '<br>' : '') + '<b>TOTAL ' + e(inv.ccy) + ' ' + U.fmt(t.total, 2) + '</b><br><br>' +
       'Payment within ' + inv.due + ' days to ' + e(payTo(f)) + '.<br>' + e(inv.note || '') + '<br><br>Original follows by mail.</div>' +
       '<div class="faxstamp">RECEIVED ' + U.fmtDate(inv.date) + '</div><div class="inv-spec">' + SPEC + '</div></div>';
   }
   function pad(x, n, right) { x = String(x).toUpperCase().slice(0, n); return right ? x.padStart(n) : x.padEnd(n); }
+  function star(x) {
+    x = String(x).toUpperCase();
+    return '*** ' + (' '.repeat(Math.max(0, Math.floor((76 - x.length) / 2))) + x).padEnd(76) + ' ***';
+  }
   function matrix(inv, f, r, t) {
     const out = [];
+    out.push(star('SPECIMEN - GAME DOCUMENT - FICTITIOUS COMPANIES - NOT A VALID INVOICE'));
+    out.push('');
     // Absender links, Rechnungsdaten rechts, Zeile für Zeile
-    const left = [f.name].concat(f.addr), right = ['RECHNUNG / INVOICE', 'NR.     ' + inv.no, 'DATUM   ' + U.fmtDate(inv.date), 'FAELLIG ' + U.fmtDate(U.addDays(inv.date, +inv.due))];
+    const left = [f.name].concat(f.addr), right = ['RECHNUNG (SPECIMEN)', 'NR.     ' + inv.no, 'DATUM   ' + U.fmtDate(inv.date), 'FAELLIG ' + U.fmtDate(U.addDays(inv.date, +inv.due))];
     for (let i = 0; i < Math.max(left.length, right.length); i++) out.push(pad(left[i] || '', 42) + '  ' + (right[i] || ''));
     out.push('');
     out.push('AN / TO:');
@@ -152,11 +181,13 @@
     out.push(pad('ZAHLBAR AN: ' + payTo(f), 72));
     if (inv.note) out.push(pad(inv.note, 72));
     out.push('');
-    out.push('*** ' + pad('SPECIMEN – PBS/WEB – FICTITIOUS COMPANIES – NOT A VALID INVOICE', 64) + ' ***');
-    return '<div class="inv-doc inv-matrix">' + wm() + '<pre>' + e(out.join('\n')) + '</pre></div>';
+    out.push(star('SPECIMEN - PRINTED FROM THE GAME PBS/WEB'));
+    out.push(star(SITE));
+    out.push(star('ALL COMPANIES ARE FICTITIOUS - NOT A VALID INVOICE'));
+    return '<div class="inv-doc inv-matrix"><pre>' + e(out.join('\n')) + '</pre></div>';
   }
   function advice(inv, f, r, t) {
-    return '<div class="inv-doc inv-advice">' + wm() + '<div class="adv-h"><div><div class="wm">VOGT &amp; CIE</div><div class="wms">PRIVATBANKIERS · ZÜRICH</div></div><div class="adv-t">BELASTUNGSANZEIGE<br><span>DEBIT ADVICE</span></div></div>' +
+    return '<div class="inv-doc inv-advice">' + warn() + '<div class="adv-h"><div><div class="wm">VOGT &amp; CIE</div><div class="wms">PRIVATBANKIERS · ZÜRICH</div></div><div class="adv-t">BELASTUNGSANZEIGE<br><span>DEBIT ADVICE</span>' + TAG + '</div></div>' +
       '<table class="adv-g"><tr><th>Account</th><td>' + e(debitAcct(r)) + '</td><th>Value date</th><td>' + U.fmtDate(U.addDays(inv.date, +inv.due)) + '</td></tr>' +
       '<tr><th>Account holder</th><td colspan="3">' + e(r.name) + ', ' + r.addr.map(e).join(', ') + '</td></tr>' +
       '<tr><th>In favour of</th><td colspan="3">' + e(f.name) + ', ' + e(f.city) + '</td></tr>' +
@@ -170,7 +201,12 @@
     const f = company(inv.from), r = company(inv.to);
     if (f.id === r.id) return '<div class="errbox">' + H.ico('warn') + ' FAKT-E-012 Sender and recipient must be different companies.</div>';
     const t = totals(inv);
-    return ({ letter: letter, fax: fax, matrix: matrix, advice: advice }[inv.fmt] || letter)(inv, f, r, t);
+    const doc = ({ letter: letter, fax: fax, matrix: matrix, advice: advice }[inv.fmt] || letter)(inv, f, r, t);
+    const ft = fit(inv);
+    const mm = function (x) { return U.fmt(x, x % 1 ? 1 : 0); };
+    return '<div class="inv-cap">' + e(ft.label) + ' · ' + mm(ft.w) + ' × ' + mm(ft.h) + ' mm · content at ' + Math.round(ft.z * 100) + '%</div>' +
+      '<div class="inv-sheet" style="width:' + ft.w + 'mm;height:' + ft.h + 'mm;--ph:' + ft.h + 'mm">' +
+      '<div class="inv-fit" style="left:' + ft.left.toFixed(2) + 'mm;width:' + ft.dw + 'mm;height:' + ft.dh + 'mm;transform:scale(' + ft.z.toFixed(4) + ')">' + doc + '</div></div>';
   };
 
   /* ---------- Maske ---------- */
@@ -191,6 +227,9 @@
     const form = '<form id="invform" autocomplete="off">' +
       '<div class="pcsec">Format</div>' + fmts.map(function (x) { return '<label class="opt inl"><input type="radio" name="fmt" value="' + x[0] + '"' + (inv.fmt === x[0] ? ' checked' : '') + '> ' + x[1] + '</label>'; }).join('') +
       '<div class="pcsec">Template</div>' + H.sel('name="tpl"', Object.keys(TPL).map(function (k) { return [k, TPL[k].label]; }), inv.tpl) + ' <span class="small muted">replaces the lines</span>' +
+      '<div class="pcsec">Paper</div>' + H.sel('name="paper"', Object.keys(PAPER).map(function (k) { return [k, PAPER[k][0] + (PAPER[k][1] ? ' (' + U.fmt(PAPER[k][1], PAPER[k][1] % 1 ? 1 : 0) + ' × ' + U.fmt(PAPER[k][2], PAPER[k][2] % 1 ? 1 : 0) + ' mm)' : '')]; }), inv.paper) +
+        ' <input class="inp num" name="pw" size="4" value="' + e(inv.pw) + '" aria-label="Paper width in mm"> × <input class="inp num" name="ph" size="4" value="' + e(inv.ph) + '" aria-label="Paper height in mm"> mm' +
+        '<div class="small muted">The invoice is scaled to fit. Choose the same paper in the print dialog.</div>' +
       '<table class="frm"><tr><th>From</th><td>' + companySelect('from', inv.from) + '</td></tr><tr><th>To</th><td>' + companySelect('to', inv.to) + '</td></tr>' +
       '<tr><th>Invoice no.</th><td><input class="inp" name="no" maxlength="20" size="16" value="' + e(inv.no) + '"></td></tr>' +
       '<tr><th>Date</th><td><input class="inp" name="date" maxlength="10" size="11" value="' + U.fmtDate(inv.date) + '"> payable within ' + H.sel('name="due"', ['10', '20', '30', '60', '90'], String(inv.due)) + ' days</td></tr>' +

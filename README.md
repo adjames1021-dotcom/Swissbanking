@@ -16,6 +16,8 @@ in 2017.
 
 Plain HTML5, CSS and JavaScript: no build step, nothing to install.
 
+- **Online:** <https://swissbanking.lilbeans.workers.dev>
+
 - **Locally:** open `index.html` in a browser, or serve the folder with
   `python3 -m http.server 8000` and go to <http://localhost:8000>.
 - **GitHub Pages:** enable Pages for the `main` branch (root folder) in the repository settings.
