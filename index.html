@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=1100">
+<meta name="viewport" content="width=1180">
 <meta name="robots" content="noindex">
 <title>PBS/Web – Vogt &amp; Cie Privatbankiers</title>
 <link rel="stylesheet" href="css/pbs.css">
@@ -10,7 +10,13 @@
 <body>
 
 <!-- Symbolbibliothek 16x16 -->
-<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+<svg xmlns="http://www.w3.org/2000/svg" class="sprite" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-green" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fd36f"/><stop offset=".55" stop-color="#2f9a3a"/><stop offset="1" stop-color="#1d7a28"/></linearGradient>
+    <linearGradient id="g-gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3a0"/><stop offset="1" stop-color="#f2b705"/></linearGradient>
+    <linearGradient id="g-blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9cc8f5"/><stop offset="1" stop-color="#2a6ac0"/></linearGradient>
+    <linearGradient id="g-grey" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f4f4"/><stop offset="1" stop-color="#b8b8b8"/></linearGradient>
+  </defs>
   <symbol id="i-home" viewBox="0 0 16 16"><path d="M1.5 8.5 8 2l6.5 6.5" fill="none" stroke="#7a3b10" stroke-width="1.5"/><path d="M3 8v6.5h10V8L8 3z" fill="#f4e4b0" stroke="#8a6a20"/><rect x="6.5" y="10" width="3" height="4.5" fill="#9a4b1b"/></symbol>
   <symbol id="i-chart" viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="13" height="13" fill="#fff" stroke="#6b7f99"/><path d="M3.5 13h2V9h-2zM7 13h2V6H7zm3.5 0h2V3.5h-2z" fill="#2a5aa0"/></symbol>
   <symbol id="i-list" viewBox="0 0 16 16"><rect x="2.5" y="1.5" width="11" height="13" fill="#fff" stroke="#6b7f99"/><path d="M4.5 4.5h7m-7 2.5h7m-7 2.5h7m-7 2.5h4" stroke="#6b7f99"/></symbol>
@@ -43,7 +49,78 @@
   <symbol id="i-bigwarn" viewBox="0 0 32 32"><path d="M16 2 31 29H1z" fill="#ffd21f" stroke="#8a6a00"/><path d="M16 11v10" stroke="#000" stroke-width="3"/><circle cx="16" cy="25" r="1.8"/></symbol>
   <symbol id="i-biginfo" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#fff" stroke="#2a5aa0" stroke-width="2"/><path d="M16 14v10" stroke="#2a5aa0" stroke-width="3.5"/><circle cx="16" cy="9" r="2.2" fill="#2a5aa0"/></symbol>
   <symbol id="crest" viewBox="0 0 40 46"><path d="M2 2h36v20c0 12-8 19-18 22C10 41 2 34 2 22z" fill="#0b2a55" stroke="#a8873a" stroke-width="2"/><path d="M6 6h28v16c0 9-6 15-14 18C12 37 6 31 6 22z" fill="none" stroke="#a8873a" stroke-width=".7"/><text x="20" y="27" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="18" fill="#fff" font-style="italic">V</text><text x="20" y="35.5" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="6" fill="#d9c27a" letter-spacing=".5">&amp; CIE</text><text x="20" y="12.5" text-anchor="middle" font-family="Georgia,serif" font-size="4.5" fill="#d9c27a" letter-spacing=".6">1871</text></symbol>
+
+  <symbol id="i-phone" viewBox="0 0 16 16"><path d="M3.2 1.8h2.6l1.1 3.1-1.8 1.4c.8 1.8 2.2 3.2 4 4l1.4-1.8 3.1 1.1v2.6c0 .9-.7 1.6-1.6 1.6C6.8 13.8 1.6 8.6 1.6 3.4c0-.9.7-1.6 1.6-1.6z" fill="#333" stroke="#000" stroke-width=".5"/></symbol>
+  <symbol id="i-bigphone" viewBox="0 0 32 32"><path d="M3.5 12.5c0-5 25-5 25 0v3.5h-6v-2.2c0-1.4-13-1.4-13 0V16h-6z" fill="#2e2e2e" stroke="#000"/><path d="M8 17h16l3.5 11h-23z" fill="#c8322a" stroke="#6a1a12"/><circle cx="16" cy="22.5" r="3.4" fill="#f2f2f2" stroke="#555"/><circle cx="16" cy="22.5" r="1" fill="#555"/></symbol>
+  <symbol id="i-key" viewBox="0 0 16 16"><circle cx="5" cy="8" r="3.5" fill="#e8c34c" stroke="#7a6a2a"/><circle cx="4.5" cy="8" r="1" fill="#fff"/><path d="M8.5 8h6m-2 0v3m-2.2-3v2" stroke="#7a6a2a" stroke-width="1.6" fill="none"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="url(#g-blue)" stroke="#1e4f8a"/><path d="M2.8 5.6c1.7.4 2.2-.6 3.8.4s.6 2.6 2.4 2.8 1.8-1.6 4.2-1.2M4 11.4c1.4-.5 2.5.3 3.4 1.6" fill="none" stroke="#3aa83a" stroke-width="1.7"/><ellipse cx="8" cy="8" rx="2.8" ry="6.5" fill="none" stroke="#1e4f8a" stroke-width=".6"/></symbol>
+  <symbol id="i-page" viewBox="0 0 16 16"><path d="M3.5 1.5h6l3 3v10h-9z" fill="#fff" stroke="#6b7f99"/><path d="M9.5 1.5v3h3" fill="#dde4ee" stroke="#6b7f99"/><circle cx="6.5" cy="10.5" r="3" fill="url(#g-blue)" stroke="#1e4f8a" stroke-width=".7"/><path d="M4.4 9.8c.9.2 1.2-.3 2 .2s.3 1.3 1.3 1.4" fill="none" stroke="#3aa83a" stroke-width="1"/></symbol>
+  <symbol id="i-go" viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="13" height="13" rx="2" fill="url(#g-green)" stroke="#1e6b25"/><path d="M4 8h7M8.2 5 11 8l-2.8 3" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-star" viewBox="0 0 16 16"><path d="M8 1.2l2 4.1 4.5.6-3.3 3.1.9 4.5L8 11.3l-4.1 2.2.9-4.5L1.5 5.9 6 5.3z" fill="url(#g-gold)" stroke="#9a7000"/></symbol>
+  <symbol id="i-intra" viewBox="0 0 16 16"><rect x="1.5" y="2.5" width="9" height="7" fill="#bcd3ee" stroke="#3a4a60"/><path d="M4 12.5h4M6 9.5v3" stroke="#3a4a60"/><circle cx="11.5" cy="10.5" r="3.5" fill="url(#g-blue)" stroke="#1e4f8a"/><path d="M8.6 9.6c1 .3 1.4-.3 2.2.2s.4 1.5 1.5 1.6 1.2-1 2.4-.7" fill="none" stroke="#3aa83a" stroke-width="1"/></symbol>
+  <symbol id="b-back" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9.3" fill="url(#g-green)" stroke="#1e6b25"/><path d="M12.6 6 7.6 11l5 5M8.2 11h7.6" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="b-fwd" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9.3" fill="url(#g-green)" stroke="#1e6b25"/><path d="M9.4 6l5 5-5 5M13.8 11H6.2" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="b-stop" viewBox="0 0 22 22"><path d="M4.5 1.5h8.5l4.5 4.5v14.5h-13z" fill="#fff" stroke="#6b7f99"/><path d="M7 7h7M7 9.5h5" stroke="#9aa8bc"/><circle cx="13.5" cy="14.5" r="5.6" fill="#d42a1f" stroke="#7a0e08"/><path d="m11.3 12.3 4.4 4.4m0-4.4-4.4 4.4" stroke="#fff" stroke-width="1.8"/></symbol>
+  <symbol id="b-refresh" viewBox="0 0 22 22"><path d="M4.5 1.5h8.5l4.5 4.5v14.5h-13z" fill="#fff" stroke="#6b7f99"/><path d="M7 5h5" stroke="#9aa8bc"/><path d="M15.8 13.2a4.8 4.8 0 1 1-1.6-3.6" fill="none" stroke="#2f9a3a" stroke-width="2.2"/><path d="m15.8 6.6-.2 4.4-4.2-1z" fill="#2f9a3a"/></symbol>
+  <symbol id="b-home" viewBox="0 0 22 22"><path d="M2 11.5 11 3.5l9 8" fill="none" stroke="#9a2a1a" stroke-width="2.4" stroke-linecap="round"/><path d="M5 10.5v9.5h12v-9.5L11 5.3z" fill="#f4e4b0" stroke="#8a6a20"/><rect x="9.3" y="13.5" width="3.4" height="6.5" fill="#6a8fc8" stroke="#3a4a60" stroke-width=".6"/><rect x="14.5" y="3.5" width="2" height="4" fill="#9a2a1a"/></symbol>
+  <symbol id="b-search" viewBox="0 0 22 22"><circle cx="11" cy="9" r="7.5" fill="url(#g-blue)" stroke="#1e4f8a" stroke-width=".8"/><path d="M4.5 6.5c2 .6 3-.6 4.8.6s.6 3 3 3.3 2.2-2 5-1.4" fill="none" stroke="#3aa83a" stroke-width="1.8"/><circle cx="8" cy="12" r="4.3" fill="rgba(230,242,255,.75)" stroke="#2a2a2a" stroke-width="1.5"/><path d="m4.8 15.2-3.3 3.6" stroke="#7a5a2a" stroke-width="3" stroke-linecap="round"/></symbol>
+  <symbol id="b-favs" viewBox="0 0 22 22"><path d="M2 6.5h7l2 2h9v11.5H2z" fill="#f5d76e" stroke="#a07e14"/><path d="M14 2.5l1.8 3.7 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" fill="url(#g-gold)" stroke="#9a7000"/></symbol>
+  <symbol id="b-hist" viewBox="0 0 22 22"><circle cx="12" cy="11.5" r="8" fill="#fff" stroke="#24508c" stroke-width="1.5"/><path d="M12 6.5v5l3.5 2.2" fill="none" stroke="#24508c" stroke-width="1.8"/><path d="M1.5 6.2 3.4 11l4-2.6z" fill="#2f9a3a"/><path d="M3.5 9.5a8.5 8.5 0 0 1 2-4" fill="none" stroke="#2f9a3a" stroke-width="1.8"/></symbol>
+  <symbol id="b-mail" viewBox="0 0 22 22"><rect x="2" y="5" width="18" height="12.5" fill="#fffbe6" stroke="#8a7a3a"/><path d="m2 5 9 7 9-7M2 17.5l7-6.2m11 6.2-7-6.2" fill="none" stroke="#8a7a3a"/></symbol>
+  <symbol id="b-print" viewBox="0 0 22 22"><rect x="6" y="2" width="10" height="6" fill="#fff" stroke="#555"/><rect x="2" y="7.5" width="18" height="8" rx="1" fill="url(#g-grey)" stroke="#555"/><rect x="6" y="12.5" width="10" height="7" fill="#fff" stroke="#555"/><path d="M8 15h6M8 17h4" stroke="#999"/><circle cx="17" cy="10" r=".9" fill="#3a3"/></symbol>
+  <symbol id="d-docs" viewBox="0 0 32 32"><path d="M2.5 7.5h10l3 3h14v18h-27z" fill="#f5d76e" stroke="#a07e14"/><path d="M8 3.5h12l4 4v14H8z" fill="#fff" stroke="#6b7f99"/><path d="M11 10h9m-9 3h9m-9 3h6" stroke="#9aa8bc"/><path d="M2.5 13.5h27v15h-27z" fill="#f8e08a" stroke="#a07e14"/></symbol>
+  <symbol id="d-comp" viewBox="0 0 32 32"><rect x="4.5" y="3.5" width="23" height="17" fill="#d4d0c8" stroke="#404040"/><rect x="7" y="6" width="18" height="12" fill="#3a6ea5"/><path d="M12 20.5h8l1.5 3h-11z" fill="#c8c4bc" stroke="#404040"/><rect x="3.5" y="24" width="25" height="5" fill="#d4d0c8" stroke="#404040"/><path d="M21 26.5h5" stroke="#3a3"/></symbol>
+  <symbol id="d-recycle" viewBox="0 0 32 32"><path d="M8 9.5h16l-2 19H10z" fill="url(#g-grey)" stroke="#505050"/><path d="M6.5 7h19v2.5h-19z" fill="#c8c8c8" stroke="#505050"/><path d="M12.5 13v12m3.5-12v12m3.5-12v12" stroke="#8a8a8a"/></symbol>
+  <symbol id="d-pbs" viewBox="0 0 32 32"><rect x="2.5" y="4.5" width="27" height="21" rx="1" fill="#fff" stroke="#3a4a60"/><rect x="2.5" y="4.5" width="27" height="4" fill="#0b2a55"/><use href="#crest" x="10" y="10" width="12" height="14"/><rect x="1.5" y="20.5" width="10" height="10" fill="#fff" stroke="#000" stroke-width=".8"/><path d="M4 28.5c0-3.5 1.5-5 5-5m-2.5-2 2.5 2-2.5 2" fill="none" stroke="#000" stroke-width="1.4"/></symbol>
+  <symbol id="d-net" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12.5" fill="url(#g-blue)" stroke="#1e4f8a"/><path d="M5 11c4 1 5-1.5 8.5 1s1 5.5 5.5 6 4.5-3.5 9-2.5M7.5 22.5c3-1 5 .5 7 3" fill="none" stroke="#3aa83a" stroke-width="3"/><ellipse cx="16" cy="16" rx="5.5" ry="12.5" fill="none" stroke="#1e4f8a" stroke-width=".8"/></symbol>
+  <symbol id="t-vol" viewBox="0 0 16 16"><path d="M2 6h3l4-3.5v11L5 10H2z" fill="#e8e8e8" stroke="#222"/><path d="M11 5.5c1.2 1.4 1.2 3.6 0 5M12.8 3.8c2.1 2.3 2.1 6.1 0 8.4" fill="none" stroke="#222"/></symbol>
+  <symbol id="t-mute" viewBox="0 0 16 16"><path d="M2 6h3l4-3.5v11L5 10H2z" fill="#e8e8e8" stroke="#222"/><circle cx="11.5" cy="11.5" r="3.6" fill="#fff" stroke="#c00" stroke-width="1.4"/><path d="m9 14 5-5" stroke="#c00" stroke-width="1.4"/></symbol>
+  <symbol id="t-net" viewBox="0 0 16 16"><rect x="1.5" y="4.5" width="6" height="5" fill="#bcd3ee" stroke="#333"/><rect x="8.5" y="1.5" width="6" height="5" fill="#bcd3ee" stroke="#333"/><path d="M3 11.5h3m-1.5-2v2M10 8.5h3m-1.5-2v2" stroke="#333"/></symbol>
+  <symbol id="i-start" viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="13" height="13" rx="1" fill="#0b2a55" stroke="#06193a"/><text x="8" y="12" text-anchor="middle" font-family="Georgia,serif" font-size="10" font-style="italic" fill="#fff">V</text></symbol>
 </svg>
+
+<!-- Arbeitsplatz -->
+<div id="desktop">
+  <div class="dicons" id="dicons">
+    <div class="dicon" data-d="docs" tabindex="0"><svg><use href="#d-docs"/></svg><span>My Documents</span></div>
+    <div class="dicon" data-d="comp" tabindex="0"><svg><use href="#d-comp"/></svg><span>My Computer</span></div>
+    <div class="dicon" data-d="net" tabindex="0"><svg><use href="#d-net"/></svg><span>Internet Explorer</span></div>
+    <div class="dicon" data-d="pbs" tabindex="0"><svg><use href="#d-pbs"/></svg><span>PBS/Web (Intranet)</span></div>
+    <div class="dicon" data-d="bin" tabindex="0"><svg><use href="#d-recycle"/></svg><span>Recycle Bin</span></div>
+  </div>
+
+  <!-- Browserfenster -->
+  <div id="ie" class="win max">
+    <div class="ie-tb" id="ie-tb"><svg class="ico"><use href="#i-page"/></svg><span id="ie-title">PBS/Web - Microsoft Internet Explorer</span>
+      <span class="wbtns"><button type="button" class="wb" data-b="min" aria-label="Minimize"><i class="g-min"></i></button><button type="button" class="wb" data-b="max" aria-label="Maximize"><i class="g-max"></i></button><button type="button" class="wb wx" data-b="close" aria-label="Close"><i class="g-x"></i></button></span></div>
+    <div class="ie-bars" id="ie-bars">
+      <div class="ie-row ie-menu" id="ie-menu"><span class="grip"></span>
+        <span class="mb" data-m="file"><u>F</u>ile</span><span class="mb" data-m="edit"><u>E</u>dit</span><span class="mb" data-m="view"><u>V</u>iew</span><span class="mb" data-m="favs">F<u>a</u>vorites</span><span class="mb" data-m="tools"><u>T</u>ools</span><span class="mb" data-m="help"><u>H</u>elp</span>
+        <span class="throb" id="ie-throb"><svg><use href="#i-globe"/></svg></span></div>
+      <div class="ie-row ie-std" id="ie-std"><span class="grip"></span>
+        <button type="button" class="tbb lbl" data-b="back" title="Back"><svg><use href="#b-back"/></svg><span>Back</span></button><button type="button" class="tbb dd" data-b="backlist" aria-label="Back history"><i class="tri"></i></button>
+        <button type="button" class="tbb" data-b="fwd" title="Forward"><svg><use href="#b-fwd"/></svg></button><button type="button" class="tbb dd" data-b="fwdlist" aria-label="Forward history"><i class="tri"></i></button>
+        <button type="button" class="tbb" data-b="stop" title="Stop"><svg><use href="#b-stop"/></svg></button>
+        <button type="button" class="tbb" data-b="refresh" title="Refresh"><svg><use href="#b-refresh"/></svg></button>
+        <button type="button" class="tbb" data-b="home" title="Home"><svg><use href="#b-home"/></svg></button><span class="tsep"></span>
+        <button type="button" class="tbb lbl" data-b="search" title="Search"><svg><use href="#b-search"/></svg><span>Search</span></button>
+        <button type="button" class="tbb lbl" data-b="favs" title="Favorites"><svg><use href="#b-favs"/></svg><span>Favorites</span></button>
+        <button type="button" class="tbb" data-b="hist" title="History"><svg><use href="#b-hist"/></svg></button><span class="tsep"></span>
+        <button type="button" class="tbb" data-b="mail" title="Mail"><svg><use href="#b-mail"/></svg></button>
+        <button type="button" class="tbb" data-b="print" title="Print"><svg><use href="#b-print"/></svg></button></div>
+      <div class="ie-row ie-row2"><div class="ie-addr" id="ie-addr"><span class="grip"></span><label for="ie-url" class="al">A<u>d</u>dress</label>
+        <div class="combo"><svg class="ico"><use href="#i-page"/></svg><input id="ie-url" spellcheck="false" autocomplete="off"><button type="button" class="dd" data-b="typed" aria-label="Typed addresses"><i class="tri"></i></button></div>
+        <button type="button" class="tbb go" data-b="go" title="Go to the address in the Address bar"><svg class="ico"><use href="#i-go"/></svg> Go</button></div>
+      <div class="ie-links" id="ie-links"><span class="grip"></span><span class="al">Links</span>
+        <button type="button" class="lnk" data-l="#/x/intranet"><svg class="ico"><use href="#i-intra"/></svg>Intranet Vogt</button>
+        <button type="button" class="lnk" data-l="#/overview"><svg class="ico"><use href="#i-page"/></svg>PBS/Web</button>
+        <button type="button" class="lnk" data-l="#/x/phone"><svg class="ico"><use href="#i-page"/></svg>Telefonbuch</button>
+        <button type="button" class="lnk" data-l="#/x/menu"><svg class="ico"><use href="#i-page"/></svg>Menüplan</button>
+        <button type="button" class="lnk" data-l="#/x/rules"><svg class="ico"><use href="#i-page"/></svg>Weisungen</button></div></div>
+    </div>
+    <div id="ie-main">
+      <div id="ie-xbar" class="hidden"><div class="xh"><span id="ie-xtitle">Favorites</span><button type="button" class="dlg-x" data-b="xclose" aria-label="Close">✕</button></div><div class="xb" id="ie-xbody"></div></div>
+      <div id="ie-view">
 
 <!-- Anmeldung -->
 <div id="login" class="screen">
@@ -111,13 +188,55 @@
   <div id="statusbar"></div>
 </div>
 
-<div id="dlg-layer"></div>
+
+<div id="intra" class="screen hidden"></div>
 <div id="gameover" class="hidden"></div>
+      </div>
+    </div>
+    <div class="ie-status" id="ie-status"><div class="sc grow"><svg class="ico"><use href="#i-page"/></svg><span id="ie-stext">Done</span></div><div class="sc sprog"><div id="ie-prog"></div></div><div class="sc w"></div><div class="sc w"></div><div class="sc zone"><svg class="ico"><use href="#i-intra"/></svg> Local intranet</div><span class="grip-r"></span></div>
+  </div>
+
+  <!-- Taskleiste -->
+  <div id="taskbar">
+    <button type="button" class="start" data-b="start"><svg class="ico"><use href="#i-start"/></svg><b>Start</b></button>
+    <span class="tsep2"></span>
+    <span class="ql"><button type="button" class="qb" data-b="desk" title="Show Desktop"><svg class="ico"><use href="#d-comp"/></svg></button><button type="button" class="qb" data-b="ieql" title="Launch Internet Explorer Browser"><svg class="ico"><use href="#i-globe"/></svg></button></span>
+    <span class="tsep2"></span>
+    <div class="tasks" id="tb-tasks"></div>
+    <div class="tray"><button type="button" class="tray-b" id="tb-vol" data-b="vol" title="Volume"><svg class="ico"><use href="#t-vol"/></svg></button><svg class="ico" aria-hidden="true"><use href="#t-net"/></svg><span id="tb-clock" title="">08:04</span></div>
+  </div>
+</div>
+
+<div id="dlg-layer"></div>
+<div id="menu-layer"></div>
 
 <script src="js/util.js"></script>
-<script src="js/data.js"></script>
-<script src="js/engine.js"></script>
-<script src="js/views.js"></script>
+<script src="js/data/core.js"></script>
+<script src="js/data/people.js"></script>
+<script src="js/data/clients.js"></script>
+<script src="js/data/markets.js"></script>
+<script src="js/data/history.js"></script>
+<script src="js/data/scenarios.js"></script>
+<script src="js/engine/kernel.js"></script>
+<script src="js/engine/market.js"></script>
+<script src="js/engine/payments.js"></script>
+<script src="js/engine/clients.js"></script>
+<script src="js/engine/staff.js"></script>
+<script src="js/engine/expansion.js"></script>
+<script src="js/engine/authorities.js"></script>
+<script src="js/engine/career.js"></script>
+<script src="js/engine/agenda.js"></script>
+<script src="js/engine/events.js"></script>
+<script src="js/engine/eod.js"></script>
+<script src="js/engine/setup.js"></script>
+<script src="js/views/common.js"></script>
+<script src="js/views/main.js"></script>
+<script src="js/views/business.js"></script>
+<script src="js/views/bank.js"></script>
+<script src="js/views/intranet.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/browser.js"></script>
+<script src="js/tutorial.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
