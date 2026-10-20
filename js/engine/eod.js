@@ -210,7 +210,7 @@
     K.planDay();
     L('STEP090', tr('TERMINE UND EREIGNISSE', 'APPOINTMENTS AND EVENTS'), evlog.length + tr(' VERARBEITET', ' PROCESSED'));
     evlog.forEach(function (e) { log.push(e); });
-    if (s.date > D.END_DATE && !s.gameOver) G.endGame('end');
+    if (s.date > (s.meta.end || D.END_DATE) && !s.gameOver) G.endGame('end');
     return finish();
 
     function finish() {

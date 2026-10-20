@@ -4,7 +4,7 @@
   'use strict';
 
   const D = PBS.DATA, U = PBS.U;
-  const SAVE_KEY = 'pbs-vogt-save-v2';
+  const SAVE_KEY = PBS.ERA === 'modern' ? 'pbs-vogt-save-modern' : 'pbs-vogt-save-v2';
   const SETTINGS_KEY = 'pbs-vogt-settings';
   const FAME_KEY = 'pbs-vogt-halloffame';
 

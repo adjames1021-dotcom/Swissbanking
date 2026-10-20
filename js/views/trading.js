@@ -5,7 +5,8 @@
   const G = PBS.Game, D = PBS.DATA, U = PBS.U, H = PBS.H, V = PBS.Views;
   const e = U.esc, tr = PBS.L.t;
   function T() { return G.trade; }
-  const dp = function (x) { return x.ccy === 'JPY' ? 0 : (x.src === 'stock' && x.base < 20) ? 3 : 2; };
+  const dp = function (x) { if (x.src === 'coin') { const p = T().px(x.id); return p && p < 1 ? (p < 0.01 ? 6 : 4) : 2; } return x.ccy === 'JPY' ? 0 : (x.src === 'stock' && x.base < 20) ? 3 : 2; };
+  const qd = function (x) { return x && x.src === 'coin' ? 4 : 0; };
   function flag(x) { return H.cty(D.STOCK_MKT[x.mkt][1]); }
   function link(x) { return '<a href="#/trade/stock/' + x.id + '">' + e(x.name) + '</a>'; }
   function stateLabel(x) {
@@ -72,14 +73,14 @@
     const pos = function (p, label) {
       if (!p) return '';
       const val = p.q * Tr.pxCHF(x.id);
-      return '<tr><td>' + label + '</td><td class="num">' + U.fmt(p.q, 0) + '</td><td class="num">' + U.fmt(p.cost, 0) + '</td><td class="num">' + U.fmt(val, 0) + '</td><td class="num">' + H.chg(val - p.cost, 0) + '</td></tr>';
+      return '<tr><td>' + label + '</td><td class="num">' + U.fmt(p.q, qd(x)) + '</td><td class="num">' + U.fmt(p.cost, 0) + '</td><td class="num">' + U.fmt(val, 0) + '</td><td class="num">' + H.chg(val - p.cost, 0) + '</td></tr>';
     };
     const open = Tr.open(x);
     const ticket = st !== 'open' ? H.note(stateLabel(x) + (st === 'ipo' ? '' : ' Trading has stopped.')) :
       '<form data-form="order" data-id="' + x.id + '" class="ticket"><table class="frm">' +
       '<tr><th>' + 'Account' + '</th><td><label class="opt inl"><input type="radio" name="acct" value="priv" checked> ' + 'Private account (your numbered account)' + '</label><br><label class="opt inl"><input type="radio" name="acct" value="bank"> ' + tr('Bank trading book (Handelsbuch)', 'Bank trading book') + '</label></td></tr>' +
       '<tr><th>' + 'Side' + '</th><td><label class="opt inl"><input type="radio" name="side" value="buy" checked> ' + 'Buy' + '</label> <label class="opt inl"><input type="radio" name="side" value="sell"> ' + 'Sell' + '</label></td></tr>' +
-      '<tr><th>' + 'Quantity' + '</th><td><input class="inp num" name="q" size="8" value="100"> <span class="small muted ticket-est"></span></td></tr>' +
+      '<tr><th>' + 'Quantity' + '</th><td><input class="inp num" name="q" size="8" value="' + (x.src === 'coin' ? '1' : '100') + '"> <span class="small muted ticket-est"></span></td></tr>' +
       '<tr><th>' + 'Order type' + '</th><td>' + H.sel('name="type"', [['mkt', 'Market'], ['lmt', 'Limit'], ['stop', 'Stop-loss']], 'mkt') + ' ' + 'Limit' + ' <input class="inp num" name="lim" size="8" placeholder="' + U.fmt(px, dp(x)) + '"></td></tr>' +
       '<tr><th>' + 'Valid' + '</th><td>' + H.sel('name="valid"', [['day', 'Today only'], ['gtc', 'Until cancelled']], 'day') + '</td></tr></table>' +
       '<div class="btnbar left"><button class="btn def" type="submit">' + 'Place order' + '</button> ' + H.dur(3) + '</div>' +
@@ -108,7 +109,7 @@
     const stl = { open: H.st('mod', 'open'), done: H.st('ok', 'filled'), cancelled: H.st('off', 'cancelled'), expired: H.st('off', 'expired'), rejected: H.st('bad', 'rejected') };
     const rows = st.orders.slice(0, 80).map(function (o) {
       const x = Tr.get(o.id);
-      return [o.no, U.fmtDate(o.d) + ' ' + U.fmtTime(o.t), o.acct === 'bank' ? tr('Trading book (Handelsbuch)', 'Trading book') : 'Private', o.side === 'buy' ? 'Buy' : 'Sell', U.fmt(o.q, 0), x ? link(x) : o.id,
+      return [o.no, U.fmtDate(o.d) + ' ' + U.fmtTime(o.t), o.acct === 'bank' ? tr('Trading book (Handelsbuch)', 'Trading book') : 'Private', o.side === 'buy' ? 'Buy' : 'Sell', U.fmt(o.q, qd(x)), x ? link(x) : o.id,
         lbl[o.type] + (o.lim ? ' ' + U.fmt(o.lim, x ? dp(x) : 2) : '') + (o.valid === 'gtc' ? ' GTC' : ''), (stl[o.status] || o.status) + (o.why ? '<br><span class="small muted">' + e(o.why) + '</span>' : ''),
         o.fill ? U.fmt(o.fill.px, x ? dp(x) : 2) : '', o.fill ? U.fmt(o.fill.chf, 0) : '', o.status === 'open' ? H.btn('Cancel', 'ordcancel', ' data-id="' + o.no + '"', 'sm') : ''];
     });
@@ -128,7 +129,7 @@
       const rows = Object.keys(b.pos).map(function (id) {
         const x = Tr.get(id), p = b.pos[id], val = p.q * Tr.pxCHF(id);
         tv += val; tc += p.cost;
-        return [flag(x), link(x), U.fmt(p.q, 0), U.fmt(Tr.px(id), dp(x)) + ' ' + x.ccy, U.fmt(p.cost, 0), U.fmt(val, 0), H.chg(val - p.cost, 0), H.chg(p.cost ? (val / p.cost - 1) * 100 : 0, 1, '%')];
+        return [flag(x), link(x), U.fmt(p.q, qd(x)), U.fmt(Tr.px(id), dp(x)) + ' ' + x.ccy, U.fmt(p.cost, 0), U.fmt(val, 0), H.chg(val - p.cost, 0), H.chg(p.cost ? (val / p.cost - 1) * 100 : 0, 1, '%')];
       });
       return { html: H.grid(['', 'Share', { t: 'Qty', num: true }, { t: 'Price', num: true }, { t: 'Cost CHF', num: true }, { t: 'Value CHF', num: true }, { t: 'P&amp;L CHF', num: true }, { t: '%', num: true }], rows,
         { empty: 'No positions.', foot: rows.length ? ['', '<b>Total</b>', '', '', U.fmt(tc, 0), '<b>' + U.fmt(tv, 0) + '</b>', H.chg(tv - tc, 0), ''] : null }), value: tv, cost: tc };
@@ -138,7 +139,7 @@
     const jr = st.journal.slice(0, 25).map(function (j) {
       const x = Tr.get(j.id);
       const what = j.k === 'fill' ? (j.side === 'buy' ? 'Buy' : 'Sale') : j.k === 'div' ? 'Dividend' : 'Write-off (bankruptcy)';
-      return [U.fmtDate(j.d), j.acct === 'bank' ? tr('Trading book (Handelsbuch)', 'Trading book') : 'Private', what, U.fmt(j.q, 0) + ' ' + (x ? e(x.name) : j.id), U.fmt(j.chf, 0), j.wht ? U.fmt(j.wht, 0) : j.fee ? U.fmt(j.fee, 0) : ''];
+      return [U.fmtDate(j.d), j.acct === 'bank' ? tr('Trading book (Handelsbuch)', 'Trading book') : 'Private', what, U.fmt(j.q, qd(x)) + ' ' + (x ? e(x.name) : j.id), U.fmt(j.chf, 0), j.wht ? U.fmt(j.wht, 0) : j.fee ? U.fmt(j.fee, 0) : ''];
     });
     return {
       mod: 'trade', crumbs: [['Trading', '#/trade'], ['Portfolios']], title: 'Portfolios',

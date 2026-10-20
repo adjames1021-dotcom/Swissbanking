@@ -272,8 +272,22 @@
     { d: 'docs', icon: 'd-docs', label: 'My Documents' },
     { d: 'net', icon: 'd-net', label: 'Internet Explorer' },
     { d: 'bin', icon: 'd-recycle', label: 'Recycle Bin' },
-    { d: 'pbs', icon: 'd-pbs', label: 'PBS/Web (Intranet)' }
-  ];
+    { d: 'pbs', icon: 'd-pbs', label: 'PBS/Web (Intranet)' },
+    { d: 'era', icon: 'd-era', label: PBS.modern() ? 'Back to 2003 (old workstation)' : 'Move to 2018 (new workstation)' }
+  ].filter(function (x) { return x.d !== 'era' || PBS.modern() || Object.keys(PBS.DATA.SCENARIOS).some(function (k) { return PBS.DATA.SCENARIOS[k].era === 'modern'; }); });
+  // Zwischen den beiden Arbeitsplätzen wechseln: jede Epoche hat ihren eigenen Spielstand und ihre eigene Festplatte
+  WM.switchEra = function () {
+    const to = PBS.modern() ? 'classic' : 'modern';
+    PBS.Dlg.confirm(to === 'modern' ? 'New workstation' : 'Old workstation',
+      to === 'modern' ? 'Switch to the bank of 2018–2025: a new PC, the new banking platform, crypto and a world without banking secrecy?<br><br><span class="muted">Your 1998–2017 game is saved and waits for you here.</span>'
+        : 'Go back to the Windows 2000 workstation and the bank of 1998–2017?<br><br><span class="muted">Your 2018–2025 game is saved.</span>',
+      function () {
+        if (PBS.Game.state) PBS.Game.save();
+        try { localStorage.setItem('pbs-vogt-era', to); } catch (x) { /* */ }
+        document.body.classList.add('era-out');
+        setTimeout(function () { location.hash = ''; location.reload(); }, 700);
+      }, 'ques', 'Switch', 'Stay');
+  };
   WM.paintDesktop = function () {
     const box = $('dicons');
     if (!box || WM.renaming) return;
@@ -420,6 +434,7 @@
     else if (d === 'docs') WM.open('explorer', { path: FS.specialPaths().documents });
     else if (d === 'bin') WM.open('explorer', { path: ['Recycled'] });
     else if (d === 'net' || d === 'pbs') launchApp(d === 'net' ? 'ie' : 'pbs');
+    else if (d === 'era') WM.switchEra();
   }
   function renameIcon(di) {
     const f = di.dataset.path && PBS.Apps.item(di.dataset.path);

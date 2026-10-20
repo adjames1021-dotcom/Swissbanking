@@ -17,6 +17,9 @@ window.PBS = window.PBS || {};
   const L = PBS.L = { lang: 'ch', num: 'ch', date: 'ch', time: '24', ccy: 'CHF' };
   try { Object.assign(L, JSON.parse(localStorage.getItem(LKEY) || '{}')); } catch (x) { /* Standard */ }
   L.save = function () { try { localStorage.setItem(LKEY, JSON.stringify({ lang: L.lang, num: L.num, date: L.date, time: L.time, ccy: L.ccy })); } catch (x) { /* nicht verfügbar */ } };
+  // Epoche des Arbeitsplatzes: 'classic' (Windows 2000, 1998–2017) oder 'modern' (2018–2025); eigener Spielstand je Epoche
+  try { PBS.ERA = localStorage.getItem('pbs-vogt-era') === 'modern' ? 'modern' : 'classic'; } catch (x) { PBS.ERA = 'classic'; }
+  PBS.modern = function () { return PBS.ERA === 'modern'; };
   // Text in der gewählten Sprache: t('Kontoauszug', 'Account statement')
   L.t = function (ch, en) { return L.lang === 'en' && en !== undefined ? en : ch; };
 

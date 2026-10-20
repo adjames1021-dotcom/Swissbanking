@@ -30,8 +30,11 @@
     if (!ALL) {
       ALL = D.INSTR.filter(function (i) { return D.INSTR_META[i.id]; }).map(function (i) {
         return Object.assign({ id: i.id, name: i.name, ccy: i.ccy, src: 'instr' }, D.INSTR_META[i.id]);
-      }).concat(D.STOCKS);
-      ALL.sort(function (a, b) { return a.mkt === b.mkt ? (a.name < b.name ? -1 : 1) : ['CH', 'US', 'EU', 'UK', 'JP'].indexOf(a.mkt) - ['CH', 'US', 'EU', 'UK', 'JP'].indexOf(b.mkt); });
+      }).concat(D.STOCKS).concat((D.COINS || []).map(function (c) {
+        return { id: c.id, name: c.name, ccy: 'USD', src: 'coin', mkt: 'CRYPTO', sector: 'crypto', div: 0, pe: 0, beta: 0, desc: c.desc || '', listed: c.listed, delisted: c.bust || null, bust: !!c.bust, news: c.news || [], stable: !!c.stable };
+      }));
+      const ORD = ['CH', 'US', 'EU', 'UK', 'JP', 'CRYPTO'];
+      ALL.sort(function (a, b) { return a.mkt === b.mkt ? (a.src === 'coin' ? 0 : a.name < b.name ? -1 : 1) : ORD.indexOf(a.mkt) - ORD.indexOf(b.mkt); });
     }
     return ALL;
   };
@@ -47,7 +50,7 @@
   T.px = function (id) {
     const x = T.get(id);
     if (!x) return 0;
-    if (x.src === 'instr') return S().market[id] || 0;
+    if (x.src === 'instr' || x.src === 'coin') return S().market[id] || 0;
     const st = state();
     return st.px[id] || 0;
   };
@@ -61,7 +64,7 @@
     const s = S(), x = T.get(id);
     n = n || HIST;
     if (!x) return [];
-    if (x.src === 'instr') return s.mhist.slice(-n).map(function (m) { return { d: m.d, p: m[id] }; }).filter(function (h) { return h.p; });
+    if (x.src === 'instr' || x.src === 'coin') return s.mhist.slice(-n).map(function (m) { return { d: m.d, p: m[id] }; }).filter(function (h) { return h.p; });
     const st = state();
     const h = st.h[id] || [];
     const out = [];
@@ -97,12 +100,15 @@
   /* ---------- Gebühren ---------- */
   // Privat: Courtage 0.5 % (mind. CHF 40), Umsatzabgabe 0.075 % Inland / 0.15 % Ausland. Handelsbuch: 0.02 %, abgabefrei
   T.costs = function (acct, x, grossCHF) {
+    // Krypto: Courtage 1 % (mind. CHF 20) privat, 0.1 % im Handelsbuch, keine Umsatzabgabe
+    if (x.src === 'coin') return acct === 'bank' ? { fee: K.round(grossCHF * 0.001, 2), tax: 0 } : { fee: K.round(Math.max(20, grossCHF * 0.01), 2), tax: 0 };
     if (acct === 'bank') return { fee: K.round(grossCHF * 0.0002, 2), tax: 0 };
     return { fee: K.round(Math.max(40, grossCHF * 0.005), 2), tax: K.round(grossCHF * (x.mkt === 'CH' ? 0.00075 : 0.0015), 2) };
   };
   // Handelszeiten (Schweizer Zeit): Zürich, Frankfurt, London 09:00–17:30, New York ab 15:30, Tokio nachts
   T.open = function (x) {
     const c = S().clock;
+    if (x.src === 'coin') return true;
     if (x.mkt === 'JP') return false;
     if (x.mkt === 'US') return c >= 15 * 60 + 30;
     return c >= 9 * 60 && c < 17 * 60 + 30;
@@ -164,7 +170,7 @@
     const status = T.status(x);
     if (status === 'ipo') return K.err('This share is not listed yet (IPO on ' + U.fmtDate(x.listed) + ').');
     if (status !== 'open') return K.err('Trading in this share has been suspended.');
-    const q = Math.floor(+p.q);
+    const q = x.src === 'coin' ? K.round(+p.q, 8) : Math.floor(+p.q);
     if (!(q > 0)) return K.err('Please enter a number of shares.');
     const type = ['mkt', 'lmt', 'stop'].indexOf(p.type) >= 0 ? p.type : 'mkt';
     if (type !== 'mkt' && !(+p.lim > 0)) return K.err('Please enter a limit price.');
@@ -185,7 +191,7 @@
     if (st.orders.length > 150) st.orders = st.orders.filter(function (y, i) { return i < 150 || y.status === 'open'; });
     if (acct === 'bank') K.personal(0, '');
     if (type === 'mkt' && T.open(x)) {
-      const r = fill(o, K.round(px * (o.side === 'buy' ? 1.001 : 0.999), x.base < 20 ? 3 : 2));
+      const r = fill(o, x.src === 'coin' ? +(px * (o.side === 'buy' ? 1.001 : 0.999)).toPrecision(6) : K.round(px * (o.side === 'buy' ? 1.001 : 0.999), x.base < 20 ? 3 : 2));
       if (!r.ok) { o.status = 'rejected'; o.why = r.msg; return r; }
       G.save();
       return { ok: true, o: o, text: 'Executed: ' + (o.side === 'buy' ? 'bought ' : 'sold ') + q + ' ' + x.name + ' at ' + x.ccy + ' ' + U.fmt(o.fill.px, 2) + '.' };
@@ -235,7 +241,7 @@
   function maybeTip() {
     const s = S(), st = state();
     if (st.tip || s.dayNo < 15 || !K.chance(0.004)) return;
-    const pool = T.list().filter(function (x) { return T.status(x) === 'open' && !x.bust && x.mkt !== 'JP' && x.id !== 'LBG'; });
+    const pool = T.list().filter(function (x) { return T.status(x) === 'open' && !x.bust && x.mkt !== 'JP' && x.src !== 'coin' && x.id !== 'LBG'; });
     const clients = G.activeClients().filter(function (c) { return c.dom === 'CH' || K.chance(0.5); });
     if (!pool.length || !clients.length) return;
     const x = K.pick(pool), c = K.pick(clients), buyer = K.pick(['Rhein-Pharma', 'an American group', 'a French competitor', 'a private equity fund from London', 'the Japanese', 'a family office from Geneva']);
@@ -315,7 +321,7 @@
     // 2. Nachrichten aus der Firmengeschichte und zufällige Firmenereignisse
     T.list().forEach(function (x) {
       (x.news || []).forEach(function (n) { if (n[0] > (st.lastEod || '0') && n[0] <= closing) news(x, n[1], false); });
-      if (T.status(x) === 'open' && K.chance(0.0035)) corporate(x);
+      if (T.status(x) === 'open' && x.src !== 'coin' && K.chance(0.0035)) corporate(x);
     });
     resolveTip();
     st.hd.push(closing);

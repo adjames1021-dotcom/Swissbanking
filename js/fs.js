@@ -5,7 +5,7 @@
 
   const U = PBS.U;
   const tr = PBS.L.t;
-  const KEY = 'pbs-vogt-fs-v1';
+  const KEY = PBS.ERA === 'modern' ? 'pbs-vogt-fs-modern' : 'pbs-vogt-fs-v1';
   const FS = PBS.FS = {};
 
   function now() { return (PBS.Game && PBS.Game.state) ? PBS.Game.state.date : '2003-03-03'; }
@@ -30,8 +30,9 @@
   }
 
   // Kapazität: C: 4 GB (davon 1.6 GB Windows und Programme), A: 1.44 MB
-  const CAP = { 'C:': 4294967296, 'A:': 1457664 };
-  const BASEUSE = { 'C:': 1717986918, 'A:': 0 };
+  // Klassisch: 4 GB Platte und Diskette; modern: 256 GB SSD, kein Diskettenlaufwerk
+  const CAP = PBS.modern() ? { 'C:': 256060514304 } : { 'C:': 4294967296, 'A:': 1457664 };
+  const BASEUSE = PBS.modern() ? { 'C:': 84825604096 } : { 'C:': 1717986918, 'A:': 0 };
   function sizeOf(n) {
     if (!n) return 0;
     if (n.type === 'file') return (n.body || '').length;
@@ -335,6 +336,7 @@
   /* ---------- Grundbestand ---------- */
   FS.seed = function (force) {
     if (!force && FS.load()) return;
+    if (PBS.modern()) { seedModern(); return; }
     const u = user();
     tree = dir();
     tree.children = {};
@@ -384,8 +386,52 @@
     FS.save();
   };
 
+  // Moderner Arbeitsplatz (Windows 10): C:\Windows, C:\Users\<Benutzer>
+  function seedModern() {
+    const u = user();
+    tree = dir();
+    tree.children = {};
+    const C = tree.children['C:'] = dir({ label: 'OS', drive: 'hdd' });
+    tree.children['Recycled'] = dir({ system: true });
+    const win = C.children['Windows'] = dir({ system: true });
+    win.children = {
+      'win.ini': file('; for 16-bit app support\r\n[fonts]\r\n[extensions]\r\n[mci extensions]\r\n[files]\r\n[Mail]\r\nMAPI=1\r\n', { ro: true, system: true }),
+      'notepad.exe': file('MZ', { mime: 'exe', ro: true, system: true, app: 'notepad' }),
+      'System32': dir({ system: true, ro: true })
+    };
+    win.children.System32.children = { 'drivers': dir({ system: true, ro: true }), 'cmd.exe': file('MZ', { mime: 'exe', system: true, ro: true, app: 'cmd' }), 'calc.exe': file('MZ', { mime: 'exe', system: true, ro: true, app: 'calc' }) };
+    const prog = C.children['Program Files'] = dir({ system: true });
+    prog.children = {
+      'Microsoft': dir({ ro: true, children: { 'Edge': dir({ ro: true, children: { 'msedge.exe': file('MZ', { mime: 'exe', ro: true, app: 'ie' }) } }) } }),
+      'Vogt Private': dir({ ro: true, children: { 'VogtPrivate.exe': file('MZ', { mime: 'exe', ro: true, app: 'pbs' }), 'readme.txt': file('Vogt Private – banking platform (formerly PBS/Web)\r\nRelease 7.4\r\nBuilt on the PBS core banking system. Runs in the browser.\r\nSupport: IT Service Desk, ext. 4411, servicedesk@vogt-cie.ch\r\n', { ro: true }) } })
+    };
+    const users = C.children['Users'] = dir({});
+    users.children['Public'] = dir({ system: true });
+    const me = users.children[u] = dir({});
+    const desk = me.children['Desktop'] = dir({});
+    const docs = me.children['Documents'] = dir({});
+    me.children['Downloads'] = dir({});
+    desk.children = {
+      'todo.txt': file('- renew Ledger PIN, store backup card in the safe NOT the desk\r\n- ask Compliance about the chain-analysis report for KESTREL\r\n- Zug crypto meetup Thu 18:30\r\n- book Davos hotel\r\n'),
+      'Welcome.txt': file('Workstation ZH-NB-1147 (Windows 10 Enterprise)\r\nUser ' + u + '\r\n\r\nThis PC: local files. OneDrive is blocked by policy.\r\nVogt Private opens in the browser.\r\nUSB storage is disabled. Ask the Service Desk if you need an exception.\r\n')
+    };
+    docs.children = {
+      'Private': dir({ children: {
+        'passwords.txt': file('(move to password manager!!)\r\nWindows: ********\r\nLedger PIN: ****\r\nBinance (private): ********\r\n', { secret: true }),
+        'seed phrase - DO NOT LOSE.txt': file('cold wallet backup words are in the safe, envelope 3\r\nnot here\r\n', { secret: true })
+      } }),
+      'Budget 2018.xlsx': file('Private Banking, budget 2018\r\n\r\nRevenue target;AuM fee;2\'900\'000\r\nRevenue target;Crypto custody;450\'000\r\nCost;Personnel;3\'100\'000\r\nCost;IT & security;1\'350\'000\r\n', { mime: 'xls' }),
+      'Crypto policy draft v3.docx': file('VOGT & CIE · DIGITAL ASSETS POLICY (DRAFT 3)\r\n\r\nCustody only for coins with a documented source of funds.\r\nChain analysis on every incoming transfer.\r\nNo coins from mixers, darknet markets or sanctioned addresses.\r\nExceptions need sign-off by the Managing Partner and the Head of Compliance.\r\n', { mime: 'doc', ro: true })
+    };
+    FS.save();
+  }
+
   FS.specialPaths = function () {
     const u = user();
+    if (PBS.modern()) {
+      if (tree && !nodeAt(['C:', 'Users', u])) { ensureDir(['C:', 'Users', u, 'Desktop']); ensureDir(['C:', 'Users', u, 'Documents']); FS.save(); }
+      return { desktop: ['C:', 'Users', u, 'Desktop'], documents: ['C:', 'Users', u, 'Documents'], home: ['C:', 'Users', u] };
+    }
     // Erste Anmeldung eines anderen Benutzers: Windows legt das Profil an
     if (tree && !nodeAt(['C:', 'Documents and Settings', u])) { ensureDir(['C:', 'Documents and Settings', u, 'Desktop']); ensureDir(['C:', 'Documents and Settings', u, 'My Documents']); FS.save(); }
     return {

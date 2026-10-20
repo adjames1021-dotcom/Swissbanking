@@ -326,8 +326,8 @@
     const promptText = function () { return st.pending ? st.pending.ask : FS.join(st.cwd) + '>'; };
     const showPrompt = function () { pr.textContent = promptText(); box.scrollTop = box.scrollHeight; };
     WM().setTitle(win.id, 'Command Prompt');
-    print('Microsoft Windows 2000 [Version 5.00.2195]');
-    print('(C) Copyright 1985-2000 Microsoft Corp.');
+    if (PBS.modern()) { print('Microsoft Windows [Version 10.0.19044.1288]'); print('(c) Microsoft Corporation. All rights reserved.'); }
+    else { print('Microsoft Windows 2000 [Version 5.00.2195]'); print('(C) Copyright 1985-2000 Microsoft Corp.'); }
     print('');
     showPrompt();
 
@@ -360,12 +360,12 @@
     const CMDS = {
       help: function () { HELP.forEach(print); },
       cls: function () { out.textContent = ''; },
-      ver: function () { print(''); print('Microsoft Windows 2000 [Version 5.00.2195]'); },
+      ver: function () { print(''); print(PBS.modern() ? 'Microsoft Windows [Version 10.0.19044.1288]' : 'Microsoft Windows 2000 [Version 5.00.2195]'); },
       vol: function () { print(' Volume in drive ' + st.cwd[0].charAt(0) + ' has no label.'); print(' Volume Serial Number is ' + (st.cwd[0] === 'A:' ? '2E1F-09C3' : '1C4A-3F2E')); },
-      hostname: function () { print('ZH-BS64-0217'); },
+      hostname: function () { print(PBS.modern() ? 'ZH-NB-1147' : 'ZH-BS64-0217'); },
       echo: function (a, raw) { print(raw === '.' || raw === '' ? (raw === '' ? 'ECHO is on.' : '') : raw); },
       exit: function () { WM().close(win.id); },
-      set: function () { ['ALLUSERSPROFILE=C:\\Documents and Settings\\All Users', 'COMPUTERNAME=ZH-BS64-0217', 'HOMEDRIVE=C:', 'NUMBER_OF_PROCESSORS=1', 'OS=Windows_NT', 'PROCESSOR_ARCHITECTURE=x86', 'PROMPT=$P$G', 'SystemRoot=C:\\WINNT', 'USERDOMAIN=VOGT-ZH', 'USERNAME=' + (G.state ? G.state.user.id : 'E10001'), 'USERPROFILE=' + FS.join(FS.specialPaths().home)].forEach(print); },
+      set: function () { (PBS.modern() ? ['ALLUSERSPROFILE=C:\\ProgramData', 'COMPUTERNAME=ZH-NB-1147', 'OS=Windows_NT', 'PROCESSOR_ARCHITECTURE=AMD64', 'NUMBER_OF_PROCESSORS=8', 'SystemRoot=C:\\Windows', 'USERDOMAIN=VOGT', 'USERNAME=' + (G.state ? G.state.user.id : 'E10001'), 'USERPROFILE=' + FS.join(FS.specialPaths().home)] : ['ALLUSERSPROFILE=C:\\Documents and Settings\\All Users', 'COMPUTERNAME=ZH-BS64-0217', 'HOMEDRIVE=C:', 'NUMBER_OF_PROCESSORS=1', 'OS=Windows_NT', 'PROCESSOR_ARCHITECTURE=x86', 'PROMPT=$P$G', 'SystemRoot=C:\\WINNT', 'USERDOMAIN=VOGT-ZH', 'USERNAME=' + (G.state ? G.state.user.id : 'E10001'), 'USERPROFILE=' + FS.join(FS.specialPaths().home)]).forEach(print); },
       ipconfig: function () { ['', 'Windows 2000 IP Configuration', '', 'Ethernet adapter Local Area Connection:', '', '        Connection-specific DNS Suffix  . : vogt.intra', '        IP Address. . . . . . . . . . . . : 10.12.4.217', '        Subnet Mask . . . . . . . . . . . : 255.255.0.0', '        Default Gateway . . . . . . . . . : 10.12.0.1'].forEach(print); },
       date: function () { const s = G.state; const d = s ? s.date : '2003-03-03'; print('The current date is: ' + U.weekday(d) + ' ' + U.fmtDate(d)); st.pending = { ask: 'Enter the new date: (dd-mm-yy) ', run: function () { print('A required privilege is not held by the client.'); } }; },
       time: function () { const s = G.state; print('The current time is: ' + (s ? U.pad(Math.floor(s.clock / 60), 2) + ':' + U.pad(s.clock % 60, 2) + ':00.00' : new Date().toTimeString().slice(0, 8))); st.pending = { ask: 'Enter the new time: ', run: function () { print('A required privilege is not held by the client.'); } }; },

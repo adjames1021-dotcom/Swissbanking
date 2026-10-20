@@ -130,7 +130,7 @@
     if (p[0] === 'My Computer') return 'My Computer';
     if (p[0] === 'Recycled') return 'Recycle Bin';
     if (p[0] === 'Control Panel') return 'Control Panel';
-    if (p.length === 1) return p[0] === 'A:' ? '3½ Floppy (A:)' : 'Local Disk (C:)';
+    if (p.length === 1) return p[0] === 'A:' ? '3½ Floppy (A:)' : PBS.modern() ? 'OS (C:)' : 'Local Disk (C:)';
     return p[p.length - 1];
   }
   A.pathLabel = pathLabel;
@@ -157,7 +157,7 @@
       '<table class="frm fd-bot"><tr><th>File name:</th><td><input class="inp fd-name" value="' + e(o.name || '') + '"></td></tr><tr><th>' + (save ? 'Save as type:' : 'Files of type:') + '</th><td><select class="inp fd-type">' + types.map(function (t, i) { return '<option value="' + i + '">' + e(t[0]) + '</option>'; }).join('') + '</select></td></tr></table></div>';
     let dlg = null;
     const items = function () {
-      if (dir[0] === 'My Computer') return [{ name: 'A:', label: '3½ Floppy (A:)', type: 'dir', icon: 'd-floppy', path: ['A:'] }, { name: 'C:', label: 'Local Disk (C:)', type: 'dir', icon: 'd-hdd', path: ['C:'] }];
+      if (dir[0] === 'My Computer') return (PBS.modern() ? [] : [{ name: 'A:', label: '3½ Floppy (A:)', type: 'dir', icon: 'd-floppy', path: ['A:'] }]).concat([{ name: 'C:', label: PBS.modern() ? 'OS (C:)' : 'Local Disk (C:)', type: 'dir', icon: 'd-hdd', path: ['C:'] }]);
       const ext = types[type][1];
       return FS.list(dir).filter(function (f) { return f.type === 'dir' || ext === '*' || ext.split(';').indexOf(FS.ext(f.name)) >= 0; })
         .map(function (f) { return { name: f.name, label: f.name, type: f.type, icon: WM().iconFor(f), path: f.path }; });
@@ -225,9 +225,9 @@
 
   function exItems(p) {
     if (p[0] === 'My Computer') {
-      return [{ name: 'A:', label: '3½ Floppy (A:)', icon: 'd-floppy', kind: 'drive', path: ['A:'], tname: '3½-Inch Floppy Disk' },
-        { name: 'C:', label: 'Local Disk (C:)', icon: 'd-hdd', kind: 'drive', path: ['C:'], tname: 'Local Disk' },
-        { name: 'Control Panel', label: 'Control Panel', icon: 'd-control', kind: 'cp', path: ['Control Panel'], tname: 'System Folder' }];
+      return (PBS.modern() ? [] : [{ name: 'A:', label: '3½ Floppy (A:)', icon: 'd-floppy', kind: 'drive', path: ['A:'], tname: '3½-Inch Floppy Disk' }]).concat([
+        { name: 'C:', label: PBS.modern() ? 'OS (C:)' : 'Local Disk (C:)', icon: 'd-hdd', kind: 'drive', path: ['C:'], tname: 'Local Disk' },
+        { name: 'Control Panel', label: 'Control Panel', icon: 'd-control', kind: 'cp', path: ['Control Panel'], tname: 'System Folder' }]);
     }
     if (p[0] === 'Control Panel') return APPLETS.map(function (a) { return { name: a.l, label: a.l, icon: a.icon, kind: 'applet', applet: a.k, tname: 'Control Panel Applet', desc: a.d }; });
     if (p[0] === 'Recycled') {
@@ -235,7 +235,7 @@
     }
     return FS.list(p).map(function (f) { return Object.assign(f, { label: f.name, icon: WM().iconFor(f), kind: f.type, tname: A.typeName(f) }); });
   }
-  function writable(p) { return p.length && ['My Computer', 'Recycled', 'Control Panel'].indexOf(p[0]) < 0 && FS.isDir(p) && !FS.node(p).ro && !(FS.node(p).system && p[1] === 'WINNT'); }
+  function writable(p) { return p.length && ['My Computer', 'Recycled', 'Control Panel'].indexOf(p[0]) < 0 && FS.isDir(p) && !FS.node(p).ro && !(FS.node(p).system && (p[1] === 'WINNT' || p[1] === 'Windows')); }
 
   // Gemeinsame Befehle für Explorer und Desktop
   function canEdit(f) { return f && f.path && (f.type === 'dir' || f.type === 'file') && f.kind !== 'bin' && !f.ro && !f.system; }
@@ -563,7 +563,7 @@
   function aboutWindows() {
     Dlg().open({
       title: 'About Windows', width: 420, icon: 'd-comp',
-      body: '<div class="dlg-msg"><svg class="ico32"><use href="#d-comp"/></svg><div><b>Windows 2000 Professional</b><br>Version 5.0 (Build 2195: Service Pack 3)<br><br>This product is licensed to:<br>Bankhaus Vogt &amp; Cie<br>Workstation ZH-BS64-0217<br><br>Physical memory available to Windows: 261,616 KB</div></div>'
+      body: PBS.modern() ? '<div class="dlg-msg"><svg class="ico32"><use href="#d-comp"/></svg><div><b>Windows 10 Enterprise</b><br>Version 21H2 (OS Build 19044.1288)<br>© Microsoft Corporation. All rights reserved.<br><br>This product is licensed under the Microsoft Software License Terms to:<br>Bankhaus Vogt &amp; Cie<br>Workstation ZH-NB-1147</div></div>' : '<div class="dlg-msg"><svg class="ico32"><use href="#d-comp"/></svg><div><b>Windows 2000 Professional</b><br>Version 5.0 (Build 2195: Service Pack 3)<br><br>This product is licensed to:<br>Bankhaus Vogt &amp; Cie<br>Workstation ZH-BS64-0217<br><br>Physical memory available to Windows: 261,616 KB</div></div>'
     });
   }
 

@@ -13,7 +13,7 @@
     const diffKey = D.DIFFICULTY[o.diff] ? o.diff : 'standard';
     const start = sc.start;
     const s = G.state = {
-      v: 2, seed: 19980302 + (+scKey), meta: { scenario: scKey, diff: diffKey, name: o.name || 'Managing Partner', started: start },
+      v: 2, seed: 19980302 + (+scKey), meta: { scenario: scKey, diff: diffKey, name: o.name || 'Managing Partner', started: start, era: sc.era || 'classic', end: sc.end || D.END_DATE },
       user: { id: o.userId || 'E10001', last: { d: U.addBusinessDays(start, -1), t: 17 * 60 + 42, ws: 'ZH-BS64-0217' } },
       date: start, clock: 8 * 60 + 4, dayNo: 1, overtime: 0, today: { ops: 0 },
       market: {}, prevMarket: {}, mhist: [], idio: {}, classRet: {},
@@ -36,14 +36,15 @@
     });
     K.marketInit(start);
 
-    D.STAFF.forEach(function (x) {
+    (sc.staff || D.STAFF).forEach(function (x) {
       if (x.hired <= start) s.staff.push(Object.assign({ status: 'active', known: {} }, JSON.parse(JSON.stringify(x))));
     });
 
-    const include = D.CLIENTS.filter(function (c) { return sc.exclude.indexOf(c.id) < 0 && c.since <= start; })
+    // Moderne Szenarien bringen eigene Kunden, Mitarbeitende und Gesellschaften mit
+    const include = sc.clients ? sc.clients.filter(function (c) { return c.since <= start; }) : D.CLIENTS.filter(function (c) { return sc.exclude.indexOf(c.id) < 0 && c.since <= start; })
       .concat(D.CLIENTS_2008.filter(function (c) { return sc.extra.indexOf(c.id) >= 0; }));
     const ids = include.map(function (c) { return c.id; });
-    D.ENTITIES.forEach(function (e) { if (ids.indexOf(e.bo) >= 0 && e.inc <= start) s.entities.push(Object.assign({}, e)); });
+    (sc.entities || D.ENTITIES).forEach(function (e) { if (ids.indexOf(e.bo) >= 0 && e.inc <= start) s.entities.push(Object.assign({}, e)); });
     include.forEach(function (src) {
       const c = {
         id: src.id, rubrik: src.rubrik, name: src.name, type: 'Individual', nat: src.nat, dom: src.dom, city: src.city,
@@ -143,7 +144,7 @@
           const q = G.clientAUM(c.id) * c.fee / 4;
           moves.push([U.addBusinessDays(y0, 2), -K.round(q / rate, K.dec(acc.ccy)), 'Management fee Q4/' + y0.slice(0, 4), 'fee', '', '']);
         }
-        const nMoves = special[acc.id] ? 0 : K.rint(0, 2);
+        const nMoves = special[acc.id] || (D.COINS || []).some(function (x) { return x.id === acc.ccy; }) ? 0 : K.rint(0, 2);
         for (let i = 0; i < nMoves; i++) {
           const day = U.addBusinessDays(firstMove, K.rint(0, span));
           const amt = K.roundTo(acc.bal * K.between(0.01, 0.05), acc.ccy === 'ITL' ? 1000000 : 1000);
@@ -185,6 +186,13 @@
     s.ctr.alert = 3;
 
     // Startmeldungen
+    if (sc.era === 'modern') {
+      s.date = start;
+      if (K.modernOpening) K.modernOpening(start, sc);
+      s.messages.forEach(function (m) { m.read = false; });
+      s.clock = 8 * 60 + 4;
+      return;
+    }
     s.clock = 7 * 60 + 50;
     s.date = U.addBusinessDays(start, -1);
     const n = G.activeClients().length;

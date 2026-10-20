@@ -277,9 +277,11 @@
 
   /* ---------- Neues Spiel ---------- */
   V.newGameForm = function (name, guide) {
-    return '<form id="newgameform"><div class="ng"><div class="pcsec">Start year</div>' + Object.keys(D.SCENARIOS).map(function (k, i) {
+    const keys = Object.keys(D.SCENARIOS).filter(function (k) { return (D.SCENARIOS[k].era || 'classic') === PBS.ERA; });
+    const def = keys.indexOf('2003') >= 0 ? '2003' : keys[0];
+    return '<form id="newgameform"><div class="ng"><div class="pcsec">Start year</div>' + keys.map(function (k, i) {
       const sc = D.SCENARIOS[k];
-      return '<label class="opt ngopt"><input type="radio" name="sc" value="' + k + '"' + (k === '2003' ? ' checked' : '') + '> <b>' + e(sc.label) + '</b><br><span class="muted">' + e(sc.desc) + '</span></label>';
+      return '<label class="opt ngopt"><input type="radio" name="sc" value="' + k + '"' + (k === def ? ' checked' : '') + '> <b>' + e(sc.label) + '</b><br><span class="muted">' + e(sc.desc) + '</span></label>';
     }).join('') +
       '<div class="pcsec">Difficulty</div>' + Object.keys(D.DIFFICULTY).map(function (k) {
       const d = D.DIFFICULTY[k];

@@ -85,7 +85,7 @@
     Tutor.done('login');
     UI.prevLogin = st.user.last;
     G.login(uid);
-    st.user.last = { d: st.date, t: st.clock, ws: 'ZH-BS64-0217' };
+    st.user.last = { d: st.date, t: st.clock, ws: PBS.modern() ? 'ZH-NB-1147' : 'ZH-BS64-0217' };
     G.save();
     connect(uid, resumed);
   }
@@ -1234,6 +1234,7 @@
     shutdown: shutDown
   });
 
+  document.body.classList.toggle('modern', PBS.modern());
   // Ländereinstellungen: Anzeige neu aufbauen; Dollarumrechnung beobachtet das Dokument
   PBS.L.hooks = { refresh: function () { if (UI.screen === 'app' || UI.screen === 'intra') route(true); else if (UI.screen === 'login') showLogin(); PBS.L.apply(); } };
   PBS.L.watch();

@@ -101,11 +101,11 @@
 
   D.STOCK_MKT = {
     CH: ['Switzerland (SWX)', 'CH'], US: ['USA (NYSE/Nasdaq)', 'US'],
-    EU: ['Europe (Xetra, Paris, Milan, Helsinki)', 'EU'], UK: ['London (LSE)', 'GB'], JP: ['Tokyo (TSE)', 'JP']
+    EU: ['Europe (Xetra, Paris, Milan, Helsinki)', 'EU'], UK: ['London (LSE)', 'GB'], JP: ['Tokyo (TSE)', 'JP'], CRYPTO: ['Crypto (24/7)', '₿']
   };
   D.SECTORS = {
     food: 'Food', ind: 'Industrials', tel: 'Telecoms', pharma: 'Pharma & biotech', fin: 'Banks & insurance', chem: 'Chemicals', transp: 'Transport',
-    realty: 'Real estate', tech: 'Technology', energy: 'Energy', retail: 'Retail', auto: 'Cars', mining: 'Mining', watch: 'Watches & luxury', util: 'Utilities'
+    realty: 'Real estate', tech: 'Technology', energy: 'Energy', retail: 'Retail', auto: 'Cars', mining: 'Mining', watch: 'Watches & luxury', util: 'Utilities', crypto: 'Crypto'
   };
   // Bestehende Aktien aus D.INSTR (Kurs aus der Hauptbewertung): Börse, Branche, Dividende
   D.INSTR_META = {
