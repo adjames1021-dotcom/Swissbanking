@@ -42,6 +42,8 @@
   T.enabled = on;
   T.done = mark;
   T.toggle = function () { B.st.tips = !on(); B.save(); if (!on()) hide(); else T.check(); };
+  // Nach der Einsteiger-Führung: die Bereichstipps erzählen nichts Neues mehr
+  T.markAll = function () { mark('intro'); TIPS.forEach(function (t) { mark(t.k); }); mark('meeting'); };
   T.restart = function () { B.st.tips = true; B.st.tipsSeen = { login: 1 }; T.step = 0; B.save(); hide(); T.check(); };
 
   /* ---------- Auswahl ---------- */
@@ -61,6 +63,7 @@
     }
     if (c.screen === 'login') return s.login || closed.login ? null : LOGIN;
     if (c.screen !== 'app' || !G.state || G.state.gameOver) return null;
+    if (PBS.Guide && PBS.Guide.active()) return null;
     if (!s.intro) {
       const st = INTRO[T.step];
       return st && find(st.a) ? Object.assign({ k: 'intro', n: T.step }, st) : null;

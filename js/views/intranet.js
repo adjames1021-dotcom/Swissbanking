@@ -10,7 +10,7 @@
   function seedOf(str) { let h = 7; for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0; return h; }
 
   function frame(cur, title, body) {
-    const nav = [['intranet', 'Home'], ['overview', 'PBS/Web (Banking)'], ['phone', 'Telefonbuch'], ['menu', 'Menüplan'], ['rules', 'Weisungen'], ['', 'Formulare'], ['', 'Personalabteilung']];
+    const nav = [['intranet', 'Home'], ['overview', 'PBS/Web (Banking)'], ['guide', 'Beginner\'s Guide'], ['phone', 'Telefonbuch'], ['menu', 'Menüplan'], ['rules', 'Weisungen'], ['', 'Formulare'], ['', 'Personalabteilung']];
     return '<div class="ix"><div class="ix-top"><div class="ix-logo"><svg class="crest" width="26" height="30"><use href="#crest"/></svg><span>VOGT &amp; CIE<small>INTRANET</small></span></div>' +
       '<div class="ix-date">' + U.longDate(today()) + '</div></div>' +
       '<div class="ix-body"><div class="ix-nav">' + nav.map(function (n) {
@@ -40,9 +40,13 @@
       html: frame('intranet', 'Welcome to the Vogt &amp; Cie intranet',
         '<div class="ix-tick"><span>' + ext + '</span></div>' +
         '<table class="ix-t"><tr><td class="ix-c"><h2>Internal news</h2>' + news.map(function (n) { return '<p><b>' + e(n[0]) + ':</b> ' + e(n[1]) + '</p>'; }).join('') + '</td>' +
-        '<td class="ix-c"><h2>Applications</h2><ul><li><a href="#/overview">PBS/Web – Private Banking System</a></li><li><a href="#/x/phone">Telephone directory</a></li><li><a href="#/x/menu">Staff restaurant – weekly menu</a></li><li><a href="#/x/rules">Directives (Weisungen)</a></li><li class="ix-dead">Telekurs Investdata (Terminal Server)</li><li class="ix-dead">Lotus Notes Mail</li></ul>' +
+        '<td class="ix-c"><h2>Applications</h2><ul><li><a href="#/overview">PBS/Web – Private Banking System</a></li><li><a href="#/x/guide"><b>New here? Beginner\'s Guide</b></a></li><li><a href="#/x/phone">Telephone directory</a></li><li><a href="#/x/menu">Staff restaurant – weekly menu</a></li><li><a href="#/x/rules">Directives (Weisungen)</a></li><li class="ix-dead">Telekurs Investdata (Terminal Server)</li><li class="ix-dead">Lotus Notes Mail</li></ul>' +
         '<h2>Quote of the week</h2><p class="ix-q">"Discretion is the better part of banking."</p></td></tr></table>')
     };
+  };
+
+  V.guidePage = function () {
+    return { title: 'Beginner\'s Guide – Intranet Vogt & Cie', key: 'guide', html: frame('guide', 'Beginner\'s Guide to PBS/Web', '<div class="hb">' + V.beginner(true) + '</div>') };
   };
 
   V.phonebook = function () {

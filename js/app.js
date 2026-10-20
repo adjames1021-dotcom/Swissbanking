@@ -93,7 +93,7 @@
   function newGameDialog(uid, onDone) {
     Dlg.open({
       title: 'PBS/Web – New Managing Partner', width: 600, icon: 'i-key',
-      body: '<div class="dlg-msg"><svg class="ico32"><use href="#crest"/></svg><div><b>Bankhaus Vogt &amp; Cie</b> welcomes its new Managing Partner.<br>Choose when you join the bank and how unforgiving the world will be.</div></div>' + V.newGameForm(UI.lastName || ''),
+      body: '<div class="dlg-msg"><svg class="ico32"><use href="#crest"/></svg><div><b>Bankhaus Vogt &amp; Cie</b> welcomes its new Managing Partner.<br>Choose when you join the bank and how unforgiving the world will be.</div></div>' + V.newGameForm(UI.lastName || '', false),
       buttons: [{ label: 'Start career', def: true, fn: function (ov) {
         const f = ov.querySelector('#newgameform');
         const sc = f.querySelector('input[name=sc]:checked'), df = f.querySelector('input[name=df]:checked');
@@ -102,6 +102,7 @@
         G.reset();
         G.newGame({ scenario: sc ? sc.value : '2003', diff: df ? df.value : 'standard', userId: uid, name: nm });
         PBS.FS.purgeGame();
+        if (f.elements.guide && f.elements.guide.checked) { G.state.guide = { on: true, step: 0 }; Tutor.done('intro'); G.save(); }
         resetUI();
         setTimeout(onDone, 0);
       } }, { label: 'Cancel' }]
@@ -226,7 +227,7 @@
     [/^inbox$/, function () { return V.inbox(); }],
     [/^inbox\/(M\d+)$/, function (m) { G.markRead(m[1]); return V.message(m[1]); }]
   ];
-  const INTRA = { intranet: function () { return V.intranet(); }, phone: function () { return V.phonebook(); }, menu: function () { return V.canteen(); }, rules: function () { return V.rules(); } };
+  const INTRA = { intranet: function () { return V.intranet(); }, guide: function () { return V.guidePage(); }, phone: function () { return V.phonebook(); }, menu: function () { return V.canteen(); }, rules: function () { return V.rules(); } };
 
   function remember(id) {
     UI.recent = [id].concat(UI.recent.filter(function (x) { return x !== id; })).slice(0, 6);
@@ -1000,6 +1001,7 @@
         else Dlg.msg('Save Web Page', 'The file could not be written: ' + (FS.lastError === 'full' ? 'the disk is full.' : 'access is denied.'), 'err');
       } });
     },
+    guide: function () { Dlg.closeAll(); PBS.Guide.start(); if (UI.screen !== 'app') location.hash = '#/overview'; },
     invprint: function () { window.print(); },
     invreset: function () { UI.inv = V.invoiceDefault('fee', { fmt: 'letter', paper: UI.inv.paper, pw: UI.inv.pw, ph: UI.inv.ph }); route(); setStatus('Invoice reset.'); },
     acquire: function (el) {
@@ -1166,6 +1168,7 @@
 
   Dlg.afterClose = function () { setTimeout(checkAgenda, 250); };
   Tutor.init({ ctx: function () { return { screen: UI.screen, path: UI.path, session: UI.session }; } });
+  PBS.Guide.init({ ctx: function () { return { screen: UI.screen, path: UI.path, session: UI.session }; } });
   B.init({
     home: function () { B.go('#/overview'); },
     refresh: navigate,

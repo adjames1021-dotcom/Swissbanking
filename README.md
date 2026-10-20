@@ -53,6 +53,15 @@ client file, house view, staff, career, and your first appointment and first new
 block the screen, disappear when you move on, and are shown only once. Switch them off with
 **Hide all tips** or **Help › Tip of the Day**; **Help › Restart Tutorial** brings them back.
 
+### Beginner's Guide
+
+New to the game? Tick **Beginner's Guide** when you start a new game. A small window then walks
+you through your first two working days in 25 short steps: it explains each screen in plain
+words, points at the right place, tells you what to click and moves on by itself once you have
+done it. You can go back, skip, collapse or close it at any time, and restart it from the
+**Handbook**, from **Help › Beginner's Guide**, or from the *Beginner's Guide* page on the bank's
+intranet, which also has the game in five sentences, a normal day step by step and a glossary.
+
 ## The browser window
 
 Everything happens inside an Internet Explorer 6 window on a Windows 2000 desktop:
@@ -198,6 +207,7 @@ js/apps2.js          Calculator, Paint, Command Prompt
 js/games.js          Minesweeper and Solitaire
 js/web.js            The fictional internet
 js/tutorial.js       Balloon tips and the first-day tour
+js/guide.js          Step-by-step Beginner's Guide
 js/app.js            Sign-on, routing, appointments, forms, actions and the batch console
 ```
 

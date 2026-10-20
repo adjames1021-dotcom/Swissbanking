@@ -275,7 +275,7 @@
   };
 
   /* ---------- Neues Spiel ---------- */
-  V.newGameForm = function (name) {
+  V.newGameForm = function (name, guide) {
     return '<form id="newgameform"><div class="ng"><div class="pcsec">Start year</div>' + Object.keys(D.SCENARIOS).map(function (k, i) {
       const sc = D.SCENARIOS[k];
       return '<label class="opt ngopt"><input type="radio" name="sc" value="' + k + '"' + (k === '2003' ? ' checked' : '') + '> <b>' + e(sc.label) + '</b><br><span class="muted">' + e(sc.desc) + '</span></label>';
@@ -284,12 +284,33 @@
       const d = D.DIFFICULTY[k];
       return '<label class="opt ngopt inl"><input type="radio" name="df" value="' + k + '"' + (k === 'standard' ? ' checked' : '') + '> <b>' + e(d.label) + '</b> <span class="muted">– ' + e(d.desc) + '</span></label>';
     }).join('') +
-      '<div class="pcsec">Your name (as it appears on your business card)</div><input name="nm" class="inp" size="34" maxlength="40" value="' + e(name || '') + '" placeholder="e.g. Dr. M. Ammann"></div></form>';
+      '<div class="pcsec">Your name (as it appears on your business card)</div><input name="nm" class="inp" size="34" maxlength="40" value="' + e(name || '') + '" placeholder="e.g. Dr. M. Ammann">' +
+      '<label class="ng-guide"><input type="checkbox" name="guide"' + (guide ? ' checked' : '') + '> <b>Beginner\'s Guide</b> – walk me through my first two days, step by step. <span class="muted">Recommended if you have never played. You can switch it off at any time.</span></label></div></form>';
   };
 
   /* ---------- Handbuch ---------- */
+  // Einsteigerkapitel: im Handbuch und auf dem Intranet
+  V.beginner = function (withButton) {
+    const s = G.state;
+    const on = s && s.guide && s.guide.on;
+    const gl = [['AuM', 'Assets under management: the clients\' money the bank looks after. Fees are a percentage of it.'], ['Codename', 'A nickname for each client (EDELWEISS, ALBATROS …) so real names appear on as few papers as possible.'],
+      ['Hold mail (banklagernd)', 'The bank keeps the client\'s letters instead of posting them, so nothing arrives at home.'], ['Form A', 'The form naming the person who really owns the money. Required by law since 1998.'],
+      ['Declared', 'The client pays tax on the money at home. Safe, but these clients pay lower fees.'], ['Tax evasion / tax fraud', 'Not declaring money is evasion: in Switzerland only an administrative offence, and until about 2010 the country would not help foreign tax offices chase it. Forging papers is fraud: always a crime.'],
+      ['PEP', 'Politically exposed person: a politician or official. Their money needs extra checks.'], ['Structure', 'A company or foundation (e.g. in Liechtenstein or Panama) that holds the money, so the client\'s name is not on the account.'],
+      ['Four-eyes principle', 'Every payment needs a second signature before it leaves the bank.'], ['Alert', 'A transaction the computer finds unusual. Compliance must clear it with a reason.'],
+      ['EBK / FINMA', 'The Swiss banking regulator. At 100 on its risk bar, the bank loses its licence.'], ['Mutual assistance', 'A request from a foreign authority for information about a client.'],
+      ['Lombard loan', 'A loan secured by the client\'s money at the bank. It can bring money "home" without a transfer.'], ['End of day (F9)', 'The night batch: books fees and interest, moves markets, delivers new mail and starts the next day.']];
+    return '<div class="hb-guide"><h4 style="margin-top:0">New here? Start with the Beginner\'s Guide</h4>' +
+      '<p>The <b>Beginner\'s Guide</b> is a small window that walks you through your first two working days in 25 short steps. It points at the right place on the screen, tells you what to click, and moves on by itself when you have done it.</p>' +
+      (withButton ? (s ? '<p>' + H.btn(on ? 'Restart the Beginner\'s Guide' : 'Start the Beginner\'s Guide', 'guide', '', 'def') + (on ? ' <span class="small muted">The guide is running.</span>' : '') + '</p>' : '<p class="muted">Sign on to PBS/Web to start the guide.</p>') : '') +
+      '<p class="small">You can also tick <b>Beginner\'s Guide</b> when you start a new game, or choose <b>Help › Beginner\'s Guide</b> in the browser menu.</p></div>' +
+      '<h4>The game in five sentences</h4><ol><li>You manage a private bank in Zurich. Foreign clients keep money with you, much of it hidden from their tax office.</li><li>You earn fees on that money, so more clients and more money mean more profit.</li><li>Foreign tax authorities and the Swiss regulator are watching. Every risky action makes them more interested (the bars on the Risk monitor).</li><li>Each day you read mail, sign payments, serve clients and clear alerts, then end the day with F9.</li><li>Every January the partners judge you. Meet their targets, grow your private fortune, and stay out of jail until 2017.</li></ol>' +
+      '<h4>A normal day, step by step</h4><ol><li><b>Overview</b>: read the "Pending items" box. It is your to-do list.</li><li><b>Mail &amp; fax</b>: open new messages and make the decisions at the bottom.</li><li><b>Payments</b>: release the faxed orders (check the warnings first), then serve the <b>Cash desk</b>.</li><li><b>Compliance › Alerts</b>: give each alert a reason.</li><li>Handle appointments when they pop up: <b>Attend</b>, <b>Delegate</b> or <b>Later</b>.</li><li>Press <b>End of day</b> (F9).</li></ol>' +
+      '<h4>Words you will meet</h4><table class="hb-gloss">' + gl.map(function (g) { return '<tr><th>' + e(g[0]) + '</th><td>' + e(g[1]) + '</td></tr>'; }).join('') + '</table>';
+  };
+
   V.handbook = function () {
-    return '<div class="hb"><h3>PBS/Web – Handbook for the Managing Partner</h3>' +
+    return '<div class="hb"><h3>PBS/Web – Handbook for the Managing Partner</h3>' + V.beginner(true) + '<h4>The full handbook</h4>' +
       '<p>You run <b>Bankhaus Vogt &amp; Cie</b>, a small Zurich private bank, during the last two decades of Swiss banking secrecy. Your clients pay handsome fees to keep their money discreetly away from their home tax authorities. Your job: grow assets and profit, satisfy the partners – and stay out of foreign courtrooms until secrecy ends in 2017.</p>' +
       '<h4>Your working day</h4><p>The office opens at 08:00 and closes at 18:00; security locks the building at 20:00. Every decision costs time (shown as ' + ico('clock') + ' minutes). Appointments in the <b>Diary</b> pop up when the clock reaches them – client reviews, phone calls, the monthly investment committee, the quarterly partners\' meeting, sometimes a trip abroad. Delegate to staff what you can. Press <b>End of day</b> (F9) to run the batch.</p>' +
       '<h4>Daily routine</h4><ol><li><b>Mail &amp; fax</b>: new clients, authorities, staff matters, client emergencies.</li><li><b>Payments</b>: release faxed orders (four-eyes), serve the cash desk, approve courier runs.</li><li><b>Compliance</b>: clear alerts the compliance team cannot handle; answer requests for assistance.</li><li><b>Investments</b>: set the house view at the monthly committee.</li><li><b>Organisation</b>: hire, pay and keep your people; open branches and booking centres.</li></ol>' +

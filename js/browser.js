@@ -7,7 +7,7 @@
   const e = U.esc;
   const BASE = D.BANK.intranet;
   const INTRA = 'http://intranet.vogt.intra/';
-  const INTRA_PAGES = { intranet: 'default.htm', phone: 'telefon.htm', menu: 'menueplan.htm', rules: 'weisungen.htm' };
+  const INTRA_PAGES = { intranet: 'default.htm', guide: 'einfuehrung.htm', phone: 'telefon.htm', menu: 'menueplan.htm', rules: 'weisungen.htm' };
   const APP = 'Microsoft Internet Explorer';
   const LINKS = [['Intranet Vogt', '#/x/intranet'], ['PBS/Web', '#/overview'], ['Telefonbuch', '#/x/phone'], ['Menüplan', '#/x/menu'], ['Weisungen', '#/x/rules']];
   const SIZES = [['xl', 'Lar~gest', 1.3], ['l', '~Larger', 1.15], ['m', '~Medium', 1], ['s', '~Smaller', 0.92], ['xs', 'Smalle~st', 0.85]];
@@ -345,7 +345,7 @@
     },
     help: function () {
       const T = PBS.Tutor;
-      return [{ l: '~Contents and Index', fn: function () { if (B.hooks.handbook) B.hooks.handbook(); } }, { l: '~Tip of the Day', chk: T && T.enabled(), fn: function () { if (T) T.toggle(); } }, { l: '~Restart Tutorial', fn: function () { if (T) T.restart(); } }, { l: 'For ~Netscape Users', dis: true }, { l: 'Online ~Support', dis: true }, { l: 'Send Feedback', dis: true }, '-', { l: '~About PBS/Web', fn: about }];
+      return [{ l: '~Contents and Index', fn: function () { if (B.hooks.handbook) B.hooks.handbook(); } }, { l: '~Tip of the Day', chk: T && T.enabled(), fn: function () { if (T) T.toggle(); } }, { l: '~Restart Tutorial', fn: function () { if (T) T.restart(); } }, { l: '~Beginner\'s Guide (step by step)', dis: !PBS.Guide || !G.state, fn: function () { PBS.Guide.start(); } }, { l: 'For ~Netscape Users', dis: true }, { l: 'Online ~Support', dis: true }, { l: 'Send Feedback', dis: true }, '-', { l: '~About PBS/Web', fn: about }];
     }
   };
   /* ---------- Dialoge (Windows 2000) ---------- */
