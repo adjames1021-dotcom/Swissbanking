@@ -204,7 +204,7 @@
     Object.keys(D.STRATS).forEach(function (st) {
       const a = view.alloc[st];
       const tot = D.CLASS_KEYS.reduce(function (t, k) { return t + (+a[k] || 0); }, 0);
-      if (Math.abs(tot - 100) > 0.01) errs.push(D.STRATS[st].label + ': weights add up to ' + tot + '% instead of 100%.');
+      if (Math.abs(tot - 100) > 0.01) errs.push(D.STRATS[st].label + ': the weights add up to ' + tot + '%, not 100%.');
     });
     if (errs.length) return K.err(errs.join(' '));
     if (!inMeeting) { const t = K.use(45); if (t) return t; }
@@ -302,10 +302,10 @@
     const s = S();
     const i = G.instr(id);
     if (!i || i.cls === 'HOUSE') return K.err('Instrument cannot be traded for own account.');
-    if (!amountCHF) return K.err('Enter an amount.');
+    if (!amountCHF) return K.err('Please enter an amount.');
     const pc = K.priceCHF(id);
     const cur = (s.nostro.pos[id] || 0) * pc;
-    if (amountCHF < 0 && -amountCHF > cur + 1) return K.err('Position too small: CHF ' + U.fmt(cur, 0) + ' held.');
+    if (amountCHF < 0 && -amountCHF > cur + 1) return K.err('Position too small. Current holding: CHF ' + U.fmt(cur, 0) + '.');
     const ci = G.capitalInfo();
     if (amountCHF > 0 && ci.nostro + amountCHF > s.bank.capital * 0.5) return K.err('Treasury limit: own-account positions may not exceed 50% of equity capital.');
     const t = K.use(10);

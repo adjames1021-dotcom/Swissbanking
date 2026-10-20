@@ -3,6 +3,7 @@
   'use strict';
 
   const D = PBS.DATA, U = PBS.U, K = PBS.K, G = PBS.Game;
+  const tr = PBS.L.t;
   function S() { return G.state; }
   function present(x) { return x.status === 'active' && (!x.absentUntil || x.absentUntil < S().date); }
 
@@ -69,7 +70,7 @@
       const r = K.deskRM(c.dom);
       c.rm = r ? r.id : null;
       K.loyal(c, -5);
-      K.note(c, 'Relationship manager ' + st.name + ' has left the bank. New RM: ' + (r ? r.name : '–') + '.');
+      K.note(c, 'Relationship manager ' + st.name + ' has left the bank. New RM: ' + (r ? r.name : 'none assigned') + '.');
     });
   }
   K.reassign = reassign;
@@ -99,7 +100,7 @@
     const s = S();
     const st = G.staff(sid);
     if (!st || st.status !== 'active') return K.err('Employee is not active.');
-    if (st.skill >= 5) return K.err(st.name + ' is already at the top of the profession.');
+    if (st.skill >= 5) return K.err(st.name + ' is already at the highest skill level (5).');
     if (st.absentUntil && st.absentUntil >= s.date) return K.err(st.name + ' is absent.');
     const t = K.use(5);
     if (t) return t;
@@ -113,7 +114,7 @@
   K.sched.trained = function (d, log) {
     const st = G.staff(d.staff);
     if (!st || st.status !== 'active') return;
-    if (K.chance(0.6)) { st.skill = Math.min(5, st.skill + 1); log.push(['EVT', 'WEITERBILDUNG ' + st.name.toUpperCase(), 'BESTANDEN']); }
+    if (K.chance(0.6)) { st.skill = Math.min(5, st.skill + 1); log.push(['EVT', tr('WEITERBILDUNG ', 'TRAINING ') + st.name.toUpperCase(), tr('BESTANDEN', 'PASSED')]); }
   };
   G.vet = function (sid) {
     const st = G.staff(sid);
@@ -195,11 +196,11 @@
       if (x.morale < 30 && !x.noticePending && K.chance(0.025)) {
         x.noticePending = true;
         K.msg({
-          type: 'letter', kind: 'resign', from: x.name + ', ' + x.title, subject: 'Resignation – ' + x.name,
-          body: 'Dear Managing Partner,\n\nI hereby give notice of my resignation. I have accepted an offer from ' + K.pick(D.COMPETITORS) + '.\n\nI would be prepared to reconsider if my situation here were to improve substantially.\n\n' + x.name,
+          type: 'letter', kind: 'resign', from: x.name + ', ' + x.title, subject: 'Resignation ' + x.name,
+          body: 'Dear Managing Partner,\n\nI hereby resign from my position with the bank, observing the contractual notice period. I have accepted an offer from ' + K.pick(D.COMPETITORS) + '.\n\nShould my situation here improve substantially, I would be prepared to reconsider.\n\nWith kind regards\n' + x.name,
           actions: [['counter', 'Counter-offer: +20% salary'], ['accept', 'Accept the resignation']], data: { staff: x.id }
         });
-        log.push(['EVT', 'KUENDIGUNG ' + x.name.toUpperCase(), 'WARNUNG']);
+        log.push(['EVT', tr('KUENDIGUNG ', 'RESIGNATION ') + x.name.toUpperCase(), tr('WARNUNG', 'WARNING')]);
       }
     });
     // Abwerbung guter RMs
@@ -207,11 +208,11 @@
       if (x.skill >= 4 && !x.noticePending && K.chance(0.003)) {
         x.noticePending = true;
         K.msg({
-          type: 'memo', kind: 'resign', from: x.name + ', ' + x.title, subject: 'Offer from a competitor – ' + x.name,
-          body: 'I wanted to let you know personally: ' + K.pick(D.COMPETITORS) + ' has offered me the position of head of private banking, with a guaranteed bonus. I would rather stay – but not at any price.\n\n' + x.name,
+          type: 'memo', kind: 'resign', from: x.name + ', ' + x.title, subject: 'Offer from a competitor (' + x.name + ')',
+          body: 'I wanted to tell you myself: ' + K.pick(D.COMPETITORS) + ' has offered me the position of head of private banking, with a guaranteed bonus. I would prefer to stay, but not at any price.\n\n' + x.name,
           actions: [['counter', 'Counter-offer: +20% salary'], ['accept', 'Let the employee go']], data: { staff: x.id, poach: true }
         });
-        log.push(['EVT', 'ABWERBUNG ' + x.name.toUpperCase(), 'WARNUNG']);
+        log.push(['EVT', tr('ABWERBUNG ', 'POACHING ') + x.name.toUpperCase(), tr('WARNUNG', 'WARNING')]);
       }
     });
     // Whistleblower und Datendiebstahl
@@ -256,12 +257,12 @@
       if (K.chance(0.4)) { c.declared = 1; c.regularised = s.date; K.note(c, 'Client filed voluntary disclosure after data theft.'); }
     });
     K.msg({
-      type: 'memo', kind: 'info', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'DATA THEFT – client data offered to ' + G.authShort(auth),
-      body: 'We have learned that ' + x.name + ' (' + x.title + ') copied client data onto CD-ROMs over several months and has disappeared. According to press reports, a data carrier with client names of our bank has been offered to the ' + G.authName(auth) + '.\n\n' +
-        (exp.live.length + exp.bin.length ? 'IT-Services found that the copies include files from the management workstation ZH-BS64-0217 (' + exp.live.concat(exp.bin).slice(0, 3).map(function (f) { return f.split('\\').pop(); }).join(', ') + '). Exports of client data must not be stored on workstations.\n\n' : '') +
+      type: 'memo', kind: 'info', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'DATA THEFT: client data offered to ' + G.authShort(auth),
+      body: 'We have learned that ' + x.name + ' (' + x.title + ') copied client data onto CD-ROMs over several months and has since disappeared. According to press reports, a data carrier with names of our clients has been offered to the ' + G.authName(auth) + '.\n\n' +
+        (exp.live.length + exp.bin.length ? 'IT-Services found that the copies include files from the management workstation ZH-BS64-0217 (' + exp.live.concat(exp.bin).slice(0, 3).map(function (f) { return f.split('\\').pop(); }).join(', ') + '). Please note that exports of client data must not be stored on workstations.\n\n' : '') +
         'We must assume that all ' + K.cname(D.AUTH[auth].c) + ' relationships are compromised. Criminal complaint filed with the Zurich public prosecutor (Art. 47 BankG, Art. 273 StGB).'
     });
-    log.push(['EVT', 'DATENDIEBSTAHL ' + auth, 'ALARM']);
+    log.push(['EVT', tr('DATENDIEBSTAHL ', 'DATA THEFT ') + auth, 'ALARM']);
   }
   function embezzle(x, log) {
     const s = S();
@@ -285,15 +286,15 @@
       const c = G.client(e.client);
       K.expense('losses', e.chf);
       const acc = G.account(e.acc);
-      if (acc && !acc.closed) K.book(acc, e.amount, 'Correction – reimbursement by the bank', { kind: 'misc' });
+      if (acc && !acc.closed) K.book(acc, e.amount, 'Correction: reimbursement by the bank', { kind: 'misc' });
       K.heat('EBK', 8, 'Embezzlement by an employee');
       if (x.status === 'active') { x.status = 'fired'; x.left = s.date; K.reassign(x); }
       if (c) K.loyal(c, -15);
       K.msg({
-        type: 'memo', kind: 'info', from: 'Beatrice Lüthi, Finance & Controlling', subject: 'Embezzlement discovered – ' + x.name,
+        type: 'memo', kind: 'info', from: 'Beatrice Lüthi, Finance & Controlling', subject: 'Embezzlement discovered: ' + x.name,
         body: (by || 'Our controls') + ' revealed that ' + x.name + ' transferred ' + e.ccy + ' ' + U.fmt(e.amount, 0) + ' from an account of ' + (c ? c.rubrik : 'a client') + ' to an offshore account in the employee\'s own favour.\n\nThe bank has reimbursed the client (CHF ' + U.fmt(e.chf, 0) + '). The employee has been dismissed and a criminal complaint filed. The regulator has been informed.'
       });
-      if (log) log.push(['EVT', 'VERUNTREUUNG ' + x.name.toUpperCase(), 'ALARM']);
+      if (log) log.push(['EVT', tr('VERUNTREUUNG ', 'EMBEZZLEMENT ') + x.name.toUpperCase(), 'ALARM']);
     });
   };
 
@@ -313,7 +314,7 @@
     if (x.status === 'active') { x.status = 'left'; x.left = s.date; if (x.role === 'rm') K.reassign(x); }
     K.msg({
       type: 'memo', kind: 'info', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'Former employee cooperating with ' + G.authShort(auth),
-      body: 'Our lawyers have learned that ' + x.name + ' has handed internal documents to the ' + G.authName(auth) + ' – reportedly including the file of ' + c.rubrik + ' and internal instructions on "cross-border services".\n\nWe have filed a criminal complaint for breach of banking secrecy. That will not undo the damage.'
+      body: 'Our lawyers have learned that ' + x.name + ' has handed internal documents to the ' + G.authName(auth) + ', reportedly including the file of ' + c.rubrik + ' and internal instructions on "cross-border services".\n\nWe have filed a criminal complaint for breach of banking secrecy. The documents are already with the authority.'
     });
     log.push(['EVT', 'WHISTLEBLOWER ' + auth, 'ALARM']);
   };
@@ -325,7 +326,7 @@
     const pr = K.genProspect(D.PROSPECTS.some(function (p) { return p.c === d.c; }) ? d.c : null);
     pr.intro = 'follows ' + r.name;
     K.prospectMessage(pr);
-    log.push(['EVT', 'KUNDE FOLGT ' + r.name.toUpperCase(), pr.c]);
+    log.push(['EVT', tr('KUNDE FOLGT ', 'CLIENT FOLLOWS ') + r.name.toUpperCase(), pr.c]);
   };
 
   G.handlers.resign = function (m, key) {
@@ -336,7 +337,7 @@
     if (key === 'counter') {
       if (m.data.poach && x.morale < 40 && K.chance(0.5)) {
         leaves(x);
-        return { text: x.name + ' thanks you but leaves anyway.' };
+        return { text: x.name + ' thanks you, but is leaving anyway.' };
       }
       x.salary = Math.round(x.salary * 1.2 / 1000) * 1000;
       K.morale(x, 30);

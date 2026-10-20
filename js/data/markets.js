@@ -81,7 +81,7 @@
     alt: { label: 'Alternative (hedge funds, gold)', bench: { CHEQ: 15, WEQ: 10, BOND: 20, GOLD: 15, HEDGE: 35, CASH: 5 } }
   };
   D.INTENSITY = {
-    low: { label: 'Low – buy and hold', turnover: 0.2 },
+    low: { label: 'Low (buy and hold)', turnover: 0.2 },
     normal: { label: 'Normal', turnover: 0.6 },
     active: { label: 'Active trading', turnover: 2.2 }
   };

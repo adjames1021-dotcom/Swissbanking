@@ -4,6 +4,7 @@
 
   const D = PBS.DATA, U = PBS.U, K = PBS.K, G = PBS.Game;
   function S() { return G.state; }
+  const tr = PBS.L.t;
   const PENALTY = { review: -6, concern: -10, call: -2, trip: -4, visit: -6 };
 
   function slot(from, to) { return Math.round(K.rint(from, to) / 15) * 15; }
@@ -62,7 +63,7 @@
     const occasion = K.pick(['70th birthday celebration', 'opening of a new factory', 'daughter\'s wedding', 'yacht christening', 'annual family dinner']);
     const day = U.addBusinessDays(S().date, K.rint(3, 8));
     K.agenda({ d: day, t: 8 * 60 + 30, dur: 0, kind: 'trip', client: c.id, title: 'Trip to ' + c.city + ' – ' + c.rubrik + ': ' + occasion, place: c.city + ', ' + K.cname(c.dom), data: { country: c.dom } });
-    K.msg({ type: 'letter', from: c.rubrik + ' (private letter, hand-delivered)', subject: 'Invitation – ' + occasion, body: 'Dear friend,\n\nIt would be a great honour if you could join us in ' + c.city + ' on ' + U.longDate(day) + ' for my ' + occasion + '. It would mean a lot to me to have my banker there in person.\n\nWith warm regards,\n' + c.rubrik + '\n\n(The appointment has been entered in your diary.)' });
+    K.msg({ type: 'letter', from: c.rubrik + ' (private letter, hand-delivered)', subject: 'Invitation – ' + occasion, body: 'Dear friend,\n\nIt would be a great honour to welcome you in ' + c.city + ' on ' + U.longDate(day) + ' for my ' + occasion + '. I should very much like my banker to be there in person.\n\nWith warm regards,\n' + c.rubrik + '\n\n(The appointment has been entered in your diary.)' });
   }
 
   // Gesprächsinhalt und Optionen
@@ -82,9 +83,9 @@
       opts.push(['perf', 'Discuss performance and strategy', 'Builds trust; the client may bring additional assets.']);
       const x = crossSell(c);
       if (x) opts.push(['sell:' + x[0], x[1], x[2]]);
-      if (c.declared < 1 && s.date >= '2009-03-13') opts.push(['disclose', 'Recommend a voluntary disclosure', 'Chance of acceptance ' + Math.round(G.disclosureChance(c) * 100) + '%. Ends the risk – or the relationship.']);
-      opts.push(['lunch', 'Lunch at the Kronenhalle (CHF 800)', 'Pure relationship care.']);
-      opts.push(['fee', 'Announce a fee increase (+0.10% p.a.)', 'More revenue, less goodwill.']);
+      if (c.declared < 1 && s.date >= '2009-03-13') opts.push(['disclose', 'Recommend a voluntary disclosure', 'Chance of acceptance ' + Math.round(G.disclosureChance(c) * 100) + '%. Ends the risk, or the relationship.']);
+      opts.push(['lunch', 'Lunch at the Kronenhalle (CHF 800)', 'Relationship care, nothing else.']);
+      opts.push(['fee', 'Announce a fee increase (+0.10% p.a.)', 'More revenue. The client will not like it.']);
     } else if (a.kind === 'concern') {
       intro = c.name + ' asked for this meeting at short notice. Concern: ' + a.data.text;
       opts.push(['reassure', 'Reassure the client', 'Works with calm clients; nervous ones may still leave.']);
@@ -101,7 +102,7 @@
         opts.push(['decline', 'Politely decline', 'The client will remember.']);
       } else if (t === 'nervous') {
         const auth = K.homeAuth(c);
-        intro = c.name + ' (' + c.rubrik + ') sounds worried: "' + (auth && s.inv[auth] ? 'I hear the ' + G.authShort(auth) + ' is investigating Swiss banks – and yours by name!' : s.date >= '2008-02-15' ? 'Every day there is something new in the papers about stolen bank data.' : 'A friend says the tax office is asking questions about Swiss accounts.') + ' Is my money safe with you?"';
+        intro = c.name + ' (' + c.rubrik + ') sounds worried: "' + (auth && s.inv[auth] ? 'I hear the ' + G.authShort(auth) + ' is investigating Swiss banks, and yours by name!' : s.date >= '2008-02-15' ? 'Every day there is something new in the papers about stolen bank data.' : 'A friend says the tax office is asking questions about Swiss accounts.') + ' Is my money safe with you?"';
         opts.push(['reassure', 'Reassure: "Banking secrecy is protected by law"', 'Calms most clients.']);
         if (Object.keys(s.branches).some(function (k) { return D.LOCATIONS[k].kind === 'sub'; }) && !c.booking) opts.push(['book', 'Offer to book the assets with our subsidiary abroad', 'Fee 0.25%; reduces the trail.']);
         if (!G.entitiesOf(c.id).length && c.declared < 1) opts.push(['struct', 'Suggest a Liechtenstein foundation', 'Set-up CHF 24,000.']);
@@ -127,7 +128,7 @@
       opts.push(['go', 'Travel', 'Strengthens the relationship considerably.' + (risk > 0.02 ? ' Risk of arrest!' : '')]);
       opts.push(['decline', 'Send apologies', 'The client will be offended.']);
     } else if (a.kind === 'ic') {
-      intro = 'The investment committee meets: Dr. Martin Frei presents the market outlook. SMI ' + U.fmt(s.market.SMI, 0) + ', CHF Libor ' + U.fmt(s.market.LIBOR, 2) + '%, gold USD ' + U.fmt(s.market.XAU, 0) + '. The committee can change the house view (allocations, trading intensity, fund policy) without extra time.';
+      intro = 'Investment committee. Dr. Martin Frei presents the market outlook: SMI ' + U.fmt(s.market.SMI, 0) + ', CHF Libor ' + U.fmt(s.market.LIBOR, 2) + '%, gold USD ' + U.fmt(s.market.XAU, 0) + '. Changes to the house view (allocations, trading intensity, fund policy) cost no extra time today.';
       opts.push(['open', 'Chair the meeting (opens the house view)', 'Changes are free of extra time today.']);
     } else if (a.kind === 'partners') {
       const st = G.targetStatus();
@@ -199,11 +200,11 @@
       case 'review:lunch': case 'visit:lunch':
         K.expense('travel', 800);
         K.loyal(c, 7);
-        return 'Veal Zurich style and a 1990 Pomerol. The client talks about family and grandchildren – and about friends who might also need a Swiss bank.';
+        return 'Veal Zurich style and a 1990 Pomerol. The client talks about family and grandchildren, and about friends who might also need a Swiss bank.';
       case 'review:fee': case 'visit:fee':
         c.fee = K.round(c.fee + 0.001, 4);
         K.loyal(c, c.traits.indexOf('greedy') >= 0 ? -12 : -8);
-        return 'The client accepts the new fee of ' + U.fmt(G.effectiveFee(c) * 100, 2) + '% – without enthusiasm.';
+        return 'The client accepts the new fee of ' + U.fmt(G.effectiveFee(c) * 100, 2) + '%, without enthusiasm.';
       case 'review:disclose': case 'visit:disclose': case 'concern:disclose': case 'call:disclose':
         return G.recommendDisclosure(c.id, true).text;
       case 'concern:reassure': case 'call:reassure': {
@@ -211,7 +212,7 @@
         const nervous = c.traits.indexOf('nervous') >= 0;
         if (nervous && auth && s.heat[auth] >= 60 && K.chance(0.4)) {
           K.schedule(K.rint(3, 12), 'leave', { client: c.id, reason: 'fear of the authorities' });
-          return 'The client listens, thanks you – and has clearly not been convinced.';
+          return 'The client listens and thanks you, but is clearly not convinced.';
         }
         K.loyal(c, a.kind === 'concern' ? 8 : 4);
         return 'The client calms down. "I knew I could rely on Vogt & Cie."';
@@ -232,7 +233,7 @@
         if (f.personal) K.personal(f.personal, 'Personal favours for clients');
         if (f.key === 'gift') K.charge(c, 14500, 'Purchase Rolex Day-Date (gift)');
         if (f.hire) {
-          if (c.nephew || G.activeStaff().length >= G.seats()) { K.loyal(c, 2); return 'There is no free desk at the moment – the nephew will be considered for the next opening. The client understands.'; }
+          if (c.nephew || G.activeStaff().length >= G.seats()) { K.loyal(c, 2); return 'No free desk at the moment. The nephew will be considered for the next opening; the client understands.'; }
           c.nephew = true;
           s.staff.push({ id: 'S' + U.pad(++s.ctr.staff, 2), name: c.name.split(' ').slice(-1)[0] + ' Jr. (nephew of ' + c.rubrik + ')', role: 'ops', title: 'Trainee, back office', skill: 1, integrity: K.rint(1, 4), morale: 75, salary: 58000, hired: s.date, status: 'active', known: {} });
           return 'The nephew starts on Monday in the back office (CHF 58,000 p.a.). The client is very grateful.';
@@ -260,7 +261,7 @@
           K.prospectMessage(pr);
           return 'An unforgettable evening. ' + c.rubrik + ' introduced you to a friend who wants to open an account (see mail).';
         }
-        return 'An unforgettable evening. The relationship has never been better.';
+        return 'A long evening. The relationship has never been better.';
       }
       case 'trip:decline':
       case 'review:decline':
@@ -284,7 +285,7 @@
           if (st.reg.ok) ok++;
         }
         s.career.confidence = U.clamp(s.career.confidence + (ok >= 2 ? 6 : -6), 0, 100);
-        return ok >= 2 ? 'The partners are satisfied with the course of business.' : 'The partners listen in silence. "We expected more." Partner confidence falls.';
+        return ok >= 2 ? 'The partners are satisfied with the course of business.' : 'The partners listen without a word. "We had expected more." Partner confidence falls.';
       }
     }
     return 'Done.';
@@ -317,7 +318,7 @@
     K.loyal(c, 3);
     return {
       box: 'The client rents safe-deposit box ' + (r.box && r.box.id) + '.',
-      card: 'A gold card via Nassau will be sent – to the bank, banklagernd.',
+      card: tr('A gold card from Nassau will be sent to the bank, banklagernd.', 'A gold card from Nassau will be sent to the bank (hold mail).'),
       loan: 'Lombard loan ' + (r.loan && r.loan.id) + ' granted.'
     }[what] || ('Done: ' + (r.entity ? r.entity.name : '') + ' has been set up and assets transferred.');
   }

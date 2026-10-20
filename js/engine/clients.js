@@ -4,6 +4,7 @@
   'use strict';
 
   const D = PBS.DATA, U = PBS.U, K = PBS.K, G = PBS.Game;
+  const tr = PBS.L.t;
   function S() { return G.state; }
   function activeClient(cid) {
     const c = G.client(cid);
@@ -14,10 +15,10 @@
   K.terminate = function (c, mode, extra) {
     const s = S();
     const texts = {
-      leave: 'Closing transfer to ' + (extra || 'other bank') + ' – client instruction',
-      seized: 'Blocked – transfer per order of the Federal Office of Justice',
-      mros: 'Blocked – report to MROS (Art. 9 GwG)',
-      offboard: 'Closing transfer – relationship terminated by the bank',
+      leave: 'Closing transfer to ' + (extra || 'other bank') + ' per client instruction',
+      seized: 'Blocked. Transfer per order of the Federal Office of Justice',
+      mros: 'Blocked. Reported to MROS (Art. 9 GwG)',
+      offboard: 'Closing transfer, relationship terminated by the bank',
       died: 'Transfer to heirs / estate',
       unfunded: ''
     };
@@ -67,13 +68,13 @@
     if (t) return t;
     c.holdMail = !!on;
     if (on) {
-      K.charge(c, S().pricing.holdMail, 'Hold mail fee (banklagernd) – annual');
+      K.charge(c, S().pricing.holdMail, tr('Hold mail fee (banklagernd), annual', 'Hold mail fee, annual'));
       K.income('comm', S().pricing.holdMail);
       K.loyal(c, 4);
-      K.note(c, 'Hold-mail agreement signed (banklagernde Korrespondenz).', S().user.id);
+      K.note(c, tr('Hold-mail agreement signed (banklagernde Korrespondenz).', 'Hold-mail agreement signed.'), S().user.id);
     } else {
       K.loyal(c, -6);
-      K.note(c, 'Hold mail cancelled – statements will be mailed to ' + c.city + '.', S().user.id);
+      K.note(c, 'Hold mail cancelled. Statements to be mailed to ' + c.city + '.', S().user.id);
     }
     G.save();
     return { ok: true };
@@ -99,13 +100,13 @@
     if (K.chance(0.7 + c.loyalty / 400 - (c.traits.indexOf('secretive') >= 0 ? 0.2 : 0))) {
       c.formA = S().date;
       K.note(c, 'Form A returned, signed by the client.');
-      K.msg({ type: 'letter', from: c.rubrik + ' (by post, hold mail)', subject: 'Form A returned signed – ' + c.rubrik, body: 'Enclosed please find the Form A (declaration of beneficial owner) duly signed.\n\n[signature]  ' + c.rubrik });
-      log.push(['EVT', 'FORMULAR A EINGEGANGEN ' + c.rubrik, 'OK']);
+      K.msg({ type: 'letter', from: c.rubrik + ' (by post, hold mail)', subject: 'Form A returned signed: ' + c.rubrik, body: 'Enclosed please find the Form A (declaration of beneficial owner), duly signed.\n\n[signature]  ' + c.rubrik });
+      log.push(['EVT', tr('FORMULAR A EINGEGANGEN ', 'FORM A RECEIVED ') + c.rubrik, 'OK']);
     } else {
       K.loyal(c, -4);
       K.note(c, 'Client refuses to sign Form A.');
-      K.msg({ type: 'memo', from: G.rmName(c) + ', Relationship Management', subject: 'Form A refused – ' + c.rubrik, body: 'The client refuses to sign the Form A, considers it "an unnecessary risk" and asks the bank not to raise the subject again.\n\n' + G.rmName(c) });
-      log.push(['EVT', 'FORMULAR A VERWEIGERT ' + c.rubrik, 'WARNUNG']);
+      K.msg({ type: 'memo', from: G.rmName(c) + ', Relationship Management', subject: 'Form A refused: ' + c.rubrik, body: 'Client will not sign the Form A. He calls it "an unnecessary risk" and asks us not to bring the subject up again.\n\n' + G.rmName(c) });
+      log.push(['EVT', tr('FORMULAR A VERWEIGERT ', 'FORM A REFUSED ') + c.rubrik, tr('WARNUNG', 'WARNING')]);
     }
   };
 
@@ -174,10 +175,10 @@
       if (auth) K.heat(auth, -Math.min(5, aum / 1e7), 'Clients regularised (voluntary disclosure)');
       K.note(c, 'Client has filed a voluntary disclosure with the home tax authority. Assets now declared.', S().user.id);
       G.save();
-      return { ok: true, accepted: true, text: c.name + ' agrees to file a voluntary disclosure. The account is now declared – lower margins from now on, but no more risk.' };
+      return { ok: true, accepted: true, text: c.name + ' agrees to file a voluntary disclosure. The account is now declared: lower margins from now on, and no more risk.' };
     }
     K.loyal(c, -12);
-    K.note(c, 'Recommended voluntary disclosure. Client refused angrily.', S().user.id);
+    K.note(c, 'Recommended voluntary disclosure. Client refused, very annoyed.', S().user.id);
     if (K.chance(0.35)) K.schedule(K.rint(3, 10), 'leave', { client: cid, reason: 'pressure to disclose' });
     G.save();
     return { ok: true, accepted: false, text: c.name + ' refuses. "I did not come to a Swiss bank to be sent to my tax office." The relationship has suffered.' };
@@ -237,7 +238,7 @@
     const n = ++s.ctr.box;
     const b = { id: 'SF-' + U.pad(n, 4), client: cid, size: size, fee: sz.fee, opened: s.date, status: 'active' };
     s.boxes.push(b);
-    K.charge(c, sz.fee, 'Safe-deposit box ' + b.id + ' – annual rent');
+    K.charge(c, sz.fee, 'Safe-deposit box ' + b.id + ', annual rent');
     K.income('comm', sz.fee);
     K.loyal(c, 4);
     K.note(c, 'Safe-deposit box ' + b.id + ' (' + sz.label + ') rented.', s.user.id);
@@ -273,7 +274,7 @@
     const acc = K.ensureAccount(c, ccy, null);
     const l = { id: 'LK-' + U.pad(++s.ctr.loan, 4), client: cid, type: 'lombard', amount: amount, ccy: ccy, opened: s.date, status: 'active', accrued: 0, acc: acc.id };
     s.loans.push(l);
-    K.book(acc, amount, 'Lombard loan ' + l.id + ' – disbursement', { kind: 'loan' });
+    K.book(acc, amount, 'Lombard loan ' + l.id + ', disbursement', { kind: 'loan' });
     K.loyal(c, 4);
     K.note(c, 'Lombard loan ' + ccy + ' ' + U.fmt(amount, 0) + ' granted against portfolio collateral.', s.user.id);
     G.save();
@@ -289,7 +290,7 @@
     if (l.type === 'lombard') {
       const acc = G.account(l.acc);
       if (!acc || G.available(acc) < l.amount) return K.err('Insufficient funds on ' + l.acc + ' to repay ' + l.ccy + ' ' + U.fmt(l.amount) + '.');
-      K.book(acc, -l.amount, 'Lombard loan ' + l.id + ' – repayment', { kind: 'loan' });
+      K.book(acc, -l.amount, 'Lombard loan ' + l.id + ', repayment', { kind: 'loan' });
     } else {
       const acc = G.account(l.acc);
       if (acc) acc.pledged = Math.max(0, (acc.pledged || 0) - l.amount);
@@ -483,8 +484,8 @@
       K.expense('legal', 5000);
       const found = pr.sting ? K.chance(0.8) : K.chance(0.05);
       m.data.checked = found ?
-        'Report of Detektei Hürlimann: inconsistencies found. The company named as source of wealth was registered only weeks ago; references could not be reached; the passport was issued recently. Possible undercover investigator.' :
-        'Report of Detektei Hürlimann: no anomalies. Identity, company and references confirmed.';
+        tr('Report of Detektei Hürlimann: inconsistencies found. Company named as source of wealth registered only weeks ago. References not reachable. Passport issued recently. Possibly an undercover investigator.', 'Report of Hürlimann detective agency: inconsistencies found. Company named as source of wealth registered only weeks ago. References not reachable. Passport issued recently. Possibly an undercover investigator.') :
+        tr('Report of Detektei Hürlimann: no anomalies. Identity, company and references confirmed.', 'Report of Hürlimann detective agency: no anomalies. Identity, company and references confirmed.');
       m.actions = m.actions.filter(function (a) { return a[0] !== 'check'; });
       return { text: m.data.checked, keep: true, min: 20 };
     }

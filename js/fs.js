@@ -4,6 +4,7 @@
   'use strict';
 
   const U = PBS.U;
+  const tr = PBS.L.t;
   const KEY = 'pbs-vogt-fs-v1';
   const FS = PBS.FS = {};
 
@@ -367,18 +368,18 @@
 
     // Desktop-Verknüpfungen
     desk.children = {
-      'Notes to self.txt': file('- Rotate the token PIN quarterly (post-it by the screen for now...)\r\n- Ask R.G. in IT why the Fakturierung test page is still on the server\r\n- Book the ski week\r\n- Dr. Vogt wants the Q figures before the partners\' meeting\r\n'),
-      'Welcome.txt': file('Workstation ZH-BS64-0217\r\nUser ' + u + '\r\n\r\nDouble-click My Computer to browse the disk, or Internet Explorer for the intranet.\r\nEverything you save here stays on this machine.\r\n')
+      'Notes to self.txt': file(tr('- change token PIN (every quarter!! post-it on screen for now)\r\n- ask R.G. in IT why the Fakturierung test page is still on the server\r\n- book ski week\r\n- Dr. Vogt wants Q figures BEFORE partners\' meeting\r\n', '- change token PIN (every quarter!! post-it on screen for now)\r\n- ask R.G. in IT why the FAKT billing test page is still on the server\r\n- book ski week\r\n- Dr. Vogt wants Q figures BEFORE partners\' meeting\r\n')),
+      'Welcome.txt': file('Workstation ZH-BS64-0217\r\nUser ' + u + '\r\n\r\nMy Computer: files on this machine.\r\nInternet Explorer: intranet and PBS/Web.\r\nFiles saved here are not backed up by IT.\r\n')
     };
 
     // Eigene Dateien
     docs.children = {
       'Private': dir({ children: {
-        'passwords.txt': file('(do NOT keep this here)\r\nWindows: ********\r\nE-Banking private: ********\r\nNuméro personnel (GE): ********\r\n', { secret: true }),
-        'numbered account.txt': file('Personal numbered account at Vogt & Cie.\r\nBonuses are credited here every January.\r\nDo not discuss.\r\n', { secret: true })
+        'passwords.txt': file(tr('(delete this!)\r\nWindows: ********\r\nE-Banking private: ********\r\nNuméro personnel (GE): ********\r\n', '(delete this!)\r\nWindows: ********\r\nE-banking private: ********\r\nPersonal number (GE): ********\r\n'), { secret: true }),
+        'numbered account.txt': file('Own numbered account, Vogt & Cie.\r\nBonus is credited here in January.\r\nNot to be discussed.\r\n', { secret: true })
       } }),
-      'Budget_PB_2003.xls': file('Private Banking – budget 2003\r\n\r\nRevenue target;AuM fee;3\'400\'000\r\nRevenue target;Commissions;650\'000\r\nCost;Personnel;2\'300\'000\r\nCost;Premises & IT;2\'500\'000\r\n', { mime: 'xls' }),
-      'Weisung GwG 1998.doc': file('BANKHAUS VOGT & CIE – WEISUNG\r\n\r\nGeldwäschereigesetz (GwG), in Kraft seit 1. April 1998.\r\n\r\nFür jede neue Geschäftsbeziehung ist der wirtschaftlich Berechtigte auf Formular A festzuhalten. Verdachtsfälle meldet ausschliesslich die Compliance an die MROS.\r\n', { mime: 'doc', ro: true })
+      'Budget_PB_2003.xls': file('Private Banking, budget 2003\r\n\r\nRevenue target;AuM fee;3\'400\'000\r\nRevenue target;Commissions;650\'000\r\nCost;Personnel;2\'300\'000\r\nCost;Premises & IT;2\'500\'000\r\n', { mime: 'xls' }),
+      'Weisung GwG 1998.doc': file(tr('BANKHAUS VOGT & CIE · WEISUNG\r\n\r\nGeldwäschereigesetz (GwG), in Kraft seit 1. April 1998.\r\n\r\nFür jede neue Geschäftsbeziehung ist der wirtschaftlich Berechtigte auf Formular A festzuhalten. Verdachtsfälle meldet ausschliesslich die Compliance an die MROS.\r\n', 'BANKHAUS VOGT & CIE · DIRECTIVE\r\n\r\nAnti-Money Laundering Act (GwG), in force since 1 April 1998.\r\n\r\nFor every new business relationship the beneficial owner must be recorded on Form A. Suspicious cases are reported to MROS by Compliance only.\r\n'), { mime: 'doc', ro: true })
     };
     FS.save();
   };

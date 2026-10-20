@@ -342,7 +342,7 @@
       { l: 'Windows Update', ico: 'i-globe', dis: true }, '-',
       { l: '~Programs', ico: 'i-folder', big: true, sub: progs },
       { l: '~Documents', ico: 'i-folder', big: true, sub: docsRecent.length ? docsRecent.concat(['-', { l: 'My Documents', ico: 'd-docs', fn: function () { WM.open('explorer', { path: FS.specialPaths().documents }); } }]) : [{ l: 'My Documents', ico: 'd-docs', fn: function () { WM.open('explorer', { path: FS.specialPaths().documents }); } }] },
-      { l: '~Settings', ico: 'i-list', big: true, sub: [{ l: '~Control Panel', ico: 'd-control', fn: function () { WM.open('control'); } }, { l: '~Network and Dial-up Connections', dis: true }, { l: '~Printers', dis: true }, { l: '~Taskbar & Start Menu...', dis: true }] },
+      { l: '~Settings', ico: 'i-list', big: true, sub: [{ l: '~Control Panel', ico: 'd-control', fn: function () { WM.open('control'); } }, { l: '~Regional Options...', ico: 'd-net', fn: function () { PBS.L.dialog(); } }, { l: '~Network and Dial-up Connections', dis: true }, { l: '~Printers', dis: true }, { l: '~Taskbar & Start Menu...', dis: true }] },
       { l: 'S~earch', ico: 'i-search', big: true, sub: [{ l: 'For ~Files or Folders...', fn: function () { WM.open('explorer'); } }, { l: 'On the ~Internet...', fn: function () { launchApp('ie'); if (WM.hooks.navigate) WM.hooks.navigate('http://www.alpensuche.ch/'); } } ] },
       { l: '~Help', ico: 'i-info', big: true, fn: function () { if (WM.hooks.help) WM.hooks.help(); } },
       { l: '~Run...', ico: 'i-go', big: true, fn: runDlg }, '-',

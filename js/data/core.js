@@ -4,6 +4,7 @@
   'use strict';
 
   const D = PBS.DATA = PBS.DATA || {};
+  const t = PBS.L.t;
 
   D.BANK = {
     short: 'Vogt & Cie',
@@ -40,7 +41,7 @@
   D.AUTH = {
     EBK: { short: 'EBK', name: 'Swiss Federal Banking Commission', c: 'CH' },
     US: { short: 'IRS / DOJ', name: 'US Internal Revenue Service', c: 'US', court: 'US District Court', city: 'Miami' },
-    DE: { short: 'Steuerfahndung', name: 'German tax investigation', c: 'DE', court: 'Staatsanwaltschaft', city: 'Frankfurt' },
+    DE: { short: 'Steuerfahndung', name: 'German tax investigation', c: 'DE', court: t('Staatsanwaltschaft', 'Public Prosecutor\'s Office'), city: 'Frankfurt' },
     IT: { short: 'Guardia di Finanza', name: 'Italian financial police', c: 'IT', court: 'Procura della Repubblica', city: 'Milan' },
     FR: { short: 'DGI', name: 'French tax administration', c: 'FR', court: 'Juge d\'instruction', city: 'Paris' },
     GB: { short: 'Inland Revenue', name: 'UK Inland Revenue', c: 'GB', court: 'Crown Prosecution Service', city: 'London' }
@@ -143,8 +144,8 @@
     PA: { c: 'PA', kind: 'company', label: 'Panama – Sociedad Anónima', form: 'Sociedad Anónima', suffix: 'S.A.', agent: 'Bufete Arosemena & Asociados, Panamá', setup: 7200, annual: 3200, shield: 0.5 },
     BS: { c: 'BS', kind: 'company', label: 'Bahamas – IBC', form: 'International Business Company', suffix: 'Ltd.', agent: 'Bay Street Nominees Ltd., Nassau', setup: 8800, annual: 3500, shield: 0.5 },
     LR: { c: 'LR', kind: 'company', label: 'Liberia – Corporation', form: 'Corporation', suffix: 'Inc.', agent: 'Monrovia Registry Services, Monrovia', setup: 6800, annual: 3000, shield: 0.55 },
-    LI_A: { c: 'LI', kind: 'company', label: 'Liechtenstein – Anstalt (establishment)', form: 'Anstalt', suffix: 'Anstalt', agent: 'Treuhand Rheinberg reg., Vaduz', setup: 18500, annual: 7000, shield: 0.4 },
-    LI_S: { c: 'LI', kind: 'foundation', label: 'Liechtenstein – Stiftung (foundation)', form: 'Stiftung', suffix: 'Stiftung', agent: 'Treuhand Rheinberg reg., Vaduz', setup: 24000, annual: 9500, shield: 0.32 },
+    LI_A: { c: 'LI', kind: 'company', label: t('Liechtenstein – Anstalt (establishment)', 'Liechtenstein – establishment (Anstalt)'), form: 'Anstalt', suffix: 'Anstalt', agent: 'Treuhand Rheinberg reg., Vaduz', setup: 18500, annual: 7000, shield: 0.4 },
+    LI_S: { c: 'LI', kind: 'foundation', label: t('Liechtenstein – Stiftung (foundation)', 'Liechtenstein – foundation (Stiftung)'), form: 'Stiftung', suffix: 'Stiftung', agent: 'Treuhand Rheinberg reg., Vaduz', setup: 24000, annual: 9500, shield: 0.32 },
     JE_T: { c: 'JE', kind: 'trust', label: 'Jersey – discretionary trust', form: 'Discretionary trust', suffix: 'Trust', agent: 'Seigneurie Trustees Ltd., St Helier', setup: 28000, annual: 12000, shield: 0.3 },
     KY_T: { c: 'KY', kind: 'trust', label: 'Cayman Islands – STAR trust', form: 'STAR trust', suffix: 'Trust', agent: 'Seven Mile Fiduciary Ltd., George Town', setup: 32000, annual: 14000, shield: 0.28 },
     LI_INS: { c: 'LI', kind: 'insurance', label: 'Liechtenstein – life insurance wrapper', form: 'Unit-linked life policy', suffix: 'Policy', agent: 'Rheintal Life AG, Vaduz', setup: 15000, annual: 6000, shield: 0.33 }
@@ -163,7 +164,7 @@
     'TM-04': 'Counterparty in FATF non-cooperative jurisdiction',
     'TM-05': 'Beneficial owner not documented (Form A missing)',
     'TM-06': 'Pass-through: funds in and out within 10 days',
-    'TM-07': 'PEP relationship – transaction ≥ CHF 100,000',
+    'TM-07': 'PEP relationship, transaction ≥ CHF 100,000',
     'TM-08': 'Incomplete originator information (field 50)',
     'TM-09': 'Inconsistent with client profile (> 30% of documented wealth)'
   };
@@ -190,28 +191,28 @@
   D.DIFFICULTY = {
     discreet: { label: 'Discreet', desc: 'Forgiving. Authorities are slow, clients are patient.', heatUp: 0.75, heatDecay: 1.4, inv: 0.7, leave: 0.6, threat: 0.75, capital: 1.2 },
     standard: { label: 'Standard', desc: 'Balanced.', heatUp: 1, heatDecay: 1, inv: 1, leave: 1, threat: 1, capital: 1 },
-    hostile: { label: 'Hostile', desc: 'Authorities react fast, clients leave at the first sign of trouble.', heatUp: 1.3, heatDecay: 0.75, inv: 1.35, leave: 1.4, threat: 1.3, capital: 0.85 }
+    hostile: { label: 'Hostile', desc: 'Authorities react quickly and clients leave at the first sign of trouble.', heatUp: 1.3, heatDecay: 0.75, inv: 1.35, leave: 1.4, threat: 1.3, capital: 0.85 }
   };
 
   // Standorte: Hauptsitz, Filialen, Repräsentanzen, Tochterbanken
   D.LOCATIONS = {
     ZH: { name: 'Zürich (head office)', kind: 'HQ', c: 'CH', setup: 0, daily: 4000, seats: 30, boxes: 120 },
     GE: { name: 'Genève – branch', kind: 'branch', c: 'CH', setup: 1000000, daily: 3000, seats: 12, boxes: 80, boost: { FR: 1.8, LB: 1.6, AE: 1.5, RU: 1.3 }, from: '1990-01-01', note: 'French-speaking and Middle East clients. Own cash desk and vault.' },
-    LU: { name: 'Lugano – branch', kind: 'branch', c: 'CH', setup: 800000, daily: 2500, seats: 10, boxes: 100, boost: { IT: 2.2 }, courier: 0.7, from: '1990-01-01', note: 'Twenty minutes from the Italian border. Couriers run safer and cheaper.' },
-    MIL: { name: 'Milano – representative office', kind: 'rep', c: 'IT', setup: 250000, daily: 1000, seats: 2, boost: { IT: 1.5 }, heat: 0.04, from: '1990-01-01', note: 'Client contact on site. Illegal to take deposits; raids possible.' },
-    MIA: { name: 'Miami – representative office', kind: 'rep', c: 'US', setup: 400000, daily: 1500, seats: 2, boost: { US: 1.5, AR: 1.8, VE: 1.8, BR: 1.8 }, heat: 0.06, from: '1990-01-01', note: 'Latin American and US clients. The IRS is not far away.' },
+    LU: { name: 'Lugano – branch', kind: 'branch', c: 'CH', setup: 800000, daily: 2500, seats: 10, boxes: 100, boost: { IT: 2.2 }, courier: 0.7, from: '1990-01-01', note: 'Twenty minutes from the Italian border. Courier runs are cheaper and safer from here.' },
+    MIL: { name: 'Milano – representative office', kind: 'rep', c: 'IT', setup: 250000, daily: 1000, seats: 2, boost: { IT: 1.5 }, heat: 0.04, from: '1990-01-01', note: 'Client contact on site. Taking deposits is illegal; raids are possible.' },
+    MIA: { name: 'Miami – representative office', kind: 'rep', c: 'US', setup: 400000, daily: 1500, seats: 2, boost: { US: 1.5, AR: 1.8, VE: 1.8, BR: 1.8 }, heat: 0.06, from: '1990-01-01', note: 'Latin American and US clients. Within reach of the IRS.' },
     DXB: { name: 'Dubai – representative office', kind: 'rep', c: 'AE', setup: 300000, daily: 1200, seats: 2, boost: { AE: 1.8, LB: 1.4, RU: 1.4, KZ: 1.6 }, from: '2004-01-01', note: 'Gulf, Levant and CIS clients.' },
-    NAS: { name: 'Nassau – Vogt & Cie (Bahamas) Ltd.', kind: 'sub', c: 'BS', setup: 5000000, daily: 2000, seats: 3, shield: 0.5, shieldLate: 0.8, lateFrom: '2010-01-01', from: '1990-01-01', note: 'Booking centre. Assets booked here are out of reach of Swiss mutual assistance – until the Bahamas sign information-exchange treaties.' },
-    SIN: { name: 'Singapore – Vogt & Cie (Asia) Pte. Ltd.', kind: 'sub', c: 'SG', setup: 10000000, daily: 3000, seats: 4, shield: 0.55, shieldLate: 1.0, lateFrom: '2015-01-01', from: '2001-01-01', note: 'Booking centre in Asia. Popular with European clients who fear the EU tax agreements.' }
+    NAS: { name: 'Nassau – Vogt & Cie (Bahamas) Ltd.', kind: 'sub', c: 'BS', setup: 5000000, daily: 2000, seats: 3, shield: 0.5, shieldLate: 0.8, lateFrom: '2010-01-01', from: '1990-01-01', note: 'Booking centre. Assets booked here are out of reach of Swiss mutual assistance until the Bahamas sign information-exchange treaties.' },
+    SIN: { name: 'Singapore – Vogt & Cie (Asia) Pte. Ltd.', kind: 'sub', c: 'SG', setup: 10000000, daily: 3000, seats: 4, shield: 0.55, shieldLate: 1.0, lateFrom: '2015-01-01', from: '2001-01-01', note: 'Booking centre in Asia. Popular with European clients worried about the EU tax agreements.' }
   };
 
   D.LAWYERS = {
-    ch: { name: 'Bär & Imhof Rechtsanwälte, Zürich', cost: 400000, factor: 0.75, scope: 'all', note: 'White-collar defence. Slows every foreign investigation.' },
+    ch: { name: 'Bär & Imhof Rechtsanwälte, Zürich', cost: 400000, factor: 0.75, scope: 'all', note: 'White-collar defence. Slows down all foreign investigations.' },
     us: { name: 'Hartley Crane Winslow LLP, Washington DC', cost: 900000, factor: 0.55, scope: 'US', note: 'Former Department of Justice prosecutors. Strongly slows US proceedings.' }
   };
   D.LOBBY = {
-    assoc: { name: 'Active membership Swiss Bankers Association (committees)', cost: 80000, note: 'Regulator attention builds up 15% slower. Early warning of political developments.' },
-    board: { name: 'Board seat for a member of the National Council', cost: 150000, note: 'Faster easing of regulator attention, foreign pressure eases faster. Risk of press scandal.' }
+    assoc: { name: 'Active membership Swiss Bankers Association (committees)', cost: 80000, note: 'Regulator attention builds up 15% more slowly. Early notice of political developments.' },
+    board: { name: 'Board seat for a member of the National Council', cost: 150000, note: 'Regulator attention and foreign pressure ease faster. Risk of a press scandal.' }
   };
 
   D.USD_CORRESPONDENTS = ['Hudson Atlantic Trust Company, New York', 'Pemberton National Bank, New York', 'Gotham Clearing Bank, New York', 'Liberty Exchange Bank, Newark'];

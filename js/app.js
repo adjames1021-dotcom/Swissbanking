@@ -224,6 +224,11 @@
     [/^reports\/pl$/, function () { return V.pl(); }],
     [/^reports\/aum$/, function () { return V.aumReport(); }],
     [/^reports\/journal$/, function () { return V.journal(); }],
+    [/^trade$/, function () { return V.trade(); }],
+    [/^trade\/stock\/(\w+)$/, function (m) { return V.tradeStock(m[1]); }],
+    [/^trade\/orders$/, function () { return V.tradeOrders(); }],
+    [/^trade\/portfolio$/, function () { return V.tradePortfolio(); }],
+    [/^trade\/news$/, function () { return V.tradeNews(); }],
     [/^inbox$/, function () { return V.inbox(); }],
     [/^inbox\/(M\d+)$/, function (m) { G.markRead(m[1]); return V.message(m[1]); }]
   ];
@@ -314,6 +319,7 @@
     { key: 'accounts', label: 'Accounts', href: '#/accounts' },
     { key: 'payments', label: 'Payments', href: '#/pay/queue', badge: function () { const s = G.state; return G.pendingPayments().length + s.counter.length + s.couriers.filter(function (k) { return k.status === 'requested'; }).length; } },
     { key: 'invest', label: 'Investments', href: '#/invest' },
+    { key: 'trade', label: 'Trading', href: '#/trade', badge: function () { return V.tradeOpenOrders(); } },
     { key: 'compliance', label: 'Compliance', href: '#/compliance', badge: function () { return G.openAlerts().length; } },
     { key: 'structures', label: 'Structures', href: '#/structures' },
     { key: 'org', label: 'Organisation', href: '#/org/staff' },
@@ -333,7 +339,7 @@
         return items;
       }
       case 'accounts': return [['accounts', 'Account list', 'folder'], ['loans', 'Loans & guarantees', 'scale', false, s.loans.filter(function (l) { return l.status === 'active'; }).length], ['vault', 'Vault (safe-deposit boxes)', 'lock']];
-      case 'payments': return [['pay/queue', 'Release queue', 'queue', false, G.pendingPayments().length], ['pay/new', 'New payment (MT103)', 'doc'], ['pay/transfer', 'Internal transfer', 'swap'], ['pay/cash', 'Cash desk (Kasse)', 'cash', false, s.counter.length],
+      case 'payments': return [['pay/queue', 'Release queue', 'queue', false, G.pendingPayments().length], ['pay/new', 'New payment (MT103)', 'doc'], ['pay/transfer', 'Internal transfer', 'swap'], ['pay/cash', PBS.L.t('Cash desk (Kasse)', 'Cash desk'), 'cash', false, s.counter.length],
         ['pay/couriers', 'Courier service', 'plane', false, s.couriers.filter(function (k) { return k.status === 'requested'; }).length], ['pay/done', 'Payment journal', 'list']];
       case 'invest': return [['invest', 'House view (committee)', 'chart'], ['invest/mandates', 'Mandates', 'folder'], ['invest/instruments', 'Instruments', 'list'], ['invest/treasury', 'Treasury & nostro', 'building']];
       case 'compliance': return [['compliance', 'Risk monitor', 'shield'], ['compliance/alerts', 'Alerts', 'warn', false, G.openAlerts().length], ['compliance/mla', 'Mutual assistance', 'scale', false, s.messages.filter(function (m) { return m.kind === 'mla' && !m.resolved; }).length],
@@ -342,6 +348,7 @@
       case 'org': return [['org/staff', 'Staff', 'user'], ['org/recruit', 'Recruitment', 'plus', false, s.candidates.length], ['org/branches', 'Branches & offices', 'building'], ['org/corr', 'Correspondent banks', 'net'], ['org/acquisitions', 'Acquisitions', 'scale', false, s.targets.length], ['org/pricing', 'Products & pricing', 'cash']];
       case 'reports': return [['reports/pl', 'Profit & loss', 'chart'], ['reports/aum', 'AuM by domicile', 'chart'], ['reports/journal', 'Booking journal', 'list']];
       case 'inbox': return [['inbox', 'Inbox', 'mail', false, G.unread()]];
+      case 'trade': return [['trade', 'Market', 'chart'], ['trade/orders', 'Orders', 'list', false, V.tradeOpenOrders()], ['trade/portfolio', 'Portfolios', 'folder'], ['trade/news', 'Market news', 'doc']];
       default: return [['overview', 'Dashboard', 'home'], ['agenda', 'Diary', 'clock', false, G.agendaDue().length], ['career', 'Targets & career', 'flag'], ['market', 'Market data', 'chart'], ['trip', 'Acquisition trip', 'plane']];
     }
   }
@@ -350,7 +357,7 @@
     const s = G.state;
     const last = UI.prevLogin;
     const ot = s.clock > 18 * 60;
-    $('hdr-r').innerHTML = 'User <b>' + e(s.user.id) + '</b> · ' + e(s.meta.name) + ' (Managing Partner) · Mandant 001 Zürich<br>' +
+    $('hdr-r').innerHTML = 'User <b>' + e(s.user.id) + '</b> · ' + e(s.meta.name) + ' (Managing Partner) · ' + PBS.L.t('Mandant 001 Zürich', 'Client unit 001 Zurich') + '<br>' +
       'Value date <b>' + U.weekday(s.date) + ' ' + U.fmtDate(s.date) + '</b> · <b' + (ot ? ' class="ot"' : '') + '>' + U.fmtTime(s.clock) + '</b>' + (ot ? ' <span class="ot">overtime</span>' : '') + '<br>' +
       (last ? 'Last sign-on ' + U.fmtDate(last.d) + ' ' + U.fmtTime(last.t) + ' from ' + e(last.ws) : '');
 
@@ -378,7 +385,7 @@
     $('nav').innerHTML =
       '<div class="navsec"><h3>' + e(modLabel) + '</h3><ul class="tree">' + tree + '</ul></div>' +
       '<div class="navsec"><h3>Quick search</h3><form data-form="qsearch" class="qs"><input class="inp" name="q" placeholder="No. / codename / name"><button class="btn sm" type="submit" aria-label="Search">' + H.ico('search') + '</button></form></div>' +
-      '<div class="navsec"><h3>Value date (Valuta)</h3><div class="navbox"><div class="big">' + U.weekday(s.date) + ' ' + U.fmtDate(s.date) + '</div>' +
+      '<div class="navsec"><h3>' + PBS.L.t('Value date (Valuta)', 'Value date') + '</h3><div class="navbox"><div class="big">' + U.weekday(s.date) + ' ' + U.fmtDate(s.date) + '</div>' +
       '<div class="row' + (ot ? ' warn' : '') + '"><span>Time</span><b>' + U.fmtTime(s.clock) + (ot ? ' (overtime)' : '') + '</b></div>' +
       '<div class="row"><span>Until building locks</span><b>' + Math.floor(left / 60) + 'h ' + U.pad(left % 60, 2) + '</b></div><div class="row"><span>Business day no.</span><b>' + s.dayNo + '</b></div>' +
       (next ? '<div class="next">' + H.ico('clock') + ' <a href="#/agenda">' + U.fmtTime(next.t) + ' ' + e(next.title.length > 26 ? next.title.slice(0, 25) + '…' : next.title) + '</a></div>' : '') +
@@ -388,7 +395,7 @@
     $('statusbar').innerHTML =
       '<div class="cell grow">' + H.ico('net') + ' ' + D.BANK.host + ' · DB2 · ' + e(D.SCENARIOS[s.meta.scenario].label.split(' – ')[0]) + ' · ' + e(D.DIFFICULTY[s.meta.diff].label) + '</div>' +
       '<div class="cell">User ' + e(s.user.id) + '</div>' +
-      '<div class="cell">Valuta ' + U.fmtDate(s.date) + ' <span' + (ot ? ' class="ot"' : '') + '>' + U.fmtTime(s.clock) + '</span></div>' +
+      '<div class="cell">' + PBS.L.t('Valuta ', 'Value date ') + U.fmtDate(s.date) + ' <span' + (ot ? ' class="ot"' : '') + '>' + U.fmtTime(s.clock) + '</span></div>' +
       '<div class="cell" id="sb-session">Session 30:00</div>';
     sessionTick();
     B.paintClock();
@@ -496,7 +503,7 @@
     if (ar) warn.push(ar + ' decision(s) pending in mail');
     const ag = G.agendaFor(s.date).filter(function (a) { return a.status === 'open'; }).length;
     if (ag) warn.push(ag + ' appointment(s) today will be missed');
-    const body = 'Start end-of-day processing (Tagesabschluss) for value date <b>' + U.weekday(s.date) + ' ' + U.fmtDate(s.date) + '</b>?' +
+    const body = 'Start end-of-day processing' + PBS.L.t(' (Tagesabschluss)', '') + ' for value date <b>' + U.weekday(s.date) + ' ' + U.fmtDate(s.date) + '</b>?' +
       (warn.length ? '<ul class="hints" style="margin-top:8px">' + warn.map(function (w) { return '<li>' + w + '</li>'; }).join('') + '</ul>' : '<br><br>All pending items have been dealt with.');
     Dlg.confirm('End of day', body, function () { setTimeout(doEOD, 30); }, warn.length ? 'bigwarn' : 'ques', 'Start batch', 'Cancel');
   }
@@ -521,7 +528,7 @@
     lines.push(['', ts() + '  PBSEOD01  ALLOC DB2 PRD.PBS01 ............................. OK']);
     res.log.forEach(function (l) {
       const txt = ts() + '  ' + (l[0] === 'EVT' ? '          EVT     ' : 'PBSEOD01  ' + l[0] + ' ') + (l[1] + ' ').padEnd(l[0] === 'EVT' ? 36 : 34, '.') + ' ' + l[2];
-      const warnish = /UEBERFAELLIG|NICHT BEDIENT|WARNUNG|GEFUNDEN|VERWEIGERT|FESTSTELLUNG|VERPASST|OVERDUE|MISSED/.test(l[2]);
+      const warnish = /UEBERFAELLIG|NICHT BEDIENT|WARNUNG|GEFUNDEN|VERWEIGERT|FESTSTELLUNG|VERPASST|VERFALLEN|OVERDUE|MISSED|WARNING|FOUND|REFUSED|FINDING|NOT SERVED|EXPIRED/.test(l[2]);
       lines.push([l[0] === 'EVT' ? (warnish ? 'w' : 'ev') : (warnish ? 'w' : 'ok'), txt]);
     });
     if (res.rc === '0012') lines.push(['er', ts() + '  PBSEOD01  *** ABEND U0012 – EXTERNAL EVENT – NOTIFY MANAGEMENT ***']);
@@ -529,8 +536,8 @@
     saveBatchLog(res.closing, lines);
 
     const d = Dlg.open({
-      title: 'Batch job PBSEOD01 – Mandant 001 Zürich', width: 712, noEsc: true, icon: 'i-print',
-      body: '<div class="batch" id="batchlog"></div><div class="small muted" style="margin-top:6px">Output of job PBSEOD01 (SYSOUT class A) · operator console OPS-ZH-02 · printer PRT-ZH-3 (Kontrolljournal)</div>',
+      title: 'Batch job PBSEOD01 – ' + PBS.L.t('Mandant 001 Zürich', 'client unit 001 Zurich'), width: 712, noEsc: true, icon: 'i-print',
+      body: '<div class="batch" id="batchlog"></div><div class="small muted" style="margin-top:6px">Output of job PBSEOD01 (SYSOUT class A) · operator console OPS-ZH-02 · printer PRT-ZH-3' + PBS.L.t(' (Kontrolljournal)', ' (control journal)') + '</div>',
       buttons: [{ label: 'OK', def: true, fn: function () {
         setTimeout(function () {
           const s = G.state;
@@ -600,8 +607,8 @@
     inv.from = val(f, 'from');
     inv.to = val(f, 'to');
     inv.no = val(f, 'no').trim();
-    const m = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(val(f, 'date').trim());
-    if (m && +m[2] >= 1 && +m[2] <= 12 && +m[1] >= 1 && +m[1] <= 31) inv.date = m[3] + '-' + U.pad(+m[2], 2) + '-' + U.pad(+m[1], 2);
+    const iso = U.parseDate(val(f, 'date'));
+    if (iso) inv.date = iso;
     inv.due = +val(f, 'due') || 30;
     inv.ccy = val(f, 'ccy');
     const v = U.parseAmount(val(f, 'vat'));
@@ -614,6 +621,15 @@
   }
 
   const FORMS = {
+    order: function (f) {
+      const r = G.trade.place({ id: f.dataset.id, acct: val(f, 'acct'), side: val(f, 'side'), q: U.parseAmount(val(f, 'q')), type: val(f, 'type'), lim: U.parseAmount(val(f, 'lim')), valid: val(f, 'valid') });
+      if (!r.ok) { Dlg.msg('Order rejected', e(r.msg), 'err'); return; }
+      Snd.click();
+      render();
+      setStatus(r.text);
+      if (r.o && r.o.status === 'done') Dlg.msg('Order ' + r.o.no, e(r.text) + '<br><span class="muted">' + 'Amount CHF ' + U.fmt(r.o.fill.chf, 2) + PBS.L.t(' · Courtage and stamp duty CHF ', ' · fees and stamp duty CHF ') + U.fmt(r.o.fill.fee + r.o.fill.tax, 2) + '</span>', 'info');
+      else Dlg.msg('Order ' + r.o.no, e(r.text), 'info');
+    },
     pay: function (f) {
       const p = keepDraft(f);
       const r = G.submitPayment(p);
@@ -1002,6 +1018,8 @@
       } });
     },
     guide: function () { Dlg.closeAll(); PBS.Guide.start(); if (UI.screen !== 'app') location.hash = '#/overview'; },
+    settings: function () { PBS.L.dialog(); },
+    ordcancel: function (el) { done(G.trade.cancel(el.dataset.id), 'Order cancelled.'); },
     invprint: function () { window.print(); },
     invreset: function () { UI.inv = V.invoiceDefault('fee', { fmt: 'letter', paper: UI.inv.paper, pw: UI.inv.pw, ph: UI.inv.ph }); route(); setStatus('Invoice reset.'); },
     acquire: function (el) {
@@ -1216,10 +1234,29 @@
     shutdown: shutDown
   });
 
+  // Ländereinstellungen: Anzeige neu aufbauen; Dollarumrechnung beobachtet das Dokument
+  PBS.L.hooks = { refresh: function () { if (UI.screen === 'app' || UI.screen === 'intra') route(true); else if (UI.screen === 'login') showLogin(); PBS.L.apply(); } };
+  PBS.L.watch();
+  // Feste Beschriftungen der Seite auf Englisch
+  if (PBS.L.lang === 'en') {
+    const EN = { 'Telefonbuch': 'Phone book', 'Menüplan': 'Canteen menu', 'Weisungen': 'Directives', 'Mandant 001 Zürich': 'Client unit 001 Zurich', 'Mandant': 'Client unit' };
+    ['ie-links', 'login'].forEach(function (id) {
+      const w = document.createTreeWalker($(id), NodeFilter.SHOW_TEXT);
+      let n;
+      while ((n = w.nextNode())) Object.keys(EN).forEach(function (k) { if (n.data.indexOf(k) >= 0) n.data = n.data.split(k).join(EN[k]); });
+    });
+  }
+  $('lg-settings').addEventListener('click', function (ev) { ev.preventDefault(); PBS.L.dialog(); });
+
   tokenTick();
   setInterval(tokenTick, 1000);
   setInterval(sessionTick, 1000);
   const h = location.hash;
-  if (h.indexOf('#/x/') === 0 || h.indexOf('#/404') === 0) route();
+  let resume = null;
+  try { resume = sessionStorage.getItem('pbs-resume'); sessionStorage.removeItem('pbs-resume'); } catch (x) { /* */ }
+  const saved = resume && G.hasSave() ? G.load() : null;
+  // Nach dem Sprachwechsel: Sitzung ohne neue Anmeldung fortsetzen
+  if (saved && !saved.gameOver) { UI.afterLogin = resume; signOn(saved.user.id, true); }
+  else if (h.indexOf('#/x/') === 0 || h.indexOf('#/404') === 0) route();
   else { UI.afterLogin = h; showLogin(); }
 })(window.PBS);

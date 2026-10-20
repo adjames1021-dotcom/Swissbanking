@@ -11,23 +11,33 @@ window.PBS = window.PBS || {};
     'August', 'September', 'October', 'November', 'December'];
   const MON3 = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
-  // Schweizer Zahlenformat: 1'250'000.00
+  // Ländereinstellungen (Systemsteuerung › Regional Options). lang: Begriffe schweizerisch oder englisch,
+  // num: Tausendertrennzeichen, date: Datumsformat, time: 24/12 Stunden, ccy: Anzeigewährung für CHF-Beträge
+  const LKEY = 'pbs-vogt-locale';
+  const L = PBS.L = { lang: 'ch', num: 'ch', date: 'ch', time: '24', ccy: 'CHF' };
+  try { Object.assign(L, JSON.parse(localStorage.getItem(LKEY) || '{}')); } catch (x) { /* Standard */ }
+  L.save = function () { try { localStorage.setItem(LKEY, JSON.stringify({ lang: L.lang, num: L.num, date: L.date, time: L.time, ccy: L.ccy })); } catch (x) { /* nicht verfügbar */ } };
+  // Text in der gewählten Sprache: t('Kontoauszug', 'Account statement')
+  L.t = function (ch, en) { return L.lang === 'en' && en !== undefined ? en : ch; };
+
+  // Zahlenformat: 1'250'000.00 (Schweiz) oder 1,250,000.00 (englisch)
   function fmt(n, dec) {
     if (dec === undefined) dec = 2;
     if (n === null || n === undefined || isNaN(n)) return '–';
     const neg = n < 0 && Math.abs(n) >= Math.pow(10, -dec) / 2;
     const parts = Math.abs(n).toFixed(dec).split('.');
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '\'');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, L.num === 'en' ? ',' : '\'');
     return (neg ? '-' : '') + parts.join('.');
   }
 
   function fmtMio(n, dec) {
-    return fmt(n / 1e6, dec === undefined ? 1 : dec) + ' Mio.';
+    return fmt(n / 1e6, dec === undefined ? 1 : dec) + (L.lang === 'en' ? ' million' : ' Mio.');
   }
 
   function parseAmount(str) {
     if (typeof str === 'number') return str;
-    const t = String(str || '').replace(/['’\s]/g, '').replace(',', '.');
+    let t = String(str || '').replace(/['’\s]/g, '');
+    t = L.num === 'en' ? t.replace(/,/g, '') : t.replace(',', '.');
     if (!/^-?\d*\.?\d+$/.test(t)) return NaN;
     return parseFloat(t);
   }
@@ -42,11 +52,29 @@ window.PBS = window.PBS || {};
   function fmtDate(iso) {
     if (!iso) return '';
     const p = iso.split('-');
+    if (L.date === 'us') return p[1] + '/' + p[2] + '/' + p[0];
+    if (L.date === 'uk') return p[2] + '/' + p[1] + '/' + p[0];
     return p[2] + '.' + p[1] + '.' + p[0];
+  }
+  // Eingabe im gewählten Datumsformat (auch mit Punkt, Schrägstrich oder ISO) → ISO oder null
+  function parseDate(str) {
+    const t = String(str || '').trim();
+    let m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(t);
+    let y, mo, d;
+    if (m) { y = +m[1]; mo = +m[2]; d = +m[3]; }
+    else {
+      m = /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/.exec(t);
+      if (!m) return null;
+      if (L.date === 'us' && t.indexOf('.') < 0) { mo = +m[1]; d = +m[2]; } else { d = +m[1]; mo = +m[2]; }
+      y = +m[3];
+    }
+    if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+    return y + '-' + pad(mo, 2) + '-' + pad(d, 2);
   }
   function weekday(iso) { return WD[toDate(iso).getUTCDay()]; }
   function longDate(iso) {
     const d = toDate(iso);
+    if (L.date === 'us') return WD_LONG[d.getUTCDay()] + ', ' + MONTHS[d.getUTCMonth()] + ' ' + d.getUTCDate() + ', ' + d.getUTCFullYear();
     return WD_LONG[d.getUTCDay()] + ', ' + d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
   }
   function faxDate(iso) {
@@ -82,7 +110,11 @@ window.PBS = window.PBS || {};
     }
     return n;
   }
-  function fmtTime(min) { return pad(Math.floor(min / 60), 2) + ':' + pad(min % 60, 2); }
+  function fmtTime(min) {
+    const h = Math.floor(min / 60) % 24, m = pad(min % 60, 2);
+    if (L.time === '12') return ((h + 11) % 12 + 1) + ':' + m + (h < 12 ? ' AM' : ' PM');
+    return pad(h, 2) + ':' + m;
+  }
   // SWIFT-Datum YYMMDD
   function swiftDate(iso) { return iso.slice(2, 4) + iso.slice(5, 7) + iso.slice(8, 10); }
 
@@ -104,7 +136,7 @@ window.PBS = window.PBS || {};
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
 
   PBS.U = {
-    fmt, fmtMio, parseAmount, pad, toDate, toIso, fmtDate, weekday, longDate, faxDate, monthName,
+    fmt, fmtMio, parseAmount, pad, toDate, toIso, fmtDate, parseDate, weekday, longDate, faxDate, monthName,
     addDays, isWeekend, addBusinessDays, businessDaysBetween, fmtTime, swiftDate, esc, iban, ibanFmt, clamp
   };
 })(window.PBS);

@@ -3,6 +3,7 @@
   'use strict';
 
   const D = PBS.DATA, U = PBS.U, K = PBS.K, G = PBS.Game;
+  const tr = PBS.L.t;
   function S() { return G.state; }
 
   G.newGame = function (o) {
@@ -188,18 +189,18 @@
     s.date = U.addBusinessDays(start, -1);
     const n = G.activeClients().length;
     const intro = {
-      '1998': 'Banking secrecy has never been stronger. Abroad, nobody can touch our clients – the only change ahead is the new Money Laundering Act in April, and the euro next January.',
-      '2003': 'Markets are at their lowest since 1997, the EU is negotiating a savings tax with Berne, and the regulator tightens its money-laundering ordinance in July. Still: these are golden years for discreet banking.',
-      '2008': 'The stolen Liechtenstein data have just made headlines in Germany, and the Americans are hunting Swiss bankers. I fear the golden years are coming to an end. Steer carefully.'
+      '1998': 'Banking secrecy is as solid as it has ever been, and no foreign authority can reach our clients. The only changes ahead are the new Money Laundering Act in April and the euro next January.',
+      '2003': 'Markets are at their lowest since 1997. The EU is negotiating a savings tax with Berne, and the regulator\'s stricter money-laundering ordinance takes effect in July. For a discreet bank, business is nevertheless very good.',
+      '2008': 'The stolen Liechtenstein data are all over the German papers, and the Americans are going after Swiss bankers. I am afraid the good years are coming to an end. Please be careful.'
     }[s.meta.scenario];
     K.msg({
-      t: 17 * 60 + 5, type: 'memo', from: D.PARTNERS.senior + ', Senior Partner', subject: 'Handover – welcome to the management of the bank',
-      body: 'Dear colleague,\n\nAs agreed by the partners, you take over operational management of the bank as of ' + U.longDate(start) + '. I remain available as Senior Partner, but the day-to-day decisions are now yours.\n\n' + intro + '\n\nWe manage roughly CHF ' + Math.round(G.totalAUM() / 1e6) + ' million for ' + n + ' relationships with ' + s.staff.length + ' staff – most clients from neighbouring countries and, let us say, not overly burdened by their home tax authorities.\n\nRemember the legal position: tax evasion by a foreign client is not a criminal offence in Switzerland; tax fraud is. Banking secrecy (Art. 47 BankG) protects our clients – but foreign authorities see things differently, and the regulator in Berne watches whether we observe our due-diligence duties.\n\nPractical notes:\n• Your day runs from 08:00 to 18:00; security locks the building at 20:00. Every decision takes time – delegate what you can.\n• Payments into a client\'s home country leave a paper trail. Structures (Liechtenstein, BVI, trusts), hold mail and booking abroad reduce the trail.\n• Clear transaction-monitoring alerts on time; the compliance team handles routine cases.\n• Look after your people: unhappy staff leave – and some take more than their personal belongings.\n• The partners will review your targets at the end of each year. Your bonus goes to your private numbered account.\n\nWith kind regards,\n' + D.PARTNERS.senior
+      t: 17 * 60 + 5, type: 'memo', from: D.PARTNERS.senior + ', Senior Partner', subject: 'Handover of management',
+      body: 'Dear colleague,\n\nAs agreed among the partners, you take over the operational management of the bank as of ' + U.longDate(start) + '. I remain available as Senior Partner; the day-to-day decisions are yours from now on.\n\n' + intro + '\n\nWe manage roughly CHF ' + Math.round(G.totalAUM() / 1e6) + ' million for ' + n + ' relationships, with ' + s.staff.length + ' staff. Most clients come from neighbouring countries and are, let us say, not overly troubled by their home tax authorities.\n\nPlease keep the legal position in mind. Tax evasion by a foreign client is not a criminal offence in Switzerland; tax fraud is. Banking secrecy (Art. 47 BankG) protects our clients. Foreign authorities see this differently, and the regulator in Berne checks that we observe our due-diligence duties.\n\nA few practical points:\n• Office hours are 08:00 to 18:00; security locks the building at 20:00. Everything you do takes time, so delegate what you can.\n• Payments into a client\'s home country leave a paper trail. Structures (Liechtenstein, BVI, trusts), hold mail and booking abroad reduce it.\n• Clear transaction-monitoring alerts on time. The compliance team handles the routine cases.\n• Look after the staff. Unhappy people leave, and some take more with them than their personal belongings.\n• The partners review your targets at the end of each year. Your bonus is paid into your private numbered account.\n\nWith kind regards,\n' + D.PARTNERS.senior
     });
     s.date = start;
     K.msg({
-      type: 'memo', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'Open alerts and the regulatory calendar', t: 7 * 60 + 52,
-      body: 'Good morning,\n\n' + G.openAlerts().length + ' transaction-monitoring alert(s) need your decision (Compliance › Alerts). Routine cases are cleared by my team each evening; anything involving cash without Form A, PEPs or unusual amounts stays with you.\n\nCompliance team capacity: about ' + G.complianceCapacity() + ' alert(s) per day.\n\nI. Wyss'
+      type: 'memo', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'Open alerts', t: 7 * 60 + 52,
+      body: 'Good morning,\n\n' + G.openAlerts().length + ' transaction-monitoring alert(s) need your decision (Compliance › Alerts). My team clears the routine cases each evening. Anything involving cash without Form A, PEPs or unusual amounts remains with you.\n\nCapacity of the compliance team: about ' + G.complianceCapacity() + ' alert(s) per day.\n\nI. Wyss'
     });
     const edel = G.client('100.482');
     const edAcc = edel && s.accounts.find(function (a) { return a.client === '100.482' && a.type === 'CUR' && !a.entity && a.ccy !== 'CHF'; });
@@ -208,12 +209,12 @@
       const amount = K.roundTo(380000 * K.rate('EUR') / K.rate(edAcc.ccy), 1000);
       const p = K.newPayment({
         debit: edAcc.id, ccy: edAcc.ccy, amount: amount, valuta: U.addBusinessDays(start, 1),
-        benefName: 'Notariat Dr. Feddersen, Westerland (Treuhandkonto)', benefAcct: benefIban, benefAddr: 'Strandstrasse 12, D-25980 Westerland/Sylt',
-        country: 'DE', bic: 'ALHBDEHH', purpose: 'Kaufpreisanzahlung Ferienwohnung', charges: 'OUR', hideOrig: false, t: 8 * 60 + 12
+        benefName: tr('Notariat Dr. Feddersen, Westerland (Treuhandkonto)', 'Notariat Dr. Feddersen, Westerland (escrow account)'), benefAcct: benefIban, benefAddr: 'Strandstrasse 12, D-25980 Westerland/Sylt',
+        country: 'DE', bic: 'ALHBDEHH', purpose: tr('Kaufpreisanzahlung Ferienwohnung', 'Deposit on holiday flat'), charges: 'OUR', hideOrig: false, t: 8 * 60 + 12
       }, 'client');
       K.msg({
         type: 'fax', kind: 'order', from: 'EDELWEISS (fax +49 711 ...)', t: 8 * 60 + 12, subject: 'Payment order ' + edAcc.ccy + ' ' + U.fmt(amount, 0) + ' – EDELWEISS',
-        body: 'TO: BANKHAUS VOGT & CIE, ZUERICH – ATTN. HERRN U. KELLER\nRE: NUMBERED ACCOUNT EDELWEISS\n\nPlease transfer ' + edAcc.ccy + ' ' + U.fmt(amount) + ' debiting my ' + edAcc.ccy + ' account to:\n\nBeneficiary: Notariat Dr. Feddersen, Westerland (Treuhandkonto)\nBank: Alster Handelsbank AG, Hamburg (ALHBDEHH)\nAccount: ' + (start < '2002-01-01' ? '418 822 711 (BLZ 201 306 00)' : U.ibanFmt(benefIban)) + '\nPurpose: Kaufpreisanzahlung Ferienwohnung\nCharges: OUR\n\nValue date tomorrow, please.\n\nMit freundlichen Grüssen\n[signature]  EDELWEISS',
+        body: tr('TO: BANKHAUS VOGT & CIE, ZUERICH, ATTN. HERRN U. KELLER\n', 'TO: BANKHAUS VOGT & CIE, ZURICH, ATTN. MR U. KELLER\n') + 'RE: NUMBERED ACCOUNT EDELWEISS\n\nPlease transfer ' + edAcc.ccy + ' ' + U.fmt(amount) + ' debiting my ' + edAcc.ccy + ' account to:\n\nBeneficiary: ' + tr('Notariat Dr. Feddersen, Westerland (Treuhandkonto)', 'Notariat Dr. Feddersen, Westerland (escrow account)') + '\nBank: Alster Handelsbank AG, Hamburg (ALHBDEHH)\nAccount: ' + (start < '2002-01-01' ? '418 822 711 (BLZ 201 306 00)' : U.ibanFmt(benefIban)) + '\nPurpose: ' + tr('Kaufpreisanzahlung Ferienwohnung', 'Deposit on holiday flat') + '\nCharges: OUR\n\nValue date tomorrow, please.\n\n' + tr('Mit freundlichen Grüssen', 'Kind regards') + '\n[signature]  EDELWEISS',
         data: { payment: p.id, client: '100.482' }
       });
     }
@@ -233,7 +234,7 @@
     const t = s.career.targets;
     K.msg({
       type: 'memo', from: D.PARTNERS.senior + ' and ' + D.PARTNERS.second + ', Partners', subject: 'Your targets for ' + t.year, t: 7 * 60 + 55,
-      body: 'Dear colleague,\n\nThe partners have set the following targets for ' + t.year + ':\n\n1. Assets under management at year end: at least CHF ' + U.fmtMio(t.aum) + '\n2. Net profit for the year: at least CHF ' + U.fmtMio(t.profit, 2) + '\n3. Regulator attention index at year end: at most ' + t.reg + '\n\nYour remuneration: ' + U.fmt(s.career.stake * 100, 0) + '% of net profit as partnership share plus CHF 100,000 per target achieved (CHF 150,000 extra if all three). Two weak years in a row and we will part ways.\n\nWe meet every quarter in the board room.\n\n' + D.PARTNERS.senior + ' / ' + D.PARTNERS.second
+      body: 'Dear colleague,\n\nThe partners have set the following targets for ' + t.year + ':\n\n1. Assets under management at year end: at least CHF ' + U.fmtMio(t.aum) + '\n2. Net profit for the year: at least CHF ' + U.fmtMio(t.profit, 2) + '\n3. Regulator attention index at year end: at most ' + t.reg + '\n\nRemuneration: ' + U.fmt(s.career.stake * 100, 0) + '% of net profit (partnership share), plus CHF 100,000 for each target achieved and a further CHF 150,000 if all three are met. After two unsatisfactory years in succession we will part ways.\n\nThe partners meet quarterly in the board room.\n\n' + D.PARTNERS.senior + ' / ' + D.PARTNERS.second
     });
   }
 })(window.PBS);

@@ -4,6 +4,7 @@
 
   const G = PBS.Game, D = PBS.DATA, U = PBS.U, H = PBS.H, V = PBS.Views;
   const e = U.esc;
+  const tr = PBS.L.t;
   const ico = H.ico, st = H.st, num = H.num, grid = H.grid, panel = H.panel, kv = H.kv, btn = H.btn;
 
   /* ---------- Anlagen ---------- */
@@ -26,14 +27,14 @@
     const form = '<form data-form="house"><table class="grid alloc"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>' +
       '<table class="frm"><tr><th>Trading intensity</th><td>' + H.sel('name="intensity"', Object.keys(D.INTENSITY).map(function (k) { return [k, D.INTENSITY[k].label]; }), s.house.intensity) + ' <span class="small muted">more trading = more brokerage income, more cost for clients</span></td></tr>' +
       '<tr><th>Fund policy</th><td>' + H.sel('name="pref"', Object.keys(D.PRODUCT_PREF).map(function (k) { return [k, D.PRODUCT_PREF[k].label]; }), s.house.pref) + ' <span class="small muted">house fund: 1.2% fee to the bank · third-party: 1.0% retrocession</span></td></tr></table>' +
-      '<div class="btnbar">' + (inMeeting ? '<span class="tag">Committee in session – no extra time</span>' : H.dur(45)) + '<button class="btn def" type="submit">Adopt house view</button></div></form>';
+      '<div class="btnbar">' + (inMeeting ? '<span class="tag">Committee in session: no extra time</span>' : H.dur(45)) + '<button class="btn def" type="submit">Adopt house view</button></div></form>';
     return {
       mod: 'invest', crumbs: [['Investments'], ['House view']], title: 'House view',
-      html: H.title('Investment committee – house view (Anlagepolitik)', '[ANL-0100]', 'Target allocation of discretionary mandates. Changes trigger rebalancing at 0.25% brokerage on the volume traded.') +
+      html: H.title(tr('Investment committee – house view (Anlagepolitik)', 'Investment committee – house view'), '[ANL-0100]', 'Target allocation of discretionary mandates. Changes trigger rebalancing at 0.25% brokerage on the volume traded.') +
         '<div class="cols"><div class="col-l">' + panel('Strategic allocation', form, { icon: 'chart' }) +
         panel('Performance year to date', grid(['Strategy', { t: 'Mandates', num: true }, { t: 'Volume CHF', num: true }, { t: 'Return', num: true }, { t: 'Benchmark', num: true }, { t: 'Relative', num: true }], perf), { icon: 'list', flush: true }) +
-        '</div><div class="col-r">' + panel('Portfolio management', kv([['Portfolio managers', pm.n ? pm.n + ' (average skill ' + U.fmt(pm.skill, 1) + ')' : '<span class="neg">none – mandates drift</span>'], ['Discretionary volume', 'CHF ' + U.fmtMio(pm.dep)], ['Capacity', pm.cap ? 'CHF ' + U.fmtMio(pm.cap) + (pm.load > 1 ? ' <span class="neg">overloaded</span>' : '') : '–']]), { icon: 'user' }) +
-        panel('Atlantic Absolute Return Fund – NAV (USD), 60 days', H.spark(aar, 300, 50) + '<p class="small">' + (s.flags.aarFraud ? '<span class="neg">Fund collapsed on ' + U.fmtDate(s.flags.aarFraud) + '.</span>' : 'Steady gains of around 0.8% per month, every month, in every market. The manager does not explain the strategy and uses a three-person audit firm.') + '</p>', { icon: 'chart' }) +
+        '</div><div class="col-r">' + panel('Portfolio management', kv([['Portfolio managers', pm.n ? pm.n + ' (average skill ' + U.fmt(pm.skill, 1) + ')' : '<span class="neg">none (mandates drift)</span>'], ['Discretionary volume', 'CHF ' + U.fmtMio(pm.dep)], ['Capacity', pm.cap ? 'CHF ' + U.fmtMio(pm.cap) + (pm.load > 1 ? ' <span class="neg">overloaded</span>' : '') : '–']]), { icon: 'user' }) +
+        panel('Atlantic Absolute Return Fund – NAV (USD), 60 days', H.spark(aar, 300, 50) + '<p class="small">' + (s.flags.aarFraud ? '<span class="neg">Fund collapsed on ' + U.fmtDate(s.flags.aarFraud) + '.</span>' : 'Around 0.8% a month, every month, whatever the market does. The manager will not discuss the strategy. The fund is audited by a firm of three people.') + '</p>', { icon: 'chart' }) +
         panel('Market environment', kv([['SMI', U.fmt(s.market.SMI, 0)], ['CHF Libor 3M', U.fmt(s.market.LIBOR, 2) + '%'], ['Gold (USD/oz)', U.fmt(s.market.XAU, 0)], ['USD/CHF', U.fmt(s.market.USD, 4)]]), { icon: 'info' }) +
         '</div></div>'
     };
@@ -48,7 +49,7 @@
     });
     return {
       mod: 'invest', crumbs: [['Investments', '#/invest'], ['Mandates']], title: 'Mandates',
-      html: H.title('Discretionary mandates (Vermögensverwaltungsmandate)', '[ANL-0200]', 'Clients compare their returns with the benchmark every quarter.') +
+      html: H.title(tr('Discretionary mandates (Vermögensverwaltungsmandate)', 'Discretionary mandates'), '[ANL-0200]', 'Clients compare their returns with the benchmark every quarter.') +
         grid(['Portfolio', 'Client', 'Strategy', { t: 'Value CHF', num: true }, { t: 'YTD', num: true }, { t: 'vs benchmark', num: true }, ''], rows, { empty: 'No mandates.' })
     };
   };
@@ -62,7 +63,7 @@
     });
     return {
       mod: 'invest', crumbs: [['Investments', '#/invest'], ['Instruments']], title: 'Instruments',
-      html: H.title('Instruments – approved list (Anlageuniversum)', '[ANL-0300]', 'Prices in trading currency; bonds in % of nominal.') +
+      html: H.title(tr('Instruments – approved list (Anlageuniversum)', 'Instruments – approved list'), '[ANL-0300]', 'Prices in trading currency; bonds in % of nominal.') +
         grid(['Code', 'Instrument', 'Class', 'Ccy', { t: 'Last', num: true }, { t: 'Change', num: true }, '40 days', { t: 'Nostro CHF', num: true }], rows)
     };
   };
@@ -81,7 +82,7 @@
         '<div class="cols"><div class="col-h">' + panel('Capital and requirements', kv([
           ['Equity capital', 'CHF ' + num(ci.capital, 0)], ['Tied in subsidiaries', 'CHF ' + U.fmt(ci.tied, 0)], ['Own-account positions', 'CHF ' + U.fmt(ci.nostro, 0)],
           ['Placed in money market', 'CHF ' + num(ci.free, 0) + ' at ' + U.fmt(s.market.LIBOR, 2) + '%'], ['Capital requirement', 'CHF ' + U.fmt(ci.req, 0)],
-          ['Coverage', ci.ratio >= 1.2 ? st('ok', U.fmt(ci.ratio * 100, 0) + '%') : ci.ratio >= 1 ? st('warn', U.fmt(ci.ratio * 100, 0) + '%') : st('bad', U.fmt(ci.ratio * 100, 0) + '% – shortfall')],
+          ['Coverage', ci.ratio >= 1.2 ? st('ok', U.fmt(ci.ratio * 100, 0) + '%') : ci.ratio >= 1 ? st('warn', U.fmt(ci.ratio * 100, 0) + '%') : st('bad', U.fmt(ci.ratio * 100, 0) + '% (shortfall)')],
           ['Negative rates', s.market.LIBOR < 0 ? (s.flags.passNeg ? 'passed on to large clients' : 'absorbed by the bank') : '–']
         ]), { icon: 'building' }) + '</div><div class="col-h">' +
         panel('Own-account positions', grid(['Instrument', { t: 'Quantity', num: true }, { t: 'Price', num: true }, { t: 'CHF', num: true }], pos, { empty: 'No positions.' }) +
@@ -107,7 +108,7 @@
       html: H.title('Risk monitor – exposure to authorities', '[CMP-0010]', 'Internal estimate by Legal & Compliance. Index 0–100. Above 55 foreign authorities may open investigations; the regulator withdraws the licence at 100.') +
         panel('Exposure indices', grid(['Authority', 'Jurisdiction', { t: 'Index', num: true }, { t: 'Scale 0–100', w: '30%' }, 'Level', { t: 'Δ 5 days', num: true }, 'Proceedings'], rows), { icon: 'shield', flush: true }) +
         '<div class="cols"><div class="col-h">' + panel('Recent drivers', grid(['Date', 'Authority', { t: 'Change', num: true }, 'Cause'], drivers, { empty: 'No changes recorded yet.' }), { icon: 'list', flush: true }) +
-        '</div><div class="col-h">' + panel('Client confidence (discretion index)', '<div class="bigval">' + U.fmt(s.discretion, 0) + '</div>' + H.bar(s.discretion, 'ok', true) + '<p class="small">How safe clients and introducers consider their money with us. High confidence brings introductions; reports to authorities and leaks reduce it.</p>', { icon: 'user' }) +
+        '</div><div class="col-h">' + panel('Client confidence (discretion index)', '<div class="bigval">' + U.fmt(s.discretion, 0) + '</div>' + H.bar(s.discretion, 'ok', true) + '<p class="small">How safe clients and introducers believe their money is with us. High confidence brings introductions; reports to the authorities and leaks lower it.</p>', { icon: 'user' }) +
         panel('How exposure arises', '<ul class="hints"><li><b>Regulator:</b> overdue or poorly documented alerts, PEP and increased-risk clients, missing Form A, audit findings, capital shortfalls, operational errors.</li><li><b>Foreign authorities:</b> payments into home countries, mailed statements, clients caught at the border, couriers, press reports, banker trips, leaks and whistleblowers.</li><li>Exposure fades slowly if nothing new happens. Lawyers slow investigations; lobbying helps with the regulator.</li></ul>', { icon: 'info' }) +
         '</div></div>'
     };
@@ -158,7 +159,7 @@
       '<label class="opt"><input type="radio" name="dec" value="close" checked> <b>Close as explained</b> (plausible, documented) ' + H.dur(8) + '</label>' +
       '<div class="ind">Justification ' + H.sel('name="just"', [['', '– select –']].concat(D.JUSTIFICATIONS), '') +
       '<br>Comment <input name="comment" class="inp" size="56" placeholder="e.g. confirmed by RM, documents on file"><div id="aq" class="small muted">Documentation quality: –</div></div>' +
-      '<label class="opt"><input type="radio" name="dec" value="mros"> <b>Report to MROS</b> (Art. 9 GwG) – assets blocked, relationship terminated ' + H.dur(25) + '</label></fieldset></form>';
+      '<label class="opt"><input type="radio" name="dec" value="mros"> <b>Report to MROS</b> (Art. 9 GwG): assets are blocked and the relationship is terminated ' + H.dur(25) + '</label></fieldset></form>';
   };
 
   V.mla = function () {
@@ -170,10 +171,10 @@
     const treaty = G.FOREIGN.map(function (k) { return [e(G.cname(D.AUTH[k].c)), U.fmtDate(D.AMTSHILFE[k]), s.date >= D.AMTSHILFE[k] ? st('bad', 'in force') : st('ok', 'not yet')]; });
     return {
       mod: 'compliance', crumbs: [['Compliance', '#/compliance'], ['Mutual assistance']], title: 'Mutual assistance',
-      html: H.title('Mutual and administrative assistance (Rechts- und Amtshilfe)', '[CMP-0300]', 'Requests from foreign authorities, forwarded via Berne.') +
+      html: H.title(tr('Mutual and administrative assistance (Rechts- und Amtshilfe)', 'Mutual and administrative assistance'), '[CMP-0300]', 'Requests from foreign authorities, forwarded via Berne.') +
         grid(['Received', 'Request', 'Client', 'Authority', 'Type', 'Due', 'Status'], rows, { empty: 'No requests received.' }) +
         '<div class="cols"><div class="col-h">' + panel('Revised tax treaties (assistance also for tax evasion)', grid(['Country', 'From', 'Status'], treaty), { icon: 'scale', flush: true }) + '</div><div class="col-h">' +
-        H.note('Under Swiss law simple tax evasion is not a crime; mutual assistance is excluded for fiscal offences (Art. 3 para. 3 IRSG). Tax fraud with forged documents is a crime – assistance must be granted. Producing documents without legal basis breaches banking secrecy (Art. 47 BankG). Once a revised tax treaty is in force, administrative assistance is granted for evasion too.') + '</div></div>'
+        H.note('Under Swiss law simple tax evasion is not a crime; mutual assistance is excluded for fiscal offences (Art. 3 para. 3 IRSG). Tax fraud with forged documents is a crime, and assistance must be granted. Producing documents without legal basis breaches banking secrecy (Art. 47 BankG). Once a revised tax treaty is in force, administrative assistance is granted for evasion too.') + '</div></div>'
     };
   };
 
@@ -186,9 +187,9 @@
     });
     return {
       mod: 'compliance', crumbs: [['Compliance', '#/compliance'], ['Investigations']], title: 'Investigations',
-      html: H.title('Investigations against the bank (Strafverfahren im Ausland)', '[CMP-0350]', 'Proceedings advance while the authority\'s attention index stays above 45 and fade below. At 100% the bank is indicted.') +
+      html: H.title(tr('Investigations against the bank (Strafverfahren im Ausland)', 'Investigations against the bank abroad'), '[CMP-0350]', 'Proceedings advance while the authority\'s attention index stays above 45 and fade below. At 100% the bank is indicted.') +
         grid(['Authority', 'Ctry', 'Opened', 'Stage', { t: 'Progress', w: '22%' }, { t: '', num: true }, 'Evidence', { t: 'Arrest risk on trips', num: true }], rows) +
-        H.note('Stage 2 (formal investigation): raids on representative offices, arrests of travelling bankers. Stage 3: indictment pending. Your personal exposure (' + U.fmt(s.career.exposure, 0) + ') decides whether you are named personally. Defence counsel slows proceedings – <a href="#/compliance/legal">Legal & lobbying</a>.')
+        H.note('Stage 2 (formal investigation): raids on representative offices, arrests of travelling bankers. Stage 3: indictment pending. Your personal exposure (' + U.fmt(s.career.exposure, 0) + ') decides whether you are named personally. Defence counsel slows proceedings (see <a href="#/compliance/legal">Legal & lobbying</a>).')
     };
   };
 
@@ -207,7 +208,7 @@
       html: H.title('Legal counsel and political relations', '[CMP-0400]', 'Retainers are charged daily. Each change ' + H.dur(20)) +
         panel('Defence counsel', grid(['Firm', { t: 'Cost', num: true }, 'Status', ''], law), { icon: 'scale', flush: true }) +
         panel('Lobbying', grid(['Measure', { t: 'Cost', num: true }, 'Status', ''], lob), { icon: 'building', flush: true }) +
-        panel('Data security', '<p>Access to client data: ' + (s.flags.dataAudit ? st('ok', 'restricted since ' + U.fmtDate(s.flags.dataAudit)) : st('warn', 'every employee can print client lists')) + ' · IT security level ' + G.securityLevel() + '</p>' + (s.flags.dataAudit ? '' : btn('Restrict access rights and log all printouts (CHF 250,000)', 'dataaudit') + ' ' + H.dur(30) + '<p class="small muted">Staff dislike being watched (morale −4) – but stolen data CDs become much rarer.</p>'), { icon: 'lock' })
+        panel('Data security', '<p>Access to client data: ' + (s.flags.dataAudit ? st('ok', 'restricted since ' + U.fmtDate(s.flags.dataAudit)) : st('warn', 'every employee can print client lists')) + ' · IT security level ' + G.securityLevel() + '</p>' + (s.flags.dataAudit ? '' : btn('Restrict access rights and log all printouts (CHF 250,000)', 'dataaudit') + ' ' + H.dur(30) + '<p class="small muted">Staff dislike being watched (morale −4), but stolen data CDs become much rarer.</p>'), { icon: 'lock' })
     };
   };
 
@@ -218,9 +219,9 @@
     const rows = s.audits.map(function (a) { return [a.year, U.fmtDate(a.d), a.findings.length ? a.findings.map(e).join('<br>') : st('ok', 'No findings'), H.chgRisk(a.delta, 1)]; });
     return {
       mod: 'compliance', crumbs: [['Compliance', '#/compliance'], ['Audit reports']], title: 'Audit reports',
-      html: H.title('Audit reports (Revisionsberichte)', '[CMP-0500]', 'Statutory auditor: Hürlimann Revision AG, Zürich. Next fieldwork from ' + U.fmtDate(next) + '.') +
+      html: H.title(tr('Audit reports (Revisionsberichte)', 'Audit reports'), '[CMP-0500]', 'Statutory auditor: Hürlimann Revision AG, Zürich. Next fieldwork from ' + U.fmtDate(next) + '.') +
         grid(['Year', 'Report', 'Findings', { t: 'Regulator index', num: true }], rows, { empty: 'No audit completed yet.' }) +
-        H.note('The auditors check Form A, a sample of alert closures, overdue alerts, PEP concentration and classification, dormant relationships, capital, retrocessions – and occasionally find an embezzler.')
+        H.note('The auditors check Form A, a sample of alert closures, overdue alerts, PEP concentration and classification, dormant relationships, capital and retrocessions. Now and then they find an embezzler.')
     };
   };
 
@@ -289,7 +290,7 @@
     const ci = [['Relationship managers', G.activeStaff('rm').length], ['Compliance capacity (alerts/day)', G.complianceCapacity()], ['Back-office capacity (bookings/day)', G.opsCapacity() + ' <span class="muted">(today ' + s.today.ops + ')</span>'], ['IT security level', G.securityLevel()], ['Desks used', G.activeStaff().length + ' / ' + G.seats()], ['Payroll p.a.', 'CHF ' + U.fmt(payroll, 0) + ' <span class="muted">+15% social charges</span>']];
     return {
       mod: 'org', crumbs: [['Organisation'], ['Staff']], title: 'Staff',
-      html: H.title('Staff (Personal)', '[ORG-0100]', 'Morale follows pay versus market, workload, overtime and scandals. Unhappy staff resign, take clients along – or worse.') +
+      html: H.title(tr('Staff (Personal)', 'Staff'), '[ORG-0100]', 'Morale depends on pay against market, workload, overtime and scandals. Unhappy staff resign and take clients with them, or worse.') +
         '<div class="cols"><div class="col-l">' + H.filter('<label><input type="checkbox" data-filterchk="staff.all"' + (f.all ? ' checked' : '') + '> show former staff</label> &nbsp; ' + btn(ico('plus') + ' Recruitment', 'go', ' data-href="#/org/recruit"', 'sm')) +
         grid(['Employee', 'Function', 'Skill', 'Integrity', 'Morale', { t: 'Salary', num: true }, 'Workload', ''], rows) + '</div><div class="col-r">' +
         panel('Capacities', kv(ci), { icon: 'chart' }) + '</div></div>'
@@ -298,14 +299,14 @@
   V.staffDialog = function (x) {
     const s = H.S();
     const R = D.ROLES[x.role];
-    return kv([['Function', e(x.title || R.label)], ['Employed since', U.fmtDate(x.hired)], ['Skill', H.stars(x.skill)], ['Integrity', x.known && x.known.integrity ? H.stars(x.integrity) : '<span class="muted">unknown – background check CHF 3,000</span>'],
+    return kv([['Function', e(x.title || R.label)], ['Employed since', U.fmtDate(x.hired)], ['Skill', H.stars(x.skill)], ['Integrity', x.known && x.known.integrity ? H.stars(x.integrity) : '<span class="muted">unknown (background check CHF 3,000)</span>'],
       ['Morale', U.fmt(x.morale, 0) + ' – ' + G.moraleLabel(x.morale).label], ['Salary', 'CHF ' + U.fmt(x.salary, 0) + ' (market for this skill: CHF ' + U.fmt(G.marketSalary(x.role, x.skill), 0) + ')'],
       x.desk ? ['Desk', x.desk.map(function (c) { return G.cname(c); }).join(', ')] : ['', '']], 'dlgkv') +
       '<form id="staffform"><fieldset class="box"><legend>Action</legend>' +
       '<label class="opt"><input type="radio" name="sa" value="raise" checked> Salary increase <select name="pct" class="inp"><option>5</option><option selected>10</option><option>20</option></select> % ' + H.dur(10) + '</label>' +
       '<label class="opt"><input type="radio" name="sa" value="bonus"> One-off bonus CHF <input name="bonus" class="inp num" size="9" value="' + Math.round(x.salary * 0.1 / 1000) * 1000 + '"> ' + H.dur(5) + '</label>' +
       '<label class="opt"><input type="radio" name="sa" value="train"' + (x.skill >= 5 ? ' disabled' : '') + '> Training course (CHF 12,000, 3 days absent, 60% chance of +1 skill) ' + H.dur(5) + '</label>' +
-      '<label class="opt"><input type="radio" name="sa" value="vet"> Background check (CHF 3,000) – reveals integrity ' + H.dur(10) + '</label>' +
+      '<label class="opt"><input type="radio" name="sa" value="vet"> Background check (CHF 3,000), shows integrity ' + H.dur(10) + '</label>' +
       '<label class="opt"><input type="radio" name="sa" value="fire"> <span class="neg">Dismiss</span> (severance of six months\' salary) ' + H.dur(20) + '</label>' +
       '</fieldset></form>';
   };
@@ -316,9 +317,9 @@
     });
     return {
       mod: 'org', crumbs: [['Organisation', '#/org/staff'], ['Recruitment']], title: 'Recruitment',
-      html: H.title('Recruitment (Stellenbewerbungen)', '[ORG-0200]', 'New applications arrive at the beginning of each month via our headhunter (fee 20% of first-year salary). Interview and hiring ' + H.dur(30)) +
+      html: H.title(tr('Recruitment (Stellenbewerbungen)', 'Recruitment'), '[ORG-0200]', 'New applications arrive at the beginning of each month via our headhunter (fee 20% of first-year salary). Interview and hiring ' + H.dur(30)) +
         grid(['Applicant', 'Position', 'Skill', { t: 'Salary', num: true }, 'Remarks', ''], rows, { empty: 'No applications at the moment.' }) +
-        H.note('Integrity is not visible at hiring – references help. A background check after hiring reveals it. Low-integrity staff with access to client data are the most dangerous people in the building.')
+        H.note('Integrity cannot be seen at hiring; references give a hint, and a background check after hiring shows it. Staff with low integrity and access to client data are the usual source of data theft.')
     };
   };
   V.branches = function () {
@@ -342,8 +343,8 @@
     const s = H.S();
     return {
       mod: 'org', crumbs: [['Organisation', '#/org/staff'], ['Correspondent banks']], title: 'Correspondent banks',
-      html: H.title('Correspondent banks (Korrespondenzbanken)', '[ORG-0400]') +
-        panel('US dollar clearing', kv([['Correspondent', e(s.corr.name)], ['Status', s.corr.status === 'active' ? st('ok', 'active') : s.corr.status === 'notice' ? st('warn', 'terminated with effect from ' + U.fmtDate(s.corr.until)) : st('bad', 'terminated – no USD payments possible')], ['Surcharge per payment', 'CHF ' + U.fmt(s.corr.fee || 0, 0)]]) +
+      html: H.title(tr('Correspondent banks (Korrespondenzbanken)', 'Correspondent banks'), '[ORG-0400]') +
+        panel('US dollar clearing', kv([['Correspondent', e(s.corr.name)], ['Status', s.corr.status === 'active' ? st('ok', 'active') : s.corr.status === 'notice' ? st('warn', 'terminated with effect from ' + U.fmtDate(s.corr.until)) : st('bad', 'terminated, no USD payments possible')], ['Surcharge per payment', 'CHF ' + U.fmt(s.corr.fee || 0, 0)]]) +
           (s.corr.status !== 'active' ? '<div class="btnbar left">' + btn('Search for a new correspondent (CHF 150,000)', 'findcorr', '', 'def') + ' ' + H.dur(60) + '</div>' : ''), { icon: 'building' }) +
         panel('Other currencies', kv([['EUR', 'Niederrheinische Handelsbank AG, Düsseldorf (TARGET)'], ['GBP', 'Hanover Square Bank plc, London'], ['JPY', 'via Kowloon Commercial Bank Ltd., Hong Kong']]), { icon: 'list' }) +
         H.note('US banks drop foreign private banks when the IRS and the Department of Justice show interest in them. Without dollar clearing you cannot pay or receive US dollars.')
@@ -357,9 +358,9 @@
     });
     return {
       mod: 'org', crumbs: [['Organisation', '#/org/staff'], ['Acquisitions']], title: 'Acquisitions',
-      html: H.title('Acquisitions (Übernahmen)', '[ORG-0500]', 'Banks for sale, offered by Hottinger Corporate Finance. Due diligence ' + H.dur(30) + ' · acquisition ' + H.dur(60)) +
+      html: H.title(tr('Acquisitions (Übernahmen)', 'Acquisitions'), '[ORG-0500]', 'Banks for sale, offered by Hottinger Corporate Finance. Due diligence ' + H.dur(30) + ' · acquisition ' + H.dur(60)) +
         grid(['Bank', { t: 'Assets', num: true }, { t: 'Clients', num: true }, { t: 'Price', num: true }, 'Due diligence', 'Offer until', ''], rows, { empty: 'No banks for sale at the moment.' }) +
-        H.note('Buying a bank brings clients and a relationship manager at once – and whatever the previous owners kept in their files.')
+        H.note('Buying a bank brings clients and a relationship manager at once, along with whatever the previous owners kept in their files.')
     };
   };
   V.pricing = function () {
@@ -367,12 +368,12 @@
     const p = s.pricing;
     return {
       mod: 'org', crumbs: [['Organisation', '#/org/staff'], ['Products & pricing']], title: 'Products & pricing',
-      html: H.title('Products and pricing (Tarife)', '[ORG-0600]', 'Changes are communicated to clients in writing. ' + H.dur(10)) +
+      html: H.title(tr('Products and pricing (Tarife)', 'Products and pricing'), '[ORG-0600]', 'Changes are communicated to clients in writing. ' + H.dur(10)) +
         '<form data-form="pricing">' + panel('Fee schedule', '<table class="frm">' +
           '<tr><th>Management fees</th><td>' + Object.keys(D.FEE_LEVELS).map(function (k) { const L = D.FEE_LEVELS[k]; return '<label class="opt inl"><input type="radio" name="level" value="' + k + '"' + (p.level === k ? ' checked' : '') + '> <b>' + L.label + '</b> (×' + L.mult + ')</label>'; }).join(' ') + '<div class="small muted">Discount: more introductions, happier clients. Premium: more revenue per client, fewer introductions.</div></td></tr>' +
           '<tr><th>Hold mail fee p.a.</th><td>CHF <input name="holdMail" class="inp num" size="7" value="' + p.holdMail + '"></td></tr>' +
           '<tr><th>Card fee p.a.</th><td>CHF <input name="card" class="inp num" size="7" value="' + p.card + '"></td></tr></table>', { icon: 'cash' }) +
-        panel('Special services', '<table class="frm"><tr><th>Courier service</th><td><label><input type="checkbox" name="courierOn"' + (p.courierOn ? ' checked' : '') + '> Offer collection of cash abroad</label> – commission <input name="courier" class="inp num" size="4" value="' + U.fmt(p.courier * 100, 1) + '"> %<div class="small muted">Brings large cash inflows from Italian, French and German clients. Needs a courier. Every run risks an arrest.</div></td></tr></table>' +
+        panel('Special services', '<table class="frm"><tr><th>Courier service</th><td><label><input type="checkbox" name="courierOn"' + (p.courierOn ? ' checked' : '') + '> Offer collection of cash abroad</label>, commission <input name="courier" class="inp num" size="4" value="' + U.fmt(p.courier * 100, 1) + '"> %<div class="small muted">Brings large cash inflows from Italian, French and German clients. Requires a courier; each trip carries a risk of arrest.</div></td></tr></table>' +
           '<div class="btnbar"><button class="btn def" type="submit">Save</button></div>', { icon: 'plane' }) + '</form>'
     };
   };
@@ -399,7 +400,7 @@
     const ann = s.annual.map(function (a) { return [a.year, U.fmt(a.rev, 0), U.fmt(a.cost, 0), num(a.profit, 0), U.fmtMio(a.aum), String(a.clients || ''), U.fmtMio(a.capital)]; });
     return {
       mod: 'reports', crumbs: [['Reports'], ['Profit & loss']], title: 'Profit & loss',
-      html: H.title('Profit and loss statement (Erfolgsrechnung) ' + year, '[REP-0100]', 'Period 01.01.' + year + ' – ' + U.fmtDate(s.date) + ', in CHF') +
+      html: H.title(tr('Profit and loss statement (Erfolgsrechnung) ', 'Profit and loss statement ') + year, '[REP-0100]', 'Period 01.01.' + year + ' – ' + U.fmtDate(s.date) + ', in CHF') +
         '<div class="cols"><div class="col-h">' + panel('Income statement', grid(['Position', { t: 'CHF', num: true }], rows, { cls: 'pl' }), { icon: 'chart', flush: true, tools: btn(ico('print') + ' Print', 'print', '', 'sm') }) +
         '</div><div class="col-h">' + panel('Capital', kv([['Equity capital', 'CHF ' + num(s.bank.capital, 0)], ['Legal minimum (Art. 4 BankV)', 'CHF ' + U.fmt(D.MIN_CAPITAL, 0)], ['Headroom', 'CHF ' + num(s.bank.capital - D.MIN_CAPITAL, 0)]]), { icon: 'building' }) +
         panel('Annual results', grid(['Year', { t: 'Revenue', num: true }, { t: 'Expenses', num: true }, { t: 'Profit', num: true }, { t: 'AuM', num: true }, { t: 'Clients', num: true }, { t: 'Capital', num: true }], ann, { empty: 'First year under your management.' }), { icon: 'list', flush: true }) + '</div></div>'
@@ -450,7 +451,7 @@
     });
     return {
       mod: 'reports', crumbs: [['Reports'], ['Journal']], title: 'Journal',
-      html: H.title('Booking journal (Journal)', '[REP-0300]', 'Latest 200 bookings') +
+      html: H.title(tr('Booking journal (Journal)', 'Booking journal'), '[REP-0300]', 'Latest 200 bookings') +
         H.filter('Type ' + H.sel('data-filter="journal.k"', [['', 'all bookings']].concat(Object.keys(kinds).map(function (k) { return [k, kinds[k]]; })), f.k || '')) +
         grid(['Date', 'Booking no.', 'Account', 'Text', { t: 'Amount', num: true }, 'Ccy', { t: 'CHF', num: true }], rows)
     };

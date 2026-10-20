@@ -4,6 +4,7 @@
 
   const D = PBS.DATA, U = PBS.U, K = PBS.K, G = PBS.Game;
   function S() { return G.state; }
+  const tr = PBS.L.t;
   const EU = ['DE', 'IT', 'FR', 'NL', 'AT', 'GR', 'SE', 'GB'];
 
   /* ---------- Entscheide auf Meldungen ---------- */
@@ -65,17 +66,17 @@
     K.heat(auth, 10, 'Bankers arrested abroad');
     K.investigate(auth, 12, 'Relationship manager arrested during client visits');
     K.discretion(-8);
-    K.msg({ type: 'telex', from: 'Correspondent lawyer, ' + D.AUTH[auth].city, subject: 'ARREST OF ' + rm.name.toUpperCase(), body: 'YOUR RELATIONSHIP MANAGER ' + rm.name.toUpperCase() + ' ARRESTED THIS MORNING AT HIS HOTEL BY ' + G.authShort(auth).toUpperCase() + '. CLIENT LIST AND APPOINTMENT DIARY SEIZED. DETENTION HEARING TOMORROW. BAIL UNLIKELY. PLEASE ADVISE.' });
-    log.push(['EVT', 'RM VERHAFTET ' + auth, 'ALARM']);
+    K.msg({ type: 'telex', from: 'Correspondent lawyer, ' + D.AUTH[auth].city, subject: 'ARREST OF ' + rm.name.toUpperCase(), body: 'YR RELATIONSHIP MANAGER ' + rm.name.toUpperCase() + ' ARRESTED THIS MORNING AT HOTEL BY ' + G.authShort(auth).toUpperCase() + '. CLIENT LIST AND DIARY SEIZED. DETENTION HEARING TOMORROW, BAIL UNLIKELY. PLS ADVISE.' });
+    log.push(['EVT', tr('RM VERHAFTET ', 'RM ARRESTED ') + auth, 'ALARM']);
   };
   K.sched.tripIncident = function (d, log) {
     const auth = D.COUNTRIES[d.c].auth;
     K.heat(auth, 9, 'Bankers checked at the border');
     K.msg({
       type: 'memo', from: 'Relationship Management', subject: 'Incident during acquisition trip (' + K.cname(d.c) + ')',
-      body: 'On arrival, our relationship manager was taken aside by customs officers. The briefcase and laptop were searched for about two hours. The officers made copies of a printed list of appointments.\n\nNo client names were on the list – only first names and times. Nevertheless we must assume the authorities are now aware of our activities in the region.'
+      body: 'On arrival our relationship manager was taken aside by customs. Briefcase and laptop were searched for about two hours, and the officers copied a printed list of appointments.\n\nThe list showed only first names and times, no client names. We must nevertheless assume that the authorities now know of our activities in the region.'
     });
-    log.push(['EVT', 'ZWISCHENFALL REISE ' + d.c, 'WARNUNG']);
+    log.push(['EVT', tr('ZWISCHENFALL REISE ', 'TRIP INCIDENT ') + d.c, tr('WARNUNG', 'WARNING')]);
   };
 
   /* ---------- Hilfen ---------- */
@@ -130,7 +131,7 @@
       const ccy = fromHome ? K.localCcy(c.dom) : K.pick(['USD', 'USD', S().date < D.EURO_DATE ? 'DEM' : 'EUR', 'CHF']);
       const amount = K.roundTo(c.wealth * K.between(0.003, 0.025) / K.rate(ccy), ccy === 'ITL' ? 1000000 : 1000);
       const acc = K.ensureAccount(c, ccy, useEnt ? ents[0].id : null);
-      if (K.incoming(c, acc, amount, ccy, bank, 0.2)) log.push(['EVT', 'ZAHLUNGSEINGANG ' + c.rubrik, ccy + ' ' + U.fmt(amount, 0)]);
+      if (K.incoming(c, acc, amount, ccy, bank, 0.2)) log.push(['EVT', tr('ZAHLUNGSEINGANG ', 'INCOMING PAYMENT ') + c.rubrik, ccy + ' ' + U.fmt(amount, 0)]);
     },
     cashIn: function (log) {
       const s = S();
@@ -139,7 +140,7 @@
       const ccy = cashCcy(c);
       const amount = K.roundTo(K.between(20000, Math.max(25000, Math.min(450000, c.wealth * 0.03))) / K.rate(ccy), ccy === 'ITL' ? 10000000 : 5000);
       s.counter.push({ id: 'K' + U.pad(++s.ctr.visit, 3), client: c.id, type: 'in', ccy: ccy, amount: amount, courier: c.dom === 'IT' && K.chance(0.6), t: K.rint(8 * 60 + 30, 15 * 60), note: c.dom === 'IT' ? 'Arrived via Chiasso' : 'Announced by telephone', funding: false });
-      log.push(['EVT', 'KASSE: BESUCH ANGEMELDET ' + c.rubrik, ccy + ' ' + U.fmt(amount, 0)]);
+      log.push(['EVT', tr('KASSE: BESUCH ANGEMELDET ', 'CASH DESK: VISIT ANNOUNCED ') + c.rubrik, ccy + ' ' + U.fmt(amount, 0)]);
     },
     cashOut: function (log) {
       const s = S();
@@ -149,7 +150,7 @@
       const ccy = cashCcy(c);
       const amount = K.roundTo(K.between(15000, 150000) / K.rate(ccy), ccy === 'ITL' ? 10000000 : 5000);
       s.counter.push({ id: 'K' + U.pad(++s.ctr.visit, 3), client: c.id, type: 'out', ccy: ccy, amount: amount, courier: false, t: K.rint(8 * 60 + 30, 15 * 60), note: K.pick(['Personal use', 'Purchase of a car', 'Renovation of holiday home', 'Family wedding', 'Not specified']), funding: false });
-      log.push(['EVT', 'KASSE: BEZUG ANGEMELDET ' + c.rubrik, ccy + ' ' + U.fmt(amount, 0)]);
+      log.push(['EVT', tr('KASSE: BEZUG ANGEMELDET ', 'CASH DESK: WITHDRAWAL ANNOUNCED ') + c.rubrik, ccy + ' ' + U.fmt(amount, 0)]);
     },
     order: function (log) {
       const s = S();
@@ -193,29 +194,29 @@
       }, 'client');
       K.msg({
         type: 'fax', kind: 'order', from: c.rubrik + ' (fax)', t: p.t, subject: 'Payment order ' + ccy + ' ' + U.fmt(amount, 0) + ' – ' + c.rubrik,
-        body: 'TO: BANKHAUS VOGT & CIE, ZUERICH – ATTN. ' + G.rmName(c).toUpperCase() + '\nRE: NUMBERED ACCOUNT ' + c.rubrik + '\n\nPlease transfer ' + ccy + ' ' + U.fmt(amount, K.dec(ccy)) + ' to:\n\nBeneficiary: ' + benef + '\nBank: ' + bank.name + ', ' + bank.city + ' (' + bank.bic + ')\nAccount: ' + (acct.length > 20 ? U.ibanFmt(acct) : acct) + '\nPurpose: ' + purpose + '\n\nThank you.\n\n[signature]  ' + c.rubrik,
+        body: 'TO: BANKHAUS VOGT & CIE, ZUERICH\nATTN. ' + G.rmName(c).toUpperCase() + '\nRE: NUMBERED ACCOUNT ' + c.rubrik + '\n\nPlease transfer ' + ccy + ' ' + U.fmt(amount, K.dec(ccy)) + ' to:\n\nBeneficiary: ' + benef + '\nBank: ' + bank.name + ', ' + bank.city + ' (' + bank.bic + ')\nAccount: ' + (acct.length > 20 ? U.ibanFmt(acct) : acct) + '\nPurpose: ' + purpose + '\n\nMany thanks.\n\n[signature]  ' + c.rubrik,
         data: { payment: p.id, client: c.id }
       });
-      log.push(['EVT', 'ZAHLUNGSAUFTRAG (FAX) ' + c.rubrik, ccy + ' ' + U.fmt(amount, 0)]);
+      log.push(['EVT', tr('ZAHLUNGSAUFTRAG (FAX) ', 'PAYMENT ORDER (FAX) ') + c.rubrik, ccy + ' ' + U.fmt(amount, 0)]);
     },
     prospect: function (log) {
       const s = S();
       const tripC = s.trip && K.chance(0.7) ? s.trip.c : null;
       const pr = K.genProspect(tripC);
       K.prospectMessage(pr, K.rint(8 * 60 + 30, 16 * 60));
-      log.push(['EVT', 'AKQUISITION: NEUER INTERESSENT', pr.c + ' ' + pr.ccy + ' ' + U.fmt(pr.amount, 0)]);
+      log.push(['EVT', tr('AKQUISITION: NEUER INTERESSENT', 'ACQUISITION: NEW PROSPECT'), pr.c + ' ' + pr.ccy + ' ' + U.fmt(pr.amount, 0)]);
     },
     journalist: function (log) {
       const c = pickClient(function (x) { return x.risk !== 'Normal'; }) || pickClient();
       if (!c) return;
       K.msg({
-        type: 'memo', kind: 'journalist', from: 'Reception / Telephone exchange', subject: 'Press enquiry – Zürcher Finanzblatt',
-        body: 'A journalist of the "Zürcher Finanzblatt" (Mr. S. Brunner) called twice this morning. He asks whether our bank manages assets for ' +
-          (c.risk === 'PEP' ? 'a former government official from ' : 'a businessman from ') + K.cname(c.dom) + ' and mentioned the name "' + c.name.split(' ').slice(-1)[0] + '".\n\nHe intends to publish later this week and asks for a statement.',
+        type: 'memo', kind: 'journalist', from: 'Reception / Telephone exchange', subject: 'Press enquiry: Zürcher Finanzblatt',
+        body: 'Mr. S. Brunner, journalist at the "Zürcher Finanzblatt", called twice this morning. He wants to know whether our bank manages assets for ' +
+          (c.risk === 'PEP' ? 'a former government official from ' : 'a businessman from ') + K.cname(c.dom) + ' and mentioned the name "' + c.name.split(' ').slice(-1)[0] + '".\n\nHe plans to publish later this week and asks for a statement. He will call again.',
         actions: [['nocomment', 'No comment (Art. 47 BankG)'], ['terminate', 'Terminate the relationship quietly']],
         data: { client: c.id }
       });
-      log.push(['EVT', 'MEDIENANFRAGE', c.rubrik]);
+      log.push(['EVT', tr('MEDIENANFRAGE', 'PRESS ENQUIRY'), c.rubrik]);
     },
     concern: function (log) {
       const s = S();
@@ -229,7 +230,7 @@
       else if (G.age(c) > 70) text = 'succession: how can the assets pass to the family without the tax office learning of them?';
       else text = 'the fees, which the client finds too high compared with other banks.';
       K.agenda({ d: U.addBusinessDays(s.date, K.rint(0, 2)), t: Math.round(K.rint(9 * 60, 16 * 60) / 15) * 15, dur: 45, kind: 'concern', client: c.id, title: 'Meeting requested by ' + c.rubrik, data: { text: text } });
-      log.push(['EVT', 'GESPRAECHSWUNSCH ' + c.rubrik, 'TERMIN']);
+      log.push(['EVT', tr('GESPRAECHSWUNSCH ', 'MEETING REQUEST ') + c.rubrik, tr('TERMIN', 'APPOINTMENT')]);
     },
     courierReq: function (log) {
       const s = S();
@@ -239,7 +240,7 @@
       const ccy = cashCcy(c);
       const amount = K.roundTo(K.between(80000, 600000) / K.rate(ccy), ccy === 'ITL' ? 10000000 : 5000);
       s.couriers.unshift({ id: 'K' + U.pad(++s.ctr.courier, 3), client: c.id, ccy: ccy, amount: amount, from: c.city, status: 'requested', d: s.date });
-      log.push(['EVT', 'KURIERAUFTRAG ' + c.rubrik, ccy + ' ' + U.fmt(amount, 0)]);
+      log.push(['EVT', tr('KURIERAUFTRAG ', 'COURIER ORDER ') + c.rubrik, ccy + ' ' + U.fmt(amount, 0)]);
     },
     life: function (log) {
       const c = pickClient();
@@ -255,8 +256,8 @@
     target: function (log) {
       const t = K.genTarget();
       if (!t) return;
-      K.msg({ type: 'letter', from: 'Hottinger Corporate Finance AG, Zürich', subject: 'Confidential: ' + t.name + ' for sale', body: 'Dear Sirs,\n\nOn behalf of the owners we are mandated to sell ' + t.name + ' (assets under management approx. CHF ' + U.fmtMio(t.aum) + ', ' + t.n + ' client relationships). Indicative price: CHF ' + U.fmt(t.price, 0) + '.\n\nDetails are available in a data room (Organisation › Acquisitions). Offers are expected within six weeks.\n\nHottinger Corporate Finance AG' });
-      log.push(['EVT', 'VERKAUFSANGEBOT BANK', 'CHF ' + U.fmtMio(t.aum)]);
+      K.msg({ type: 'letter', from: 'Hottinger Corporate Finance AG, Zürich', subject: 'Confidential: ' + t.name + ' for sale', body: 'Dear Sirs,\n\nWe have been mandated by the owners to sell ' + t.name + ' (assets under management approx. CHF ' + U.fmtMio(t.aum) + ', ' + t.n + ' client relationships). Indicative price: CHF ' + U.fmt(t.price, 0) + '.\n\nThe documentation is available in a data room (Organisation › Acquisitions). We expect offers within six weeks.\n\nYours faithfully\nHottinger Corporate Finance AG' });
+      log.push(['EVT', tr('VERKAUFSANGEBOT BANK', 'BANK FOR SALE'), 'CHF ' + U.fmtMio(t.aum)]);
     }
   };
 
@@ -266,27 +267,27 @@
     c.deceased = s.date;
     if (heirs) {
       K.msg({
-        type: 'letter', kind: 'heirs', from: 'Avv./Dr. ' + surname(c.dom) + ', lawyer for the heirs of ' + c.rubrik, subject: 'Death of ' + c.name + ' – instructions of the heirs',
-        body: 'Dear Sirs,\n\nWe regret to inform you that our client ' + c.name + ' passed away on ' + U.fmtDate(U.addBusinessDays(s.date, -3)) + '. We represent the heirs (' + [c.family.spouse].concat(c.family.children).filter(Boolean).join(', ') + ').\n\nThe heirs request the transfer of all assets to the estate account in ' + K.cname(c.dom) + '. They are, however, open to a meeting about continuing the relationship.\n\nYours faithfully',
+        type: 'letter', kind: 'heirs', from: 'Avv./Dr. ' + surname(c.dom) + ', lawyer for the heirs of ' + c.rubrik, subject: 'Death of ' + c.name + ': instructions of the heirs',
+        body: 'Dear Sirs,\n\nWe regret to inform you that our client ' + c.name + ' passed away on ' + U.fmtDate(U.addBusinessDays(s.date, -3)) + '. We represent the heirs (' + [c.family.spouse].concat(c.family.children).filter(Boolean).join(', ') + ').\n\nThe heirs request the transfer of all assets to the estate account in ' + K.cname(c.dom) + '. They are, however, prepared to meet you to discuss whether the relationship should continue.\n\nYours faithfully',
         actions: [['transfer', 'Transfer the estate as instructed'], ['retain', 'Persuade the heirs to stay (meeting)']], data: { client: c.id }
       });
     } else {
       c.dormant = s.date;
       K.msg({
-        type: 'memo', kind: 'dormant', from: G.rmName(c) + ', Relationship Management', subject: 'Death of ' + c.name + ' (' + c.rubrik + ') – no heirs known',
-        body: 'We have learned from the newspaper that ' + c.name + ' has died. There is no will on file and no heirs are known to us; the client never wanted correspondence.\n\nUnder the guidelines of the Swiss Bankers Association the relationship is now dormant ("nachrichtenlos"). It should be reported to the central contact office of the Banking Ombudsman so that heirs can find it.\n\nAssets: CHF ' + U.fmt(G.clientAUM(c.id), 0) + '.',
+        type: 'memo', kind: 'dormant', from: G.rmName(c) + ', Relationship Management', subject: 'Death of ' + c.name + ' (' + c.rubrik + '), no heirs known',
+        body: 'We learned from the newspaper that ' + c.name + ' has died. No will on file, no heirs known to us. The client never wanted correspondence.\n\nUnder the guidelines of the Swiss Bankers Association the relationship is now dormant' + tr(' ("nachrichtenlos")', '') + ' and should be reported to the central contact office of the Banking Ombudsman, so that heirs can find it.\n\nAssets: CHF ' + U.fmt(G.clientAUM(c.id), 0) + '.',
         actions: [['report', 'Report to the Banking Ombudsman, reduce fees'], ['keep', 'Keep managing quietly at full fees']], data: { client: c.id }
       });
     }
-    log.push(['EVT', 'TODESFALL ' + c.rubrik, heirs ? 'ERBEN' : 'NACHRICHTENLOS']);
+    log.push(['EVT', tr('TODESFALL ', 'DEATH ') + c.rubrik, heirs ? tr('ERBEN', 'HEIRS') : tr('NACHRICHTENLOS', 'DORMANT')]);
   }
   function divorce(c, log) {
     K.msg({
-      type: 'fax', kind: 'divorce', from: c.rubrik + ' (fax)', subject: 'URGENT – ' + c.rubrik + ' – divorce proceedings',
-      body: 'My spouse\'s lawyers have obtained an order from the court in ' + c.city + ' requiring me to disclose all my assets "in Switzerland and elsewhere". I will not let anyone take what I built.\n\nPlease advise IMMEDIATELY what can be done.\n\n[signature]  ' + c.rubrik,
+      type: 'fax', kind: 'divorce', from: c.rubrik + ' (fax)', subject: 'URGENT: ' + c.rubrik + ', divorce proceedings',
+      body: 'The lawyers of my spouse have obtained an order from the court in ' + c.city + '. I am to disclose all my assets "in Switzerland and elsewhere". This is out of the question.\n\nPlease advise IMMEDIATELY what can be done.\n\n[signature]  ' + c.rubrik,
       actions: [['hide', 'Move the assets into a Cayman STAR trust'], ['settle', 'Advise the client to settle']], data: { client: c.id }
     });
-    log.push(['EVT', 'SCHEIDUNG ' + c.rubrik, 'ANFRAGE']);
+    log.push(['EVT', tr('SCHEIDUNG ', 'DIVORCE ') + c.rubrik, tr('ANFRAGE', 'REQUEST')]);
   }
   function windfall(c, log) {
     const pct = K.between(0.1, 0.35);
@@ -294,16 +295,16 @@
     const amt = K.roundTo(c.wealth * pct / K.rate(ccy), 10000);
     c.wealth = K.roundTo(c.wealth * (1 + pct * 0.6), 100000);
     K.schedule(K.rint(2, 5), 'funding', { client: c.id, amount: amt, ccy: ccy, method: K.pick(['offshore', 'home', 'ch']) });
-    K.msg({ type: 'memo', from: G.rmName(c) + ', Relationship Management', subject: 'Windfall – ' + c.rubrik, body: c.name + ' has sold a stake in a business. The client informs us that about ' + ccy + ' ' + U.fmt(amt, 0) + ' will arrive within the next few days. The client profile has been updated accordingly.\n\n' + G.rmName(c) });
-    log.push(['EVT', 'NEUGELD ANGEKUENDIGT ' + c.rubrik, ccy + ' ' + U.fmt(amt, 0)]);
+    K.msg({ type: 'memo', from: G.rmName(c) + ', Relationship Management', subject: 'New money expected, ' + c.rubrik, body: c.name + ' has sold a stake in a business and tells us that about ' + ccy + ' ' + U.fmt(amt, 0) + ' will arrive in the next few days. Client profile updated.\n\n' + G.rmName(c) });
+    log.push(['EVT', tr('NEUGELD ANGEKUENDIGT ', 'NEW MONEY ANNOUNCED ') + c.rubrik, ccy + ' ' + U.fmt(amt, 0)]);
   }
   function politician(c, log) {
     K.msg({
       type: 'memo', kind: 'politician', from: G.rmName(c) + ', Relationship Management', subject: c.rubrik + ' enters politics',
-      body: 'According to the press, ' + c.name + ' has been appointed ' + K.pick(['deputy minister of public works', 'governor of a province', 'member of the national parliament and chairman of the budget committee']) + ' in ' + K.cname(c.dom) + '.\n\nUnder our due-diligence rules the client is now a politically exposed person (PEP). Reclassification means enhanced monitoring, senior-management approval and more attention from the regulator.',
+      body: 'According to the press, ' + c.name + ' has been appointed ' + K.pick(['deputy minister of public works', 'governor of a province', 'member of the national parliament and chairman of the budget committee']) + ' in ' + K.cname(c.dom) + '.\n\nUnder our due-diligence rules the client is now a politically exposed person (PEP). If we reclassify, the file needs enhanced monitoring and approval by senior management, and the regulator will look at it more closely.',
       actions: [['reclassify', 'Reclassify as PEP (fee +0.3%)'], ['ignore', 'Leave the file as it is']], data: { client: c.id }
     });
-    log.push(['EVT', 'NEUER PEP ' + c.rubrik, 'ENTSCHEID']);
+    log.push(['EVT', tr('NEUER PEP ', 'NEW PEP ') + c.rubrik, tr('ENTSCHEID', 'DECISION')]);
   }
 
   /* ---------- Meldungs-Handler ---------- */
@@ -316,14 +317,14 @@
         try { G.offboard(c.id); } finally { K.free = false; }
         K.heat('EBK', -2, 'Reputational risk reduced');
       }
-      return { text: 'Relationship terminated quietly. Journalist received a "no comment".' };
+      return { text: 'Relationship closed quietly. The journalist got a "no comment".' };
     }
     if (c && K.chance(c.risk === 'PEP' ? 0.5 : 0.25)) {
       K.heat('EBK', c.risk === 'PEP' ? 5 : 2, 'Press reports');
       const auth = K.homeAuth(c);
       if (auth) K.heat(auth, 3, 'Press reports');
       s.news.push({ d: s.date, text: 'Zürcher Finanzblatt: "Zurich private bank holds millions for ' + (c.risk === 'PEP' ? 'former official' : 'foreign businessman') + ' from ' + K.cname(c.dom) + '"' });
-      return { text: 'No comment given (Art. 47 BankG). The article appeared anyway – the regulator has taken note.' };
+      return { text: 'No comment given (Art. 47 BankG). The article appeared anyway and the regulator has taken note.' };
     }
     return { text: 'No comment given (Art. 47 BankG). The story was not published.' };
   };
@@ -356,7 +357,7 @@
     } finally { K.free = false; }
     if (!r.ok) return { text: r.msg };
     K.loyal(c, 8);
-    return { text: 'Assets restructured into ' + r.entity.name + '. Outside the scope of the EU agreement.' };
+    return { text: 'Assets moved into ' + r.entity.name + ', which falls outside the EU savings agreement.' };
   };
   G.handlers.heirs = function (m, key) {
     const s = S();
@@ -370,7 +371,7 @@
       c.family = { spouse: '', children: [] };
       delete c.deceased;
       K.note(c, 'Relationship continued by the heirs (community of heirs).', s.user.id);
-      return { text: 'After a long meeting the heirs agree to keep the assets with us – for now.' };
+      return { text: 'After a long meeting the heirs agree to leave the assets with us for the time being.' };
     }
     const auth = K.homeAuth(c);
     K.terminate(c, 'died');
@@ -381,7 +382,7 @@
     const c = G.client(m.data.client);
     if (!c) return { text: 'Done.' };
     if (key === 'report') { c.dormantReported = S().date; c.fee = Math.min(c.fee, 0.003); return { text: 'Reported to the central contact office. Fees reduced to 0.30% p.a.' }; }
-    return { text: 'The relationship is managed as before. Nobody will ask – probably.' };
+    return { text: 'The relationship continues as before. Probably nobody will ask.' };
   };
   G.handlers.divorce = function (m, key) {
     const c = G.client(m.data.client);
@@ -396,10 +397,10 @@
       if (auth) K.heat(auth, 3, 'Court orders in divorce cases');
       K.loyal(c, 10);
       c.family.spouse = '(divorced)';
-      return { text: r.entity.name + ' set up. The client is deeply grateful. The ex-spouse\'s lawyers are not.' };
+      return { text: r.entity.name + ' set up. The client is very grateful; the lawyers of the ex-spouse less so.' };
     }
     const acc = G.clientAccounts(c.id).filter(function (a) { return a.type === 'CUR'; }).sort(function (a, b) { return K.valueCHF(b) - K.valueCHF(a); })[0];
-    if (acc) K.book(acc, -G.available(acc) * 0.5, 'Payment – divorce settlement', { kind: 'wire-out', ext: true, country: c.dom });
+    if (acc) K.book(acc, -G.available(acc) * 0.5, 'Payment, divorce settlement', { kind: 'wire-out', ext: true, country: c.dom });
     if (auth) K.heat(auth, 2, 'Court orders in divorce cases');
     K.loyal(c, -10);
     c.family.spouse = '(divorced)';
@@ -415,7 +416,7 @@
       return { text: 'Client reclassified as PEP. Enhanced monitoring applies.' };
     }
     c.hiddenPep = S().date;
-    return { text: 'File unchanged. If the auditors notice, it will be awkward.' };
+    return { text: 'File left unchanged. Awkward if the auditors notice.' };
   };
   G.handlers.margin = function (m, key) {
     const s = S();
@@ -426,16 +427,16 @@
     if (key === 'sell' || (key === 'topup' && !K.chance(0.7))) {
       if (dep) {
         const chf = Math.min(dep.bal, l.amount * K.rate(l.ccy));
-        K.book(dep, -chf, 'Sale of securities – margin call ' + l.id, { kind: 'sec' });
+        K.book(dep, -chf, 'Sale of securities, margin call ' + l.id, { kind: 'sec' });
         l.amount = Math.max(0, l.amount - chf / K.rate(l.ccy));
         if (l.amount < 1) l.status = 'closed';
       }
       K.loyal(c, -8);
-      return { text: 'Securities sold at the market low to reduce the loan. The client is bitter.' };
+      return { text: 'Securities sold at the low to reduce the loan. The client is bitter about it.' };
     }
     if (key === 'topup') { K.loyal(c, -4); l.amount *= 0.7; return { text: 'The client transferred additional collateral and reduced the loan by 30%.' }; }
     l.watch = true;
-    return { text: 'The bank waits. If prices fall further, it may lose money.' };
+    return { text: 'No action for now. If prices fall further the bank may lose money.' };
   };
   G.handlers.retro = function (m, key) {
     const s = S();
@@ -447,7 +448,7 @@
     const s = S();
     if (key === 'pass') { s.flags.passNeg = true; G.activeClients().forEach(function (c) { K.loyal(c, -4); }); return { text: 'Negative rates are passed on to clients with large cash balances.' }; }
     s.flags.passNeg = false;
-    return { text: 'The bank absorbs the negative rates – at a cost to the interest result.' };
+    return { text: 'The bank absorbs the negative rates. This costs interest income.' };
   };
   G.handlers.usProgram = function (m, key) {
     const s = S();
@@ -472,7 +473,7 @@
       K.heat('US', 30, 'Category 3 declaration contradicted');
       K.investigate('US', 55, 'False Category 3 declaration');
       K.msg({ type: 'letter', from: 'US Department of Justice, Tax Division', subject: 'Programme for Non-Prosecution Agreements – Bankhaus Vogt & Cie', body: 'The Department has obtained information contradicting the bank\'s representation under Category 3 of the Program. The Department will proceed accordingly.' });
-      log.push(['EVT', 'DOJ: KATEGORIE 3 WIDERLEGT', 'ALARM']);
+      log.push(['EVT', tr('DOJ: KATEGORIE 3 WIDERLEGT', 'DOJ: CATEGORY 3 DISPROVED'), 'ALARM']);
     }
   };
   G.handlers.fatca = function (m, key) {
@@ -494,7 +495,7 @@
       Object.keys(losses).forEach(function (cid) {
         const c = G.client(cid);
         const dep = c && G.clientAccounts(cid).find(function (a) { return a.type === 'DEP'; });
-        if (dep) { K.book(dep, losses[cid] * 0.5, 'Goodwill compensation – Atlantic Absolute Return Fund', { kind: 'misc' }); tot += losses[cid] * 0.5; }
+        if (dep) { K.book(dep, losses[cid] * 0.5, 'Goodwill compensation, Atlantic Absolute Return Fund', { kind: 'misc' }); tot += losses[cid] * 0.5; }
       });
       K.expense('losses', tot);
       return { text: 'The bank compensates 50% of the losses (CHF ' + U.fmt(tot, 0) + '). Clients appreciate the gesture.' };
@@ -511,7 +512,7 @@
     const c = G.client(d.client);
     if (!c || c.status !== 'active') return;
     s.counter.push({ id: 'K' + U.pad(++s.ctr.visit, 3), client: c.id, type: d.type, ccy: d.ccy, amount: d.amount, courier: !!d.courier, t: K.rint(8 * 60 + 30, 11 * 60), note: d.note || '', funding: !!d.funding, retry: !!d.retry });
-    log.push(['EVT', 'KASSE: BESUCH ANGEMELDET ' + c.rubrik, d.ccy + ' ' + U.fmt(d.amount, 0)]);
+    log.push(['EVT', tr('KASSE: BESUCH ANGEMELDET ', 'CASH DESK: VISIT ANNOUNCED ') + c.rubrik, d.ccy + ' ' + U.fmt(d.amount, 0)]);
   };
   K.sched.funding = function (d, log) {
     const c = G.client(d.client);
@@ -524,7 +525,7 @@
     if (ccy !== 'CHF' && G.currencies().indexOf(ccy) < 0) ccy = 'EUR';
     if (K.incoming(c, K.ensureAccount(c, ccy, null), d.amount, ccy, bank, 0.5, !c.funded)) {
       c.funded = true;
-      log.push(['EVT', 'GELDEINGANG ' + c.rubrik, ccy + ' ' + U.fmt(d.amount, 0)]);
+      log.push(['EVT', tr('GELDEINGANG ', 'FUNDS RECEIVED ') + c.rubrik, ccy + ' ' + U.fmt(d.amount, 0)]);
     }
   };
   K.sched.border = function (d, log) {
@@ -532,7 +533,7 @@
     if (!c) return;
     const auth = K.homeAuth(c);
     if (!auth) return;
-    const place = { IT: ['Ponte Chiasso', 'Guardia di Finanza'], DE: ['Basel-Weil am Rhein', 'German customs (Zoll)'], FR: ['Genève-Bardonnex', 'French customs (douane)'], GB: ['London Heathrow', 'HM Customs'], US: ['Miami International Airport', 'US Customs'] }[c.dom];
+    const place = { IT: ['Ponte Chiasso', 'Guardia di Finanza'], DE: ['Basel-Weil am Rhein', tr('German customs (Zoll)', 'German customs')], FR: ['Genève-Bardonnex', 'French customs (douane)'], GB: ['London Heathrow', 'HM Customs'], US: ['Miami International Airport', 'US Customs'] }[c.dom];
     const docs = !c.holdMail || K.chance(0.15);
     K.heat(auth, docs ? 9 : 3, 'Clients stopped at the border');
     K.loyal(c, -8);
@@ -540,11 +541,11 @@
     K.msg({
       type: 'memo', kind: 'border', from: G.rmName(c) + ', Relationship Management', subject: 'Client ' + c.rubrik + ' stopped at the border',
       body: 'The client\'s lawyer informs us that ' + c.name + ' was stopped yesterday at ' + place[0] + ' by the ' + place[1] + ' carrying ' + d.ccy + ' ' + U.fmt(d.amount, 0) + ' in cash.\n\n' +
-        (docs ? 'Unfortunately a statement of our bank was found in the luggage. The authorities now know of the relationship.' : 'No bank documents were found (hold mail). The client gave no explanation regarding the origin of the cash.') +
-        '\n\nThe client asks whether the bank will cover the cost of a lawyer.',
+        (docs ? 'Unfortunately a statement of our bank was found in the luggage. The authorities now know of the relationship.' : 'No bank documents were found (hold mail). The client would not say where the cash came from.') +
+        '\n\nThe client asks whether the bank would pay for a lawyer.',
       actions: [['lawyer', 'Instruct lawyer (CHF 25,000)'], ['none', 'No action']], data: { client: c.id, auth: auth }
     });
-    log.push(['EVT', 'GRENZKONTROLLE ' + c.rubrik, docs ? 'DOKUMENTE GEFUNDEN' : 'OHNE DOKUMENTE']);
+    log.push(['EVT', tr('GRENZKONTROLLE ', 'BORDER CHECK ') + c.rubrik, docs ? tr('DOKUMENTE GEFUNDEN', 'DOCUMENTS FOUND') : tr('OHNE DOKUMENTE', 'NO DOCUMENTS')]);
   };
   K.sched.leave = function (d, log) {
     const c = G.client(d.client);
@@ -554,23 +555,23 @@
     K.terminate(c, 'leave', b.name + ', ' + b.city);
     K.discretion(-1);
     K.msg({ type: 'memo', from: G.rmName(c) + ', Relationship Management', subject: 'Client ' + c.rubrik + ' closes relationship', body: 'The client has instructed us to transfer all assets (approx. CHF ' + U.fmtMio(aum) + ') to ' + b.name + ', ' + b.city + ' and to close the relationship. Reason given: ' + (d.reason || 'none') + '.' });
-    log.push(['EVT', 'SALDIERUNG ' + c.rubrik, 'CHF ' + U.fmtMio(aum)]);
+    log.push(['EVT', tr('SALDIERUNG ', 'ACCOUNT CLOSED ') + c.rubrik, 'CHF ' + U.fmtMio(aum)]);
   };
   K.sched.eutax = function (d, log) {
     const c = G.client(d.client);
     if (!c || c.status !== 'active' || G.entitiesOf(c.id).length || c.declared >= 1) return;
     K.msg({
-      type: 'fax', kind: 'eutax', from: c.rubrik + ' (fax)', subject: 'EU retention tax – ' + c.rubrik,
-      body: 'Dear Sirs,\n\nI read in the newspaper that from now on a tax will be deducted from my interest income in Switzerland and possibly reported. I do not want any of this.\n\nPlease advise what can be done. A friend mentioned a company abroad, another an insurance policy.\n\n[signature]  ' + c.rubrik,
+      type: 'fax', kind: 'eutax', from: c.rubrik + ' (fax)', subject: 'EU retention tax, ' + c.rubrik,
+      body: 'Dear Sirs,\n\nI read in the newspaper that a tax will now be deducted from my interest in Switzerland, and perhaps reported. I do not want this.\n\nWhat can be done? A friend mentioned a company abroad, another one an insurance policy.\n\n[signature]  ' + c.rubrik,
       actions: [['restructure', 'Restructure via BVI company (CHF 9,500)'], ['insure', 'Life insurance wrapper (CHF 15,000)'], ['retention', 'Apply retention tax']], data: { client: c.id }
     });
-    log.push(['EVT', 'ANFRAGE ZINSBESTEUERUNG ' + c.rubrik, 'OK']);
+    log.push(['EVT', tr('ANFRAGE ZINSBESTEUERUNG ', 'SAVINGS TAX ENQUIRY ') + c.rubrik, 'OK']);
   };
   K.sched.aeoiDecision = function (d, log) {
     const s = S();
     const c = G.client(d.client);
     if (!c || c.status !== 'active' || c.declared >= 1) return;
-    if (K.chance(0.55 + c.loyalty / 300)) { c.declared = 1; c.regularised = s.date; K.note(c, 'Client regularised ahead of the automatic exchange of information.'); log.push(['EVT', 'REGULARISIERUNG ' + c.rubrik, 'OK']); }
+    if (K.chance(0.55 + c.loyalty / 300)) { c.declared = 1; c.regularised = s.date; K.note(c, 'Client regularised ahead of the automatic exchange of information.'); log.push(['EVT', tr('REGULARISIERUNG ', 'REGULARISATION ') + c.rubrik, 'OK']); }
     else K.sched.leave({ client: c.id, reason: 'automatic exchange of information' }, log);
   };
 
@@ -596,7 +597,7 @@
     ruCrisis: function () { G.activeClients().forEach(function (c) { if (c.dom === 'RU') K.schedule(K.rint(1, 8), 'funding', { client: c.id, amount: K.roundTo(c.wealth * 0.08, 10000), ccy: 'USD', method: 'offshore' }); }); },
     euro: function () { K.euroConvert(); },
     y2k: function () {
-      if (!G.activeStaff('it').length) { K.heat('EBK', 3, 'IT failures'); K.msg({ type: 'memo', from: 'Rolf Gisler, Operations', subject: 'Millennium – no IT staff on standby', body: 'Without IT staff nobody was on standby over New Year. Two batch jobs failed on 3 January; the regulator has asked for an explanation.' }); }
+      if (!G.activeStaff('it').length) { K.heat('EBK', 3, 'IT failures'); K.msg({ type: 'memo', from: 'Rolf Gisler, Operations', subject: 'Y2K: no IT staff on standby', body: 'We have no IT staff, so nobody was on standby over New Year. Two batch jobs failed on 3 January. The regulator has asked for an explanation.' }); }
     },
     qi: function () { G.activeClients().forEach(function (c) { if (c.dom === 'US') K.loyal(c, -3); }); },
     cardSummons: function () {
@@ -628,9 +629,9 @@
       if (s.nostro.pos.AAR) nost = s.nostro.pos.AAR * K.priceCHF('AAR') * 24;
       if (!tot && !nost) return;
       K.msg({
-        type: 'memo', kind: tot ? 'hedge' : 'info', from: 'Dr. Martin Frei, Portfolio Management', subject: 'Atlantic Absolute Return Fund – total loss',
-        body: 'The Atlantic Absolute Return Fund, which we held in client portfolios for its "steady returns", was a fraud. The manager has been arrested in New York; the fund\'s assets are gone.\n\nLosses in client portfolios: approx. CHF ' + U.fmt(tot, 0) + (nost ? '. Losses in the bank\'s own book: approx. CHF ' + U.fmt(nost, 0) : '') + '.\n\nClients will ask why we did not see it coming.',
-        actions: tot ? [['compensate', 'Compensate clients for 50% of the loss'], ['refuse', 'No compensation – market risk']] : [], data: { losses: losses }
+        type: 'memo', kind: tot ? 'hedge' : 'info', from: 'Dr. Martin Frei, Portfolio Management', subject: 'Atlantic Absolute Return Fund: total loss',
+        body: 'The Atlantic Absolute Return Fund, which we held in client portfolios for its "steady returns", was a fraud. The manager was arrested in New York and the money is gone.\n\nLosses in client portfolios: approx. CHF ' + U.fmt(tot, 0) + (nost ? '. Losses in the bank\'s own book: approx. CHF ' + U.fmt(nost, 0) : '') + '.\n\nClients will ask why we did not notice.',
+        actions: tot ? [['compensate', 'Compensate clients for 50% of the loss'], ['refuse', 'No compensation (market risk)']] : [], data: { losses: losses }
       });
       Object.keys(losses).forEach(function (cid) { const c = G.client(cid); if (c && c.status === 'active') K.loyal(c, -8); });
     },
@@ -640,7 +641,7 @@
         K.loyal(c, -15);
         K.agenda({ d: U.addBusinessDays(S().date, K.rint(1, 4)), t: 10 * 60 + K.rint(0, 24) * 15, dur: 45, kind: 'concern', client: c.id, title: 'Urgent meeting requested by ' + c.rubrik, data: { text: 'the US deal of the largest Swiss bank – will our bank hand over names too?' } });
       });
-      K.msg({ type: 'memo', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'US clients – recommendation', body: 'After the settlement of the largest Swiss bank with the US authorities, I strongly recommend that we stop all business with undeclared US persons: either they regularise (voluntary disclosure programme of the IRS) or we close the relationship.\n\nEvery further month with undeclared US money increases the penalty we may one day have to pay.' });
+      K.msg({ type: 'memo', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'US clients – recommendation', body: 'Following the settlement between the largest Swiss bank and the US authorities, I strongly recommend that we stop all business with undeclared US persons. Either they regularise (IRS voluntary disclosure programme) or we close the relationship.\n\nEach further month with undeclared US money adds to the penalty we may one day have to pay.' });
     },
     cd: function () {
       const s = S();
@@ -653,7 +654,7 @@
     retro: function () {
       const s = S();
       if (D.PRODUCT_PREF[s.house.pref].third === 0 && !s.flags.retroEver) return;
-      K.msg({ type: 'memo', kind: 'retro', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'Retrocessions belong to the client', body: 'The Federal Supreme Court has ruled that retrocessions received from fund providers belong to the client unless the client has expressly waived them with full knowledge of their amount.\n\nWe can either pass them on from now on, or keep them and accept claims and audit findings.', actions: [['stop', 'Pass retrocessions on to clients'], ['keep', 'Keep them']] });
+      K.msg({ type: 'memo', kind: 'retro', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'Retrocessions belong to the client', body: 'The Federal Supreme Court has ruled that retrocessions from fund providers belong to the client, unless the client has expressly waived them knowing their amount.\n\nWe can pass them on from now on, or keep them and expect claims and audit findings.', actions: [['stop', 'Pass retrocessions on to clients'], ['keep', 'Keep them']] });
     },
     rubik: function () {
       const s = S();
@@ -673,18 +674,18 @@
     usProgram: function () {
       const s = S();
       K.msg({
-        type: 'letter', kind: 'usProgram', from: 'Swiss Bankers Association / Federal Department of Finance', subject: 'US programme for Swiss banks – choice of category by 31 December 2013',
-        body: 'The US Department of Justice offers Swiss banks a programme to resolve their past. Each bank must choose:\n\nCategory 2 – the bank has reason to believe it committed tax-related offences: it discloses its US business, delivers anonymised "leaver lists" and pays a penalty of 20–50% of the maximum undeclared US assets since August 2008.\n\nCategory 3 – the bank declares, confirmed by an independent examiner, that it committed no offence.\n\nOur peak of undeclared US assets since August 2008: CHF ' + U.fmt(s.flags.usPeak || 0, 0) + '.',
-        actions: [['cat2', 'Category 2 – disclose and pay'], ['cat3', 'Category 3 – declare innocence']], due: '2013-12-31'
+        type: 'letter', kind: 'usProgram', from: 'Swiss Bankers Association / Federal Department of Finance', subject: 'US programme for Swiss banks: choice of category by 31 December 2013',
+        body: 'The US Department of Justice offers Swiss banks a programme to settle the past. Each bank must choose a category.\n\nCategory 2: the bank has reason to believe it committed tax-related offences. It discloses its US business, delivers anonymised "leaver lists" and pays a penalty of 20–50% of the maximum undeclared US assets since August 2008.\n\nCategory 3: the bank declares that it committed no offence, confirmed by an independent examiner.\n\nOur peak of undeclared US assets since August 2008: CHF ' + U.fmt(s.flags.usPeak || 0, 0) + '.',
+        actions: [['cat2', 'Category 2: disclose and pay'], ['cat3', 'Category 3: declare innocence']], due: '2013-12-31'
       });
     },
     fatca: function () {
       const us = G.activeClients().filter(function (c) { return c.dom === 'US' && c.declared < 1; });
       if (!us.length) return;
-      K.msg({ type: 'memo', kind: 'fatca', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'FATCA – ' + us.length + ' undeclared US relationship(s)', body: 'FATCA is in force. We still hold ' + us.length + ' undeclared US relationship(s): ' + us.map(function (c) { return c.rubrik; }).join(', ') + '.\n\nWe must report them, have them regularise, or close them.', actions: [['force', 'Force regularisation or closure'], ['ignore', 'Do nothing']] });
+      K.msg({ type: 'memo', kind: 'fatca', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'FATCA: ' + us.length + ' undeclared US relationship(s)', body: 'FATCA is in force. We still hold ' + us.length + ' undeclared US relationship(s): ' + us.map(function (c) { return c.rubrik; }).join(', ') + '.\n\nThey must be reported, regularised or closed.', actions: [['force', 'Force regularisation or closure'], ['ignore', 'Do nothing']] });
     },
     snb: function () {
-      K.msg({ type: 'memo', kind: 'snb', from: 'Beatrice Lüthi, Finance & Controlling', subject: 'Negative interest rates', body: 'The SNB charges -0.75% on sight deposits above an exemption threshold. Our client cash balances therefore cost the bank money.\n\nShall we pass negative rates on to clients with cash balances above CHF 1 million?', actions: [['pass', 'Pass them on to large clients'], ['absorb', 'Absorb them']] });
+      K.msg({ type: 'memo', kind: 'snb', from: 'Beatrice Lüthi, Finance & Controlling', subject: 'Negative interest rates', body: 'The SNB charges -0.75% on sight deposits above an exemption threshold, so client cash balances now cost the bank money.\n\nShall we pass negative rates on to clients with cash balances above CHF 1 million?', actions: [['pass', 'Pass them on to large clients'], ['absorb', 'Absorb them']] });
     },
     panama: function () {
       const s = S();
@@ -696,13 +697,13 @@
         if (auth && c.declared < 1) K.heat(auth, 4, 'Panama Papers');
         K.loyal(c, -10);
       });
-      if (n) K.msg({ type: 'memo', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'Panama Papers – ' + n + ' client structure(s) affected', body: 'The leaked data of the Panamanian law firm includes ' + n + ' structure(s) held by our clients. Journalists are calling.' });
+      if (n) K.msg({ type: 'memo', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'Panama Papers: ' + n + ' client structure(s) affected', body: 'The leaked files of the Panamanian law firm include ' + n + ' structure(s) held by our clients. Journalists are calling.' });
     },
     aeoi: function () {
       const s = S();
       const list = G.activeClients().filter(function (c) { return D.COUNTRIES[c.dom] && D.COUNTRIES[c.dom].eu && c.declared < 1; });
       list.forEach(function (c) { K.schedule(K.rint(10, 220), 'aeoiDecision', { client: c.id }); });
-      K.msg({ type: 'memo', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'Final year of banking secrecy – ' + list.length + ' EU client(s) undeclared', body: 'From today we collect account data for the EU tax authorities. All ' + list.length + ' undeclared EU clients will have to regularise or leave during the year.\n\nThe game – excuse me, the business – will be different from 2018.' });
+      K.msg({ type: 'memo', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'Final year of banking secrecy: ' + list.length + ' EU client(s) undeclared', body: 'From today we collect account data for the EU tax authorities. All ' + list.length + ' undeclared EU clients will have to regularise or leave during the year.\n\nFrom 2018 the game (sorry: the business) will be a different one.' });
     }
   };
 
@@ -718,7 +719,7 @@
       if (t.memo) K.msg({ type: 'memo', from: t.memo.from, subject: t.memo.subject, body: t.memo.body, t: 7 * 60 + 45 });
       if (t.flag) s.flags[t.flag] = true;
       if (t.fx && FX[t.fx]) FX[t.fx]();
-      log.push(['EVT', 'ZEITGESCHEHEN', (t.news || '').slice(0, 34).toUpperCase()]);
+      log.push(['EVT', tr('ZEITGESCHEHEN', 'CURRENT AFFAIRS'), (t.news || '').slice(0, 34).toUpperCase()]);
     });
   };
 

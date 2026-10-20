@@ -177,7 +177,7 @@
       <div class="postit">Helpdesk 4411<br>neues PW alle 90 Tage!!<br><span>– R.G.</span></div>
     </div>
   </div>
-  <div class="lg-foot">© 2003 Bankhaus Vogt &amp; Cie · Informatik / IT-Services · Helpdesk intern 4411 · Optimised for Microsoft Internet Explorer 5.5 / 6.0 at 1024×768 · <a href="#" id="lg-reset">Reset game data</a></div>
+  <div class="lg-foot">© 2003 Bankhaus Vogt &amp; Cie · Informatik / IT-Services · Helpdesk intern 4411 · Optimised for Microsoft Internet Explorer 5.5 / 6.0 at 1024×768 · <a href="#" id="lg-settings">Regional settings</a> · <a href="#" id="lg-reset">Reset game data</a></div>
 </div>
 
 <!-- Verbindungsaufbau -->
@@ -200,6 +200,7 @@
     <div id="tools">
       <button class="btn tb" type="button" data-act="handbook"><svg class="ico"><use href="#i-info"/></svg> Handbook</button>
       <button class="btn tb" type="button" data-act="print"><svg class="ico"><use href="#i-print"/></svg> Print</button>
+      <button class="btn tb" type="button" data-act="settings"><svg class="ico"><use href="#i-globe"/></svg> Settings</button>
       <button class="btn tb" type="button" data-act="newgame">New game</button>
       <button class="btn tb" type="button" data-act="logout"><svg class="ico"><use href="#i-lock"/></svg> Sign off</button>
       <button class="btn tb eod" type="button" data-act="eod"><svg class="ico"><use href="#i-clock"/></svg> End of day ▸</button>
@@ -236,6 +237,7 @@
 <script src="js/data/people.js"></script>
 <script src="js/data/clients.js"></script>
 <script src="js/data/markets.js"></script>
+<script src="js/data/stocks.js"></script>
 <script src="js/data/history.js"></script>
 <script src="js/data/scenarios.js"></script>
 <script src="js/engine/kernel.js"></script>
@@ -250,12 +252,14 @@
 <script src="js/engine/events.js"></script>
 <script src="js/engine/eod.js"></script>
 <script src="js/engine/setup.js"></script>
+<script src="js/engine/trading.js"></script>
 <script src="js/views/common.js"></script>
 <script src="js/views/main.js"></script>
 <script src="js/views/business.js"></script>
 <script src="js/views/bank.js"></script>
 <script src="js/views/intranet.js"></script>
 <script src="js/views/invoice.js"></script>
+<script src="js/views/trading.js"></script>
 <script src="js/fs.js"></script>
 <script src="js/sound.js"></script>
 <script src="js/browser.js"></script>
@@ -266,6 +270,7 @@
 <script src="js/web.js"></script>
 <script src="js/tutorial.js"></script>
 <script src="js/guide.js"></script>
+<script src="js/locale.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

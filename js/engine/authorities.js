@@ -4,6 +4,7 @@
   'use strict';
 
   const D = PBS.DATA, U = PBS.U, K = PBS.K, G = PBS.Game;
+  const tr = PBS.L.t;
   function S() { return G.state; }
   const STAGES = ['', 'Preliminary inquiry', 'Formal investigation', 'Indictment pending'];
   G.STAGES = STAGES;
@@ -42,7 +43,7 @@
         type: 'memo', kind: 'info', from: 'Dr. Iris Wyss, Legal & Compliance', subject: G.authShort(auth) + ': ' + STAGES[stage].toLowerCase(),
         body: stage === 2 ?
           'The proceedings in ' + K.cname(D.AUTH[auth].c) + ' have become a formal criminal investigation. Search warrants against clients and against any presence of the bank in the country must be expected. Bankers travelling there risk arrest.' :
-          'Our lawyers expect an indictment of the bank in ' + K.cname(D.AUTH[auth].c) + ' within months. Only a drastic reduction of our exposure – closing or regularising relationships, cooperation – can still stop it.'
+          'Our lawyers expect the bank to be indicted in ' + K.cname(D.AUTH[auth].c) + ' within months. This can only be prevented by a drastic reduction of our exposure (closing or regularising relationships, co-operation).'
       });
     }
     inv.stage = Math.max(inv.stage, stage);
@@ -126,7 +127,7 @@
     K.investigate(auth, 25, 'Undercover agent posing as client');
     K.msg({
       type: 'memo', kind: 'info', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'Client ' + c.rubrik + ' was an undercover investigator',
-      body: 'Our lawyers have been shown recordings: "' + c.name + '" (' + c.rubrik + ') is an undercover officer of the ' + G.authName(auth) + '. Every conversation since the account opening was recorded – including the ' + what + ' you approved.\n\nThe file is now part of the proceedings against the bank, and your name is in it.'
+      body: 'Our lawyers have been shown recordings: "' + c.name + '" (' + c.rubrik + ') is an undercover officer of the ' + G.authName(auth) + '. Every conversation since the account opening was recorded, including the ' + what + ' you approved.\n\nThe recordings have been added to the file in the proceedings against the bank. Your name appears in them.'
     });
   };
 
@@ -185,7 +186,7 @@
       const h = s.heat[a];
       const inv = s.inv[a];
       if (!inv) {
-        if (h >= 55 && K.chance((h - 55) / 300 * K.diff().threat)) { K.investigate(a, 5, 'Accumulated evidence'); log.push(['EVT', 'ERMITTLUNG ERÖFFNET ' + a, 'WARNUNG']); }
+        if (h >= 55 && K.chance((h - 55) / 300 * K.diff().threat)) { K.investigate(a, 5, 'Accumulated evidence'); log.push(['EVT', tr('ERMITTLUNG ERÖFFNET ', 'INVESTIGATION OPENED ') + a, tr('WARNUNG', 'WARNING')]); }
         return;
       }
       const delta = h >= 45 ? (h - 45) / 50 * K.diff().inv * K.lawyerFactor(a) : -0.3;
@@ -207,7 +208,7 @@
       s.flags.enforcement = s.date;
       K.expense('legal', 500000);
       K.msg({ type: 'letter', from: G.authName('EBK') + ', Bern', subject: 'Opening of enforcement proceedings', body: 'Dear Sirs,\n\nWe hereby open enforcement proceedings against Bankhaus Vogt & Cie and appoint an independent investigator at the expense of the bank (estimated costs CHF 500,000).\n\nThe investigation will examine the organisation, the risk management and the guarantee of irreproachable business conduct by the members of management. We reserve the right to withdraw the licence.\n\n' + G.authName('EBK') });
-      log.push(['EVT', 'ENFORCEMENT-VERFAHREN', 'ALARM']);
+      log.push(['EVT', tr('ENFORCEMENT-VERFAHREN', 'ENFORCEMENT PROCEEDINGS'), 'ALARM']);
     }
     if (s.heat.EBK < 50) s.flags.enforcement = null;
     if (s.lobby.board && K.chance(0.001)) {
@@ -228,10 +229,10 @@
     K.personal(5, 'Raid on representative office');
     G.activeClients().forEach(function (c) { if (K.homeAuth(c) === auth && c.declared < 1) K.loyal(c, -10); });
     K.msg({
-      type: 'telex', from: L.name, subject: 'RAID – ' + L.name,
-      body: 'THIS MORNING 07.10 HOURS ' + G.authShort(auth).toUpperCase() + ' OFFICERS SEARCHED OUR PREMISES WITH A WARRANT. ALL FILES, DIARIES AND COMPUTERS SEIZED. STAFF QUESTIONED FOR SIX HOURS. OFFICE SEALED. PLEASE ADVISE.'
+      type: 'telex', from: L.name, subject: 'RAID ' + L.name.toUpperCase(),
+      body: '0710 HRS TODAY ' + G.authShort(auth).toUpperCase() + ' OFFICERS SEARCHED OUR PREMISES WITH WARRANT. ALL FILES DIARIES AND COMPUTERS SEIZED. STAFF QUESTIONED 6 HRS. OFFICE SEALED. PLS ADVISE URGENTLY'
     });
-    log.push(['EVT', 'RAZZIA ' + L.name.toUpperCase().slice(0, 20), 'ALARM']);
+    log.push(['EVT', tr('RAZZIA ', 'RAID ') + L.name.toUpperCase().slice(0, 20), 'ALARM']);
   }
 
   /* ---------- Rechtshilfe / Amtshilfe ---------- */
@@ -252,35 +253,35 @@
       const clear = K.chance(0.72);
       const leaning = clear ? fraud : (K.chance(0.65) ? fraud : !fraud);
       const requester = treaty ? G.authName(auth) : {
-        DE: 'Staatsanwaltschaft ' + K.pick(['Stuttgart', 'München I', 'Düsseldorf', 'Bochum']),
+        DE: tr('Staatsanwaltschaft ', 'Public Prosecutor, ') + K.pick(['Stuttgart', 'München I', 'Düsseldorf', 'Bochum']),
         IT: 'Procura della Repubblica di ' + K.pick(['Milano', 'Como', 'Bergamo']),
         FR: 'Juge d\'instruction, Tribunal de grande instance de ' + K.pick(['Paris', 'Lyon']),
         US: 'US Department of Justice, Tax Division',
         GB: 'Crown Prosecution Service on behalf of the ' + G.authName('GB')
       }[auth];
       const allegation = fraud ?
-        'The suspect is alleged to have used falsified invoices and forged balance sheets of a company under his control in order to reduce its taxable profits' + (c.b2b ? ', and to have disguised his Swiss assets as a bank loan' : '') + '.' :
-        'The suspect is alleged to have failed to declare income and assets held abroad in his tax returns.';
+        'The suspect allegedly used false invoices and forged balance sheets of a company under his control to reduce its taxable profits' + (c.b2b ? ', and disguised his Swiss assets as a bank loan' : '') + '.' :
+        'The suspect allegedly failed to declare income and assets held abroad in his tax returns.';
       let assessment;
       if (treaty) {
-        assessment = 'This is a request for administrative assistance under the revised double taxation agreement. Since ' + U.fmtDate(D.AMTSHILFE[auth]) + ' assistance is granted for simple tax evasion as well. An objection has practically no chance; it only costs money. The client has a right to be heard and will learn of the request.';
+        assessment = 'Request for administrative assistance under the revised double taxation agreement. Since ' + U.fmtDate(D.AMTSHILFE[auth]) + ' assistance is also granted for simple tax evasion. An objection has practically no chance of success and only causes costs. The client has a right to be heard and will be informed of the request.';
       } else {
         assessment = clear ?
-          (fraud ? 'Tax fraud (Abgabebetrug) – use of forged documents. Dual criminality is given; assistance must be granted.' :
-            'Simple tax evasion (Steuerhinterziehung). Not a criminal offence in Switzerland; no dual criminality. Assistance may be refused (Art. 3 para. 3 IRSG).') :
-          'The request mentions undeclared income as well as "irregular accounting" without specifying forged documents. Assessment uncertain – our provisional view: ' +
+          (fraud ? tr('Tax fraud (Abgabebetrug): forged documents were used. Dual criminality is given; assistance must be granted.', 'Tax fraud: forged documents were used. Dual criminality is given; assistance must be granted.') :
+            tr('Simple tax evasion (Steuerhinterziehung). Not a criminal offence in Switzerland, hence no dual criminality. Assistance may be refused (Art. 3 para. 3 IRSG).', 'Simple tax evasion. Not a criminal offence in Switzerland, hence no dual criminality. Assistance may be refused (Art. 3 para. 3 IRSG).')) :
+          'The request mentions undeclared income and "irregular accounting" but does not specify any forged documents. Assessment uncertain. Provisional view: ' +
           (leaning ? 'probably tax fraud; assistance would have to be granted.' : 'probably simple tax evasion; an objection appears promising.');
       }
       K.msg({
-        type: 'letter', kind: 'mla', from: treaty ? 'Federal Tax Administration, Bern – Exchange of Information Service' : 'Federal Office of Justice, Bern – Mutual Legal Assistance Unit',
-        subject: (treaty ? 'Request for administrative assistance' : 'Request for mutual legal assistance') + ' – ' + requester + ' – re: ' + c.name,
+        type: 'letter', kind: 'mla', from: treaty ? 'Federal Tax Administration, Exchange of Information Service, Bern' : 'Federal Office of Justice, Mutual Legal Assistance Unit, Bern',
+        subject: (treaty ? 'Request for administrative assistance' : 'Request for mutual legal assistance') + ': ' + requester + ', re ' + c.name,
         body: (treaty ? 'Request for administrative assistance in tax matters\n\n' : 'Request for mutual legal assistance in criminal matters\n\n') + 'The ' + requester + ' (' + K.cname(country) + ') has requested assistance concerning ' + c.name + ', ' + c.city + '.\n\n' +
-          allegation + '\n\nThe requesting authority asks for production of all account documents and for information on any structures of which the person is the beneficial owner.\n\nYou are requested to state within ten days whether your institution maintains such relationships and whether you object to the production of documents.\n\n— Internal note, Dr. Iris Wyss, Legal & Compliance —\n' + assessment +
-          (c.booking ? '\n\nNote: the assets are booked with our subsidiary ' + D.LOCATIONS[c.booking].name + '; only the Swiss records are covered by the request.' : ''),
-        actions: [['object', treaty ? 'Object (appeal to the Federal Administrative Court)' : 'Object: fiscal offence – refuse assistance'], ['produce', 'Produce account documents']],
+          allegation + '\n\nThe requesting authority asks for all account documents and for information on any structures of which the person is the beneficial owner.\n\nWe kindly ask you to state within ten days whether your institution maintains such relationships and whether you object to the production of documents.\n\n[Internal note, Dr. I. Wyss, Legal & Compliance]\n' + assessment +
+          (c.booking ? '\n\nPlease note: the assets are booked with our subsidiary ' + D.LOCATIONS[c.booking].name + '. The request covers only the Swiss records.' : ''),
+        actions: [['object', treaty ? 'Object (appeal to the Federal Administrative Court)' : 'Object: fiscal offence, refuse assistance'], ['produce', 'Produce account documents']],
         data: { auth: auth, client: c.id, fraud: fraud, clear: clear, treaty: treaty }, due: U.addBusinessDays(s.date, 10)
       });
-      log.push(['EVT', (treaty ? 'AMTSHILFEGESUCH ' : 'RECHTSHILFEGESUCH ') + auth, c.rubrik]);
+      log.push(['EVT', (treaty ? tr('AMTSHILFEGESUCH ', 'ADMIN ASSISTANCE REQUEST ') : tr('RECHTSHILFEGESUCH ', 'MLA REQUEST ')) + auth, c.rubrik]);
     });
   }
 
@@ -288,14 +289,14 @@
     const s = S();
     const c = G.client(m.data.client);
     const auth = m.data.auth;
-    if (!c || c.status !== 'active') return { text: 'Relationship already closed – request answered accordingly.' };
+    if (!c || c.status !== 'active') return { text: 'Relationship already closed. Request answered accordingly.' };
     const offshore = !!c.booking;
     if (m.data.treaty) {
       K.expense('legal', key === 'object' ? 40000 : 5000);
       K.heat(auth, -4, 'Information delivered under tax treaty');
       K.loyal(c, -30);
-      if (offshore) return { text: 'The Swiss records were delivered. Most assets are booked abroad, so the damage is limited – but the client is shaken.' };
-      if (K.chance(0.5)) { c.declared = 1; c.regularised = s.date; K.note(c, 'Client regularised after administrative assistance.'); return { text: (key === 'object' ? 'The Federal Administrative Court dismissed the appeal. ' : '') + 'The documents were delivered. The client has filed a voluntary disclosure at home and stays – for now.' }; }
+      if (offshore) return { text: 'The Swiss records were delivered. Most assets are booked abroad, so the damage is limited. The client is shaken nonetheless.' };
+      if (K.chance(0.5)) { c.declared = 1; c.regularised = s.date; K.note(c, 'Client regularised after administrative assistance.'); return { text: (key === 'object' ? 'The Federal Administrative Court dismissed the appeal. ' : '') + 'The documents were delivered. The client has filed a voluntary disclosure at home and is staying for the time being.' }; }
       K.schedule(K.rint(3, 15), 'leave', { client: c.id, reason: 'administrative assistance' });
       return { text: (key === 'object' ? 'The Federal Administrative Court dismissed the appeal. ' : '') + 'The documents were delivered. The client is moving his assets elsewhere.' };
     }
@@ -308,11 +309,11 @@
         return { text: 'Objection upheld. The Federal Office of Justice refused assistance (fiscal offence). Legal costs CHF 15,000.' };
       }
       K.heat('EBK', 14, 'Unlawful refusal of mutual assistance');
-      K.heat(auth, 8, 'Mutual assistance – documents produced by court order');
+      K.heat(auth, 8, 'Mutual assistance: documents produced by court order');
       K.investigate(auth, offshore ? 3 : 8, 'Bank obstructed mutual assistance');
       K.expense('legal', 60000);
       if (!offshore) K.terminate(c, 'seized');
-      return { text: 'Objection rejected: the offence qualifies as tax fraud. Documents produced by order; the bank\'s conduct was reported to the regulator.' + (offshore ? '' : ' Relationship blocked and terminated.') + ' Legal costs CHF 60,000.' };
+      return { text: 'Objection rejected: the offence qualifies as tax fraud. Documents produced by order. The bank\'s conduct has been reported to the regulator.' + (offshore ? '' : ' Relationship blocked and terminated.') + ' Legal costs CHF 60,000.' };
     }
     if (m.data.fraud) {
       K.heat(auth, -10, 'Co-operation with foreign authorities');
@@ -327,7 +328,7 @@
     K.discretion(-12);
     G.activeClients().forEach(function (o) { if (o.dom === c.dom && o.id !== c.id) K.loyal(o, -6); });
     if (!offshore) K.terminate(c, 'seized');
-    return { text: 'Documents produced although the offence was purely fiscal. This breaches banking secrecy; the regulator has taken note and word is spreading among clients.' };
+    return { text: 'Documents produced although the offence was purely fiscal. This is a breach of banking secrecy. The regulator has taken note, and clients are talking.' };
   };
 
   /* ---------- Aufsicht ---------- */
@@ -342,12 +343,12 @@
     const n = (s.flags.reviews || []).filter(function (d) { return d >= yearAgo; }).length;
     const cost = 250000 * (1 + n * 0.6);
     K.msg({
-      type: 'letter', kind: 'ebk', from: G.authName('EBK') + ', Bern', subject: 'Request for information – due diligence in private banking',
+      type: 'letter', kind: 'ebk', from: G.authName('EBK') + ', Bern', subject: 'Request for information: due diligence in private banking',
       body: 'Dear Sirs,\n\nIn the course of our ongoing supervision we have received information which gives rise to questions regarding the observance of due-diligence obligations by your institution, in particular in connection with cash transactions, relationships with politically exposed persons and the clearing of transaction-monitoring alerts.\n\nWe request you to submit a written statement within 30 days. We reserve the right to order an extraordinary audit at the expense of the bank.\n\n' + G.authName('EBK'),
       actions: [['review', 'Commission special review (CHF ' + U.fmt(cost, 0) + ')'], ['reply', 'Written reply by Legal (CHF 20,000)']],
       data: { cost: cost, effect: 12 / Math.pow(2, n) }, due: U.addBusinessDays(s.date, 15)
     });
-    log.push(['EVT', 'SCHREIBEN ' + G.authShort('EBK'), 'WARNUNG']);
+    log.push(['EVT', tr('SCHREIBEN ', 'LETTER FROM ') + G.authShort('EBK'), tr('WARNUNG', 'WARNING')]);
   }
   G.handlers.ebk = function (m, key) {
     const s = S();
@@ -355,7 +356,7 @@
       K.expense('legal', m.data.cost);
       K.heat('EBK', -m.data.effect, 'Special review commissioned');
       s.flags.reviews = (s.flags.reviews || []).concat([s.date]);
-      return { text: 'Special review commissioned from Hürlimann Revision AG (CHF ' + U.fmt(m.data.cost, 0) + ').' + (m.data.effect >= 10 ? ' The regulator welcomes the initiative.' : ' The regulator notes that this is not the first review and remains sceptical.') };
+      return { text: 'Special review commissioned from Hürlimann Revision AG (CHF ' + U.fmt(m.data.cost, 0) + ').' + (m.data.effect >= 10 ? ' The regulator welcomes the step.' : ' The regulator notes that this is not the first review and remains sceptical.') };
     }
     K.expense('legal', 20000);
     const overdue = G.overdueAlerts().length;
@@ -412,7 +413,7 @@
           'Our audit did not reveal any findings regarding compliance with the due-diligence obligations. Our report to the regulator will contain an unqualified opinion.') +
         '\n\nAudit fee: CHF ' + U.fmt(180000 + G.activeClients().length * 1500, 0) + '.\n\nHürlimann Revision AG'
     });
-    log.push(['EVT', 'REVISIONSBERICHT ' + y, findings.length ? findings.length + ' FESTSTELLUNGEN' : 'OHNE BEFUND']);
+    log.push(['EVT', tr('REVISIONSBERICHT ', 'AUDIT REPORT ') + y, findings.length ? findings.length + tr(' FESTSTELLUNGEN', ' FINDINGS') : tr('OHNE BEFUND', 'NO FINDINGS')]);
   };
 
   // Risiko einer Festnahme bei Reisen ins Ausland

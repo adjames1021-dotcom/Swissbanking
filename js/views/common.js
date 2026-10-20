@@ -4,6 +4,7 @@
 
   const G = PBS.Game, D = PBS.DATA, U = PBS.U;
   const e = U.esc;
+  const tr = PBS.L.t;
   PBS.Views = PBS.Views || {};
   const H = PBS.H = {};
   H.S = function () { return G.state; };
@@ -64,8 +65,8 @@
     if (!c) return '';
     return '<a href="#/client/' + c.id + '">' + c.id + '</a>&nbsp;<b>' + e(c.rubrik) + '</b>' + (withName ? '<br><span class="muted">' + e(c.name) + '</span>' : '');
   };
-  H.accLabel = function (a) { return { CUR: 'Current account (Kontokorrent)', DEP: 'Securities portfolio (Depot)', MET: 'Precious metals (Edelmetall)' }[a.type]; };
-  H.accShort = function (a) { return { CUR: 'Kontokorrent', DEP: 'Depot', MET: 'Edelmetall' }[a.type]; };
+  H.accLabel = function (a) { return { CUR: tr('Current account (Kontokorrent)', 'Current account'), DEP: tr('Securities portfolio (Depot)', 'Securities portfolio'), MET: tr('Precious metals (Edelmetall)', 'Precious metals account') }[a.type]; };
+  H.accShort = function (a) { return { CUR: tr('Kontokorrent', 'Current'), DEP: tr('Depot', 'Portfolio'), MET: tr('Edelmetall', 'Metals') }[a.type]; };
   H.riskSt = function (r) { return r === 'PEP' ? H.st('bad', 'PEP') : r === 'Increased' ? H.st('warn', 'Increased') : H.st('ok', 'Normal'); };
   H.cty = function (c) { return '<span class="cc">' + e(c) + '</span>'; };
   H.clientsSelect = function (name, sel, filter) {

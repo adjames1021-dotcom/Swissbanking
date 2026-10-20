@@ -69,7 +69,7 @@
     const s = S();
     if (!min || K.free) return null;
     if (s.clock + min > K.LOCK) {
-      return K.err('It is ' + U.fmtTime(s.clock) + ' – this would take ' + min + ' minutes, and security locks the building at 20:00. Run the end-of-day batch.');
+      return K.err('It is ' + U.fmtTime(s.clock) + '. This takes ' + min + ' minutes and security locks the building at 20:00. Run the end-of-day batch.');
     }
     const before = s.clock;
     s.clock += min;

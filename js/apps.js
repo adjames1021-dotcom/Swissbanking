@@ -6,6 +6,7 @@
 
   const G = PBS.Game, U = PBS.U, FS = PBS.FS, Snd = PBS.Sound;
   const e = U.esc;
+  const tr = PBS.L.t;
   const A = PBS.Apps = { defs: {}, clip: null };
   function WM() { return PBS.WM; }
   function Dlg() { return PBS.Dlg; }
@@ -218,7 +219,8 @@
     { k: 'mouse', l: 'Mouse', icon: 'd-exe', d: 'Customizes your mouse settings, such as the button configuration and double-click speed.' },
     { k: 'inet', l: 'Internet Options', icon: 'd-net', d: 'Configures your Internet display and connection settings.' },
     { k: 'addrem', l: 'Add/Remove Programs', icon: 'd-exe', d: 'Installs and removes programs and Windows components.' },
-    { k: 'users', l: 'Users and Passwords', icon: 'i-key', d: 'Manages users and passwords for this computer.' }
+    { k: 'users', l: 'Users and Passwords', icon: 'i-key', d: 'Manages users and passwords for this computer.' },
+    { k: 'regional', l: 'Regional Options', icon: 'd-net', d: 'Customizes settings for the display of languages, numbers, times, and dates.' }
   ];
 
   function exItems(p) {
@@ -718,6 +720,7 @@
     else if (k === 'mouse') mouseProps();
     else if (k === 'inet') { if (PBS.Browser.options) PBS.Browser.options(); }
     else if (k === 'addrem') addRemove();
+    else if (k === 'regional') PBS.L.dialog();
     else Dlg().msg('Users and Passwords', 'You must be a member of the Administrators group to use Users and Passwords.<br>Please contact the Helpdesk (ext. 4411).', 'err');
   };
   function tabs(list) { return '<div class="wtabs">' + list.map(function (t, i) { return '<span class="wtab' + (i === 0 ? ' on' : '') + '" data-t="' + t[0] + '">' + t[1] + '</span>'; }).join('') + '</div>'; }
@@ -828,7 +831,7 @@
     });
   }
   function addRemove() {
-    const progs = [['Internet Explorer 6 SP1', '11.4MB'], ['Office Suite 2000 Professional', '182MB'], ['PBS/Web Client 4.2.1', '12.4MB'], ['Host Access 3270 Terminal Emulation', '24.1MB'], ['Virus Scanner 4.5 (definitions 03/2003)', '18.7MB'], ['Kursinformation Telekurs 3.1', '9.2MB']];
+    const progs = [['Internet Explorer 6 SP1', '11.4MB'], ['Office Suite 2000 Professional', '182MB'], ['PBS/Web Client 4.2.1', '12.4MB'], ['Host Access 3270 Terminal Emulation', '24.1MB'], ['Virus Scanner 4.5 (definitions 03/2003)', '18.7MB'], [tr('Kursinformation Telekurs 3.1', 'Telekurs Price Information 3.1'), '9.2MB']];
     Dlg().open({
       title: 'Add/Remove Programs', width: 480, icon: 'd-exe',
       body: '<div class="ar"><div class="ar-side"><div class="ar-t on">Change or Remove Programs</div><div class="ar-t">Add New Programs</div><div class="ar-t">Add/Remove Windows Components</div></div><div class="ar-list"><b>Currently installed programs:</b>' +

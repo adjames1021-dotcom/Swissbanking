@@ -6,6 +6,7 @@
 
   const G = PBS.Game, U = PBS.U;
   const e = U.esc;
+  const t = PBS.L.t;
   const Guide = PBS.Guide = { hooks: {} };
   let el = null, target = null, shownKey = '', base = null, advancing = null, collapsed = false;
 
@@ -25,15 +26,15 @@
   /* ---------- Die Schritte ---------- */
   // t: Titel, x: Absätze, task: was zu tun ist, done(c, s, base): erledigt?, a: worauf gezeigt wird, go: "Hinbringen"
   const STEPS = [
-    { t: 'Welcome!', x: ['This guide walks you through your first two working days, one small step at a time. Nothing you do here can break the game.',
-      'The idea in one sentence: you run a small Swiss private bank between 1998 and 2017. Rich people from abroad keep their money with you, often hidden from the tax office in their home country. You earn fees on that money.',
-      'More money means more fees – but foreign tax authorities and the Swiss regulator are watching. Grow the bank without getting caught.',
-      'Keep this little window open. It watches what you do and moves on by itself when a task is done. ‹ Back and Next › work at any time.'] },
-    { t: 'Finding your way', a: '#menubar', x: ['Everything happens inside this browser window, like the office computer of a bank in 2003.',
+    { t: 'Welcome!', x: ['This guide takes you through your first two working days, one small step at a time. Nothing you do here can break the game.',
+      'In short: you run a small Swiss private bank between 1998 and 2017. Rich people from abroad keep their money with you, often hidden from the tax office in their home country. You earn fees on that money.',
+      'More money means more fees, but foreign tax authorities and the Swiss regulator are watching. Your job is to grow the bank without getting caught.',
+      'Keep this little window open. It moves on by itself when you finish a task. ‹ Back and Next › work at any time.'] },
+    { t: 'Finding your way', a: '#menubar', x: ['Everything happens inside this browser window, on an office PC at a bank in 2003.',
       'The dark blue bar is the main menu. Each word is a department of the bank. A red number on it counts things waiting for you.',
       'The column on the left shows the pages of the department you are in.'] },
     { t: 'Your first memo', a: '#content .ptitle h1', go: '#/inbox/M0001', x: ['On screen is a memo from the Senior Partner, Dr. Vogt. It is your job description.',
-      'The most important line: for a foreigner, simply not declaring money (tax evasion) is not a crime in Switzerland, but forging documents (tax fraud) is. The whole game lives in that gap.'],
+      'The most important line: for a foreigner, simply not declaring money (tax evasion) is not a crime in Switzerland, but forging documents (tax fraud) is. Many decisions in the game turn on that difference.'],
       task: 'Scroll down and read the memo. Press Next when you are done.' },
     { t: 'The Dashboard', a: menu('#/overview'), x: ['The Dashboard is your home page. It summarises the whole bank on one screen.'],
       task: 'Click "Overview" in the blue menu.', done: function (c) { return c.path === 'overview'; } },
@@ -57,16 +58,16 @@
       task: 'Click "Release" on one payment. If the list is empty, press Next.', start: function () { return { n: G.pendingPayments().length }; }, done: function (c, s, b) { return G.pendingPayments().length < b.n; } },
     { t: 'The cash desk', a: '#nav a[href="#/pay/cash"]', x: ['Some clients come in person to bring or collect cash. Serve them before the evening or they leave annoyed.',
       'Large cash deposits (CHF 25,000 and more) set off a compliance alarm.'],
-      task: 'Click "Cash desk (Kasse)" in the left column.', done: function (c) { return c.path === 'pay/cash'; } },
+      task: t('Click "Cash desk (Kasse)" in the left column.', 'Click "Cash desk" in the left column.'), done: function (c) { return c.path === 'pay/cash'; } },
     { t: 'Your clients', a: menu('#/clients'), x: ['The client book lists every client. For discretion, each one also has a codename such as EDELWEISS.',
       '"AuM" means assets under management: how much money the client keeps with you. Your fees are a percentage of it.'],
       task: 'Click "Clients" in the blue menu.', done: function (c) { return c.path === 'clients'; } },
     { t: 'A client\'s file', a: '#content table.grid', go: '#/clients', x: ['Each client has a file with their accounts, products and notes.'],
       task: 'Click any client number (the blue link in the first column).', done: function (c) { return /^client\//.test(c.path); } },
     { t: 'Reading the file', a: '#content .cbanner', x: ['The coloured dots at the top are the client\'s status:',
-      '• "Hold mail" (banklagernd): no letters are sent to the client\'s home, so their tax office never sees a bank statement.',
+      t('• "Hold mail" (banklagernd): no letters are sent to the client\'s home, so their tax office never sees a bank statement.', '• "Hold mail": no letters are sent to the client\'s home, so their tax office never sees a bank statement.'),
       '• "Form A": the form recording who really owns the money. The law requires it.',
-      '• "Declared": the client pays their taxes. That is safe for you, but they pay lower fees.'] },
+      '• "Declared": the client pays tax on the money. Safe for you, but they pay lower fees.'] },
     { t: 'The risk monitor', a: menu('#/compliance'), x: ['This is the most important page for staying out of trouble.'],
       task: 'Click "Compliance" in the blue menu.', done: function (c) { return c.path === 'compliance'; } },
     { t: 'Who is watching you', a: '#content .panel', x: ['Each bar shows how interested one authority is in your bank: the Swiss regulator (EBK, later FINMA) and the tax authorities of the USA, Germany, Italy, France and Britain.',
@@ -83,7 +84,7 @@
       '1. Overview: look at the pending items.  2. Mail & fax: make the decisions.  3. Payments: sign orders and serve the cash desk.  4. Compliance: clear alerts.  5. End of day.'],
       task: 'Click "Overview" to start your second day.', done: function (c) { return c.path === 'overview'; } },
     { t: 'Your people', a: menu('#/org/staff'), x: ['Your employees do most of the work. Pay them close to the market rate and keep their morale up. Unhappy bankers quit and take their clients with them.',
-      'Watch out for staff with low integrity: they are the ones who leak or steal data.'],
+      'Watch out for staff with low integrity. They are the ones who leak or steal data.'],
       task: 'Click "Organisation" in the blue menu.', done: function (c) { return c.path === 'org/staff'; } },
     { t: 'Your score', a: '#nav a[href="#/career"]', go: '#/overview', x: ['Your bonus goes into your own private numbered account. That fortune is your score.',
       'The game ends when you retire, sell the bank or reach 2018, or earlier if you are fired, arrested or the bank is shut down.'],
@@ -93,8 +94,8 @@
       '3. Make sure every client has a Form A.',
       '4. Not every client is worth having. Be careful with politicians (PEPs) and cash that comes from nowhere.',
       '5. Delegate appointments when you are busy.',
-      '6. Do not leave client lists on the computer. Data thieves love them.',
-      'That\'s it! The Handbook (top right) explains everything in more detail, and you can restart this guide from there or from Help › Beginner\'s Guide.'] }
+      '6. Do not leave client lists on the computer. That is what data thieves look for.',
+      'That\'s it. The Handbook (top right) has the details. You can restart this guide from there or from Help › Beginner\'s Guide.'] }
   ];
 
   /* ---------- Steuerung ---------- */

@@ -111,6 +111,33 @@ auditors may list them in their report. Deleting them helps, and emptying the Re
 more. Each end-of-day batch also leaves its SYSOUT in `C:\PBS\log`. A new game clears the files
 the game created.
 
+### Settings
+
+**Settings** in the PBS/Web toolbar (also *Regional Options* in the Control Panel and Start menu,
+and *Regional settings* on the sign-on screen) switches how the game reads:
+
+- **Language:** the Swiss original (English with German banking terms, Swiss websites in German)
+  or English throughout.
+- **Numbers:** 1'234'567.89 or 1,234,567.89. **Dates:** 31.12.2003, 31/12/2003 or 12/31/2003.
+  **Time:** 24-hour or 12-hour.
+- **Currency:** Swiss francs, or US dollars converted at the game's daily rate. The bank still
+  keeps its books in francs, so input fields stay in CHF and accounts in other currencies keep
+  theirs.
+
+Presets give the Swiss original or English with US dollars in one click. Changing the language
+restarts PBS/Web without signing you off.
+
+### Stock market
+
+The **Trading** menu is a full share-dealing desk with about 30 fictional companies on five
+exchanges, priced day by day along real market history: the dot-com bubble, an airline grounding
+in 2001, an energy trader's collapse, subprime lenders, the 2008 bank crash, the solar boom and
+bust and a diesel scandal. Trade with your own money (your fortune is your score) or for the
+bank's trading book, which feeds the bank's profit. There are market, limit and stop-loss orders,
+exchange hours, brokerage and Swiss stamp duty, dividends with withholding tax, company news,
+IPOs and bankruptcies. Clients sometimes pass on takeover tips. Acting on one is insider dealing,
+and the exchange's surveillance office may notice.
+
 ### The internet
 
 Internet Explorer reaches a small, fictional Swiss web of the early 2000s that follows the game's
@@ -193,10 +220,12 @@ there make the score, kept in a local hall of fame.
 ```
 index.html           Desktop, browser window, sign-on screen, application frame, icon sprite
 css/pbs.css          Windows 2000 / IE6 chrome, intranet look, balloon tips, print styles
-js/util.js           Swiss number and date formatting, business days, IBAN check digits
+js/util.js           Number and date formatting (Swiss or English), regional settings, IBAN
+js/locale.js         Regional Options dialog and the US-dollar display
 js/data/             Bank and laws, staff and names, clients, markets, timeline, start scenarios
 js/engine/           Game rules: kernel (state, time, saving), market, payments, clients, staff,
-                     expansion, authorities, career, agenda, events, end-of-day batch, setup
+                     expansion, authorities, career, agenda, events, end-of-day batch, setup,
+                     trading (stock market)
 js/views/            Screens; they only read the game state
 js/sound.js          Synthesised sounds
 js/browser.js        Browser window, menus, toolbars, explorer bars, dialogs

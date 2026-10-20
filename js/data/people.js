@@ -3,6 +3,7 @@
   'use strict';
 
   const D = PBS.DATA;
+  const t = PBS.L.t;
 
   D.ROLES = {
     rm: { label: 'Relationship manager', short: 'RM', market: 230000, cap: 'clients' },
@@ -59,19 +60,19 @@
   };
 
   D.TRAITS = {
-    loyal: 'Loyal – has banked with the house for decades',
-    nervous: 'Nervous – reads the newspapers closely',
-    greedy: 'Performance-driven – compares returns',
-    demanding: 'Demanding – expects personal service',
-    secretive: 'Extremely discreet – no paper, no telephone'
+    loyal: 'Loyal. Has banked with the house for decades',
+    nervous: 'Nervous. Reads the papers closely',
+    greedy: 'Performance-driven, compares returns',
+    demanding: 'Demanding. Expects personal service',
+    secretive: 'Extremely discreet: no paper, no telephone'
   };
 
   D.PROSPECTS = [
     { c: 'DE', w: [1.5e6, 30e6], fee: [0.009, 0.013], risk: 'Normal', cash: 0.3, weight: 3,
       cities: ['München', 'Stuttgart', 'Düsseldorf', 'Hamburg', 'Frankfurt am Main', 'Freiburg im Breisgau'],
-      occ: ['Dentist (own practice)', 'Car dealership owner', 'Surgeon', 'Owner, Mittelstand manufacturer', 'Real estate developer', 'Notary'],
+      occ: ['Dentist (own practice)', 'Car dealership owner', 'Surgeon', t('Owner, Mittelstand manufacturer', 'Owner, mid-sized manufacturer'), 'Real estate developer', 'Notary'],
       sow: ['Professional income', 'Business income', 'Inheritance', 'Sale of company'],
-      intro: ['Steuerberater Dr. K. in Konstanz', 'Treuhand Kreuzlingen AG', 'existing client EDELWEISS'], refuseA: 0.08 },
+      intro: [t('Steuerberater Dr. K. in Konstanz', 'Dr. K., tax adviser in Konstanz'), 'Treuhand Kreuzlingen AG', 'existing client EDELWEISS'], refuseA: 0.08 },
     { c: 'IT', w: [0.8e6, 25e6], fee: [0.011, 0.016], risk: 'Normal', cash: 0.65, weight: 3,
       cities: ['Milano', 'Como', 'Bergamo', 'Brescia', 'Verona', 'Torino', 'Varese'],
       occ: ['Textile manufacturer', 'Furniture exporter', 'Construction entrepreneur', 'Restaurant chain owner', 'Steel stockholder', 'Jeweller'],
@@ -135,22 +136,22 @@
   ];
 
   D.TRIP_DEST = [
-    { c: 'DE', city: 'Frankfurt / Munich / Stuttgart', note: 'Mittelstand owners and professionals. Steuerfahndung is active at the border.' },
+    { c: 'DE', city: 'Frankfurt / Munich / Stuttgart', note: t('Mittelstand owners and professionals. The Steuerfahndung is active at the border.', 'Owners of mid-sized firms, professionals. German tax investigators are active at the border.') },
     { c: 'IT', city: 'Milan / Como / Brescia', note: 'Cash-rich entrepreneurs. Guardia di Finanza checks at Chiasso.' },
     { c: 'FR', city: 'Paris / Lyon / Côte d\'Azur', note: 'Old money and professionals.' },
     { c: 'GB', city: 'London', note: 'Property and City money. Relatively low scrutiny.' },
-    { c: 'US', city: 'Miami / Houston / New York', note: 'Large tickets. The IRS takes a dim view of Swiss bankers on US soil.' },
+    { c: 'US', city: 'Miami / Houston / New York', note: 'Large tickets. The IRS does not like Swiss bankers on US soil.' },
     { c: 'AR', city: 'Buenos Aires', note: 'Capital flight. No home-country enforcement.' },
-    { c: 'BR', city: 'São Paulo / Rio de Janeiro', note: 'New wealth, informal money changers.' },
-    { c: 'RU', city: 'Moscow', note: 'Very large tickets, increased-risk profiles.' }
+    { c: 'BR', city: 'São Paulo / Rio de Janeiro', note: 'New money, informal money changers.' },
+    { c: 'RU', city: 'Moscow', note: 'Very large tickets. Mostly increased-risk profiles.' }
   ];
 
   // Kunden-Anliegen bei Telefonaten
   D.FAVOURS = [
     { key: 'hotel', text: 'asks you to reserve a suite at the Dolder and a table at the Kronenhalle for Saturday.', cost: 0, loyalty: 3, min: 10 },
     { key: 'nephew', text: 'asks whether the bank could offer his nephew a traineeship in the back office.', hire: true, loyalty: 10, min: 15 },
-    { key: 'cashair', text: 'is arriving at Kloten on Friday and would like cash brought to the airport – discreetly.', personal: 1, loyalty: 8, min: 20 },
-    { key: 'letter', text: 'needs a letter confirming "sufficient funds" for a property purchase at home – without naming the bank in the letterhead.', personal: 0.5, loyalty: 6, min: 15 },
-    { key: 'gift', text: 'would like you to organise a Rolex as a birthday present for a business partner, paid from the account.', loyalty: 4, min: 15 }
+    { key: 'cashair', text: 'arrives at Kloten on Friday and would like cash brought discreetly to the airport.', personal: 1, loyalty: 8, min: 20 },
+    { key: 'letter', text: 'needs a letter confirming "sufficient funds" for a property purchase at home, without the bank\'s name on the letterhead.', personal: 0.5, loyalty: 6, min: 15 },
+    { key: 'gift', text: 'would like you to get a Rolex as a birthday present for a business partner, paid from the account.', loyalty: 4, min: 15 }
   ];
 })(window.PBS);

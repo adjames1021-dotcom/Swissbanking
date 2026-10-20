@@ -3,6 +3,7 @@
   'use strict';
 
   const D = PBS.DATA, U = PBS.U, K = PBS.K, G = PBS.Game;
+  const tr = PBS.L.t;
   function S() { return G.state; }
 
   /* ---------- Exposure einer Zahlung ---------- */
@@ -140,16 +141,16 @@
     const errors = [];
     const acc = G.account(p.debit);
     const amount = +p.amount;
-    if (!acc) errors.push('Debit account (Belastungskonto) is missing.');
+    if (!acc) errors.push(tr('Debit account (Belastungskonto) is missing.', 'Debit account is missing.'));
     if (!(amount > 0)) errors.push('Field 32A: amount must be greater than zero.');
     if (!p.benefName) errors.push('Field 59: beneficiary name is missing.');
     if (!p.bic || String(p.bic).length < 8) errors.push('Field 57A: BIC of beneficiary institution is missing or incomplete.');
     if (!p.country || !D.COUNTRIES[p.country]) errors.push('Beneficiary country is missing.');
     if (G.currencies().indexOf(p.ccy) < 0) errors.push('Field 32A: currency ' + p.ccy + ' is not available.');
-    if (p.ccy === 'USD' && s.corr.status !== 'active') errors.push('No USD correspondent bank – US dollar payments are suspended.');
+    if (p.ccy === 'USD' && s.corr.status !== 'active') errors.push('No USD correspondent bank. US dollar payments are suspended.');
     if (errors.length) return { errors: errors, hits: [], notes: [] };
     const client = G.client(acc.client);
-    if (acc.type !== 'CUR') errors.push('Payments can only be debited to a current account (Kontokorrent).');
+    if (acc.type !== 'CUR') errors.push(tr('Payments can only be debited to a current account (Kontokorrent).', 'Payments can only be debited to a current account.'));
     if (client.status !== 'active' || acc.closed) errors.push('Relationship is blocked or closed.');
     const chf = amount * K.rate(p.ccy);
     const debitAmt = p.ccy === acc.ccy ? amount : chf * (1 + D.FX_SPREAD) / K.rate(acc.ccy);
@@ -278,7 +279,7 @@
     const s = S();
     const k = s.counter.find(function (x) { return x.id === id; });
     if (!k) return K.err('Visit not found.');
-    if (!G.activeStaff('teller').length) return K.err('The cash desk is not staffed – hire a teller (Organisation › Staff).');
+    if (!G.activeStaff('teller').length) return K.err('The cash desk is not staffed. Hire a teller first (Organisation › Staff).');
     const c = G.client(k.client);
     const chf = k.amount * K.rate(k.ccy);
     let al = null;
@@ -300,7 +301,7 @@
       if (!acc) {
         acc = accs.filter(function (a) { return G.available(a) * K.rate(a.ccy) >= chf * 1.003; })
           .sort(function (a, b) { return K.valueCHF(b) - K.valueCHF(a); })[0];
-        if (!acc) return K.err('Insufficient funds on current accounts – securities would have to be sold first.');
+        if (!acc) return K.err('Insufficient funds on current accounts. Securities would have to be sold first.');
         debit = chf * 1.0025 / K.rate(acc.ccy);
         K.income('fx', chf * 0.0025);
       }
@@ -398,10 +399,10 @@
       K.discretion(-5);
       if (cr) { cr.status = 'arrested'; cr.left = s.date; }
       K.msg({
-        type: 'memo', kind: 'info', from: 'Claudio Moretti, desk Italy', subject: 'URGENT – courier arrested at the border',
-        body: 'Our courier ' + (cr ? cr.name : '') + ' was stopped this morning at ' + (c.dom === 'IT' ? 'Brogeda (Chiasso)' : 'the border') + ' carrying ' + k.ccy + ' ' + U.fmt(k.amount, 0) + ' in cash collected from ' + c.rubrik + '.\n\nThe money has been seized. The courier is being questioned by the ' + G.authShort(auth) + '. We must assume he will talk.\n\nThe client is furious.'
+        type: 'memo', kind: 'info', from: 'Claudio Moretti, desk Italy', subject: 'URGENT: courier arrested at the border',
+        body: 'Our courier ' + (cr ? cr.name : '') + ' was stopped this morning at ' + (c.dom === 'IT' ? 'Brogeda (Chiasso)' : 'the border') + ' carrying ' + k.ccy + ' ' + U.fmt(k.amount, 0) + ' in cash collected from ' + c.rubrik + '.\n\nThe money was seized. He is being questioned by the ' + G.authShort(auth) + ' and we have to assume he will make a statement. Client informed, furious.'
       });
-      log.push(['EVT', 'KURIER VERHAFTET ' + c.rubrik, 'WARNUNG']);
+      log.push(['EVT', tr('KURIER VERHAFTET ', 'COURIER ARRESTED ') + c.rubrik, tr('WARNUNG', 'WARNING')]);
     } else {
       k.status = 'done';
       const acc = K.ensureAccount(c, k.ccy, null);
@@ -411,7 +412,7 @@
       K.income('comm', fee);
       K.raise(K.rulesFor(c, k.amount * K.rate(k.ccy), { cash: true }), c, tx, 'Cash deposit ' + k.ccy + ' ' + U.fmt(k.amount, 0) + ' (courier service)');
       K.loyal(c, 6);
-      log.push(['EVT', 'KURIERFAHRT ' + c.rubrik, k.ccy + ' ' + U.fmt(k.amount, 0)]);
+      log.push(['EVT', tr('KURIERFAHRT ', 'COURIER RUN ') + c.rubrik, k.ccy + ' ' + U.fmt(k.amount, 0)]);
     }
   };
 })(window.PBS);

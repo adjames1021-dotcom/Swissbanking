@@ -3,6 +3,7 @@
   'use strict';
 
   const D = PBS.DATA, U = PBS.U, K = PBS.K, G = PBS.Game;
+  const tr = PBS.L.t;
   function S() { return G.state; }
 
   /* ---------- Standorte ---------- */
@@ -51,7 +52,7 @@
   /* ---------- USD-Korrespondenzbank ---------- */
   G.findCorrespondent = function () {
     const s = S();
-    if (s.corr.status === 'active') return K.err('The USD correspondent relationship is active.');
+    if (s.corr.status === 'active') return K.err('The USD correspondent relationship is still active.');
     const t = K.use(60);
     if (t) return t;
     K.expense('legal', 150000);
@@ -62,22 +63,22 @@
       s.corr.history = used.concat([s.corr.name]);
       s.corr = { name: name, status: 'active', since: s.date, fee: (s.corr.fee || 0) + 30, history: s.corr.history };
       G.save();
-      return { ok: true, found: true, text: name + ' accepts the relationship – at higher fees (+CHF 30 per payment).' };
+      return { ok: true, found: true, text: name + ' accepts the relationship, at higher fees (+CHF 30 per payment).' };
     }
     G.save();
-    return { ok: true, found: false, text: 'No US bank was willing to take on a Swiss private bank at this time. Try again later.' };
+    return { ok: true, found: false, text: 'No US bank is willing to take on a Swiss private bank at present. Try again later.' };
   };
   K.correspondentDaily = function (log) {
     const s = S();
     if (s.corr.status === 'active' && s.date >= '2008-06-01' && s.heat.US > 65 && K.chance((s.heat.US - 65) / 400)) {
       s.corr.status = 'notice';
       s.corr.until = U.addBusinessDays(s.date, 20);
-      K.msg({ type: 'letter', kind: 'info', from: s.corr.name, subject: 'Termination of correspondent banking relationship', body: 'Dear Sirs,\n\nFollowing a review of our risk appetite regarding foreign private banks, we regret to inform you that we will terminate the USD correspondent account relationship with effect from ' + U.fmtDate(s.corr.until) + '.\n\nAfter that date we will no longer process payments in your favour or on your behalf.\n\nYours faithfully,\n' + s.corr.name });
-      log.push(['EVT', 'KUENDIGUNG USD-KORRESPONDENT', 'WARNUNG']);
+      K.msg({ type: 'letter', kind: 'info', from: s.corr.name, subject: 'Termination of correspondent banking relationship', body: 'Dear Sirs,\n\nFollowing a review of our risk appetite regarding foreign private banks, we regret to inform you that we are terminating the USD correspondent account relationship with effect from ' + U.fmtDate(s.corr.until) + '.\n\nAfter that date we will no longer process payments in your favour or on your behalf.\n\nYours faithfully,\n' + s.corr.name });
+      log.push(['EVT', tr('KUENDIGUNG USD-KORRESPONDENT', 'USD CORRESPONDENT TERMINATED'), tr('WARNUNG', 'WARNING')]);
     }
     if (s.corr.status === 'notice' && s.date >= s.corr.until) {
       s.corr.status = 'terminated';
-      log.push(['EVT', 'USD-ZAHLUNGSVERKEHR EINGESTELLT', 'ALARM']);
+      log.push(['EVT', tr('USD-ZAHLUNGSVERKEHR EINGESTELLT', 'USD PAYMENTS SUSPENDED'), 'ALARM']);
     }
     if (s.corr.status === 'terminated') {
       G.activeClients().forEach(function (c) {
@@ -104,7 +105,7 @@
     const s = S();
     const t = s.targets.find(function (x) { return x.id === id; });
     if (!t) return K.err('Offer no longer available.');
-    if (t.dd) return K.err('Due diligence already done.');
+    if (t.dd) return K.err('Due diligence has already been carried out.');
     const tm = K.use(30);
     if (tm) return tm;
     K.expense('legal', 250000);
@@ -136,7 +137,7 @@
       const c = K.acceptProspect(pr);
       s.sched = s.sched.filter(function (x) { return !(x.data && x.data.client === c.id); });
       const acc = G.clientAccounts(c.id)[0];
-      K.book(acc, pr.amount, 'Transfer of assets – merger with ' + t.name.split(',')[0], { kind: 'int-in' });
+      K.book(acc, pr.amount, 'Transfer of assets, merger with ' + t.name.split(',')[0], { kind: 'int-in' });
       c.funded = true;
       if (i < t.hidden.weak) { c.formA = null; }
     }
@@ -163,10 +164,10 @@
     const buyer = K.pick(['a large Zurich bank', 'a Geneva private banking group', 'a Liechtenstein banking group', 'an Austrian bank', 'a Brazilian banking group']);
     K.msg({
       type: 'letter', kind: 'takeover', from: 'Hottinger Corporate Finance AG (on behalf of ' + buyer + ')', subject: 'Confidential offer to acquire Bankhaus Vogt & Cie',
-      body: 'Dear Sirs,\n\nOn behalf of our client, ' + buyer + ', we are instructed to submit a non-binding offer to acquire 100% of Bankhaus Vogt & Cie for CHF ' + U.fmt(price, 0) + ' (approx. ' + U.fmt(price / aum * 100, 1) + '% of assets under management, including equity).\n\nYour partnership share would amount to CHF ' + U.fmt(price * s.career.stake, 0) + '.\n\nThe offer is valid for ten business days.\n\nHottinger Corporate Finance AG',
-      actions: [['accept', 'Accept – sell the bank (ends the game)'], ['decline', 'Decline']], data: { price: price, buyer: buyer }, due: U.addBusinessDays(s.date, 10)
+      body: 'Dear Sirs,\n\nOn behalf of our client, ' + buyer + ', we are instructed to submit a non-binding offer to acquire 100% of Bankhaus Vogt & Cie for CHF ' + U.fmt(price, 0) + ' (approx. ' + U.fmt(price / aum * 100, 1) + '% of assets under management, including equity).\n\nYour partnership share would amount to CHF ' + U.fmt(price * s.career.stake, 0) + '.\n\nThe offer is valid for ten business days.\n\nYours faithfully,\nHottinger Corporate Finance AG',
+      actions: [['accept', 'Accept and sell the bank (ends the game)'], ['decline', 'Decline']], data: { price: price, buyer: buyer }, due: U.addBusinessDays(s.date, 10)
     });
-    log.push(['EVT', 'UEBERNAHMEANGEBOT', 'CHF ' + U.fmtMio(price)]);
+    log.push(['EVT', tr('UEBERNAHMEANGEBOT', 'TAKEOVER OFFER'), 'CHF ' + U.fmtMio(price)]);
   };
 
   /* ---------- Preise und Produkte ---------- */
@@ -180,7 +181,7 @@
     if (p.level && p.level !== old) {
       const up = D.FEE_LEVELS[p.level].mult > D.FEE_LEVELS[old].mult;
       G.activeClients().forEach(function (c) { K.loyal(c, up ? -5 : 3); });
-      K.msg({ type: 'memo', from: 'Beatrice Lüthi, Finance & Controlling', subject: 'Fee schedule changed: ' + D.FEE_LEVELS[p.level].label, body: 'All clients have been informed in writing of the new fee schedule (' + D.FEE_LEVELS[p.level].label + ', factor ' + D.FEE_LEVELS[p.level].mult + '). The change applies from today.' });
+      K.msg({ type: 'memo', from: 'Beatrice Lüthi, Finance & Controlling', subject: 'Fee schedule changed: ' + D.FEE_LEVELS[p.level].label, body: 'All clients have been informed in writing of the new fee schedule (' + D.FEE_LEVELS[p.level].label + ', factor ' + D.FEE_LEVELS[p.level].mult + '). The new rates apply from today.\n\nB. Lüthi' });
     }
     G.save();
     return { ok: true };

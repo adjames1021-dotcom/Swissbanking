@@ -3,6 +3,7 @@
   'use strict';
 
   const D = PBS.DATA;
+  const t = PBS.L.t;
   function n(d, who, text) { return [d, who, text]; }
 
   // accounts: [Typ, Währung, Saldo (Stand 2003), Inhaber-Sitzgesellschaft, Strategie für Depots]
@@ -16,8 +17,8 @@
       traits: ['loyal'], family: { spouse: 'Gisela (1937)', children: ['Dr. Martin (1962)', 'Katrin (1965)'] },
       accounts: [['CUR', 'CHF', 1284551.20], ['CUR', 'EUR', 3905112.75], ['DEP', 'CHF', 24500000, null, 'income'], ['MET', 'XAU', 2400],
         ['CUR', 'EUR', 4350000, 'E01'], ['DEP', 'CHF', 2800000, 'E01', 'balanced']],
-      notes: [n('2003-02-05', 'Urs Keller', 'Telephone call. Client plans to buy a holiday flat on Sylt this spring. Wishes his son (Dr. M. Brenner) to receive power of attorney at a later date.'),
-        n('2002-11-19', 'Urs Keller', 'Annual meeting in Zurich (Hotel Baur au Lac). Mandate unchanged, conservative. Statements to remain banklagernd.')]
+      notes: [n('2003-02-05', 'Urs Keller', 'Telephone call. Client plans to buy a holiday flat on Sylt this spring. Son (Dr. M. Brenner) to receive power of attorney at a later date.'),
+        n('2002-11-19', 'Urs Keller', t('Annual meeting in Zurich (Hotel Baur au Lac). Mandate unchanged, conservative. Statements to remain banklagernd.', 'Annual meeting in Zurich (Hotel Baur au Lac). Mandate unchanged, conservative. Statements to remain on hold mail.'))]
     },
     {
       id: '100.517', rubrik: 'MONTEROSA', name: 'Vittorio Spadaro', nat: 'IT', dom: 'IT', city: 'Como',
@@ -33,7 +34,7 @@
       sow: 'Inheritance (1988)', wealth: 14e6, declared: 0, risk: 'Normal', formA: '1988-06-30', holdMail: true,
       since: '1961-05-02', rm: 'S03', fee: 0.011, loyalty: 88, traits: ['loyal', 'nervous'], family: { spouse: '† Pierre (1925–1988)', children: [] },
       accounts: [['CUR', 'CHF', 220110.45], ['CUR', 'EUR', 1840900.00], ['DEP', 'CHF', 9150000, null, 'income']],
-      notes: [n('2003-01-08', 'Jean-Pierre Favre', 'Visit of client\'s nephew (no power of attorney). Information refused politely. Client has no children; will not on file.')]
+      notes: [n('2003-01-08', 'Jean-Pierre Favre', 'Client\'s nephew called in (no power of attorney). Information politely refused. Client has no children; no will on file.')]
     },
     {
       id: '100.711', rubrik: 'BLUEGRASS', name: 'Richard T. Whitcomb', nat: 'US', dom: 'US', city: 'Houston, Texas',
@@ -50,7 +51,7 @@
       wealth: 20e6, declared: 0.3, risk: 'Normal', formA: '1996-09-02', holdMail: false, since: '1996-09-02',
       rm: 'S04', fee: 0.010, loyalty: 66, traits: ['demanding'], family: { spouse: 'Annabel (1962)', children: ['Oliver (1990)'] },
       accounts: [['CUR', 'GBP', 2140000], ['DEP', 'CHF', 4300000, null, 'growth']],
-      notes: [n('2002-12-03', 'Thomas Hollis', 'At client\'s request statements continue to be mailed to his London home address. Advised hold mail – client declined.')]
+      notes: [n('2002-12-03', 'Thomas Hollis', 'At client\'s request statements continue to be mailed to his London home address. Advised hold mail, client declined.')]
     },
     {
       id: '100.802', rubrik: 'ORCHIDEE', name: 'Carlos Ibáñez Ortega', nat: 'VE', dom: 'VE', city: 'Caracas',
@@ -116,7 +117,7 @@
       wealth: 1.2e6, declared: 0, risk: 'Normal', formA: null, holdMail: true, since: '2001-11-05', rm: 'S02',
       fee: 0.013, loyalty: 70, traits: ['secretive'], family: { spouse: 'Aldo (1946)', children: ['Marta (1976)'] },
       accounts: [['CUR', 'EUR', 412500], ['MET', 'XAU', 650]],
-      notes: [n('2002-10-14', 'Claudio Moretti', 'Client declined again to sign Form A ("my accountant will take care of it"). To follow up.')]
+      notes: [n('2002-10-14', 'Claudio Moretti', 'Client again declined to sign Form A ("my accountant will take care of it"). Follow up.')]
     },
     {
       id: '101.026', rubrik: 'NORDLICHT', name: 'Lars Ekdahl', nat: 'SE', dom: 'SE', city: 'Stockholm',
@@ -136,7 +137,7 @@
       risk: 'Normal', formA: '2004-09-01', holdMail: true, since: '2004-09-01', rm: 'S01', fee: 0.009, loyalty: 70,
       traits: ['nervous'], family: { spouse: 'Christiane (1952)', children: ['Philipp (1978)', 'Anna (1981)'] },
       accounts: [['CUR', 'EUR', 6200000, 'E06'], ['DEP', 'CHF', 31000000, 'E06', 'balanced']],
-      notes: [n('2007-11-20', 'Urs Keller', 'Client asked whether "his Liechtenstein foundation" is safe. Reassured him.')]
+      notes: [n('2007-11-20', 'Urs Keller', 'Client asked whether "his Liechtenstein foundation" is safe. Reassured.')]
     },
     {
       id: '101.358', rubrik: 'MANGROVE', name: 'Robert J. Caldwell', nat: 'US', dom: 'US', city: 'Palm Beach, Florida',

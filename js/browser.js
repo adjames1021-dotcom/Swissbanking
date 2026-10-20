@@ -9,7 +9,7 @@
   const INTRA = 'http://intranet.vogt.intra/';
   const INTRA_PAGES = { intranet: 'default.htm', guide: 'einfuehrung.htm', phone: 'telefon.htm', menu: 'menueplan.htm', rules: 'weisungen.htm' };
   const APP = 'Microsoft Internet Explorer';
-  const LINKS = [['Intranet Vogt', '#/x/intranet'], ['PBS/Web', '#/overview'], ['Telefonbuch', '#/x/phone'], ['Menüplan', '#/x/menu'], ['Weisungen', '#/x/rules']];
+  const LINKS = [['Intranet Vogt', '#/x/intranet'], ['PBS/Web', '#/overview'], [PBS.L.t('Telefonbuch', 'Phone book'), '#/x/phone'], [PBS.L.t('Menüplan', 'Canteen menu'), '#/x/menu'], [PBS.L.t('Weisungen', 'Directives'), '#/x/rules']];
   const SIZES = [['xl', 'Lar~gest', 1.3], ['l', '~Larger', 1.15], ['m', '~Medium', 1], ['s', '~Smaller', 0.92], ['xs', 'Smalle~st', 0.85]];
   function $(id) { return document.getElementById(id); }
 
