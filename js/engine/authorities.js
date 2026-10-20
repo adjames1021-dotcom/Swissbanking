@@ -393,6 +393,8 @@
       delta += hidden.length * 6;
       hidden.forEach(function (c) { c.risk = 'PEP'; delete c.hiddenPep; });
     }
+    const ws = G.workstationExposure ? G.workstationExposure() : { live: [] };
+    if (ws.live.length && K.chance(0.7)) { findings.push('Client data stored outside the core banking system on workstation ZH-BS64-0217 (' + ws.live.length + ' file(s), e.g. ' + ws.live[0].split('\\').pop() + ')'); delta += Math.min(6, ws.live.length * 2); }
     if (s.flags.retroStop === false && s.date >= '2012-10-30') { findings.push('Retrocessions retained without client waiver after Federal Supreme Court ruling'); delta += 3; }
     const comp = G.activeStaff('comp');
     if (comp.some(function (x) { return x.skill >= 3; }) && s.staff.some(function (x) { return x.embezzled && !x.embezzled.found; }) && K.chance(0.6)) {

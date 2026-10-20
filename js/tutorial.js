@@ -52,7 +52,7 @@
     return r.width || r.height ? n : null;
   }
   function pick() {
-    if (!on() || B.win === 'min' || B.win === 'closed') return null;
+    if (!on() || ['min', 'closed'].indexOf(PBS.WM.ieState()) >= 0) return null;
     const c = T.hooks.ctx ? T.hooks.ctx() : {};
     const s = seen();
     if (Dlg.any()) {

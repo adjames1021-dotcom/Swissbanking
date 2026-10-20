@@ -44,7 +44,7 @@
     el.className = 'oswin';
     el.id = win.id;
     el.innerHTML =
-      '<div class="os-tb"><svg class="ico"><use href="#' + win.icon + '"/></svg><span class="os-title"></span>' +
+      '<div class="os-tb"><svg class="ico"><use href="#' + win.icon + '"/></svg><span class="os-title">' + e(win.title || '') + '</span>' +
       '<span class="os-wbtns"><button type="button" class="wb" data-w="min" aria-label="Minimize"><i class="g-min"></i></button>' +
       '<button type="button" class="wb" data-w="max" aria-label="Maximize"><i class="g-max"></i></button>' +
       '<button type="button" class="wb wx" data-w="close" aria-label="Close"><i class="g-x"></i></button></span></div>' +
@@ -93,6 +93,15 @@
     paintTasks();
   }
   WM.setTitle = setTitle;
+  // Programme mit fester Grösse (Minesweeper, Rechner) passen das Fenster dem Inhalt an
+  WM.setSize = function (w, width, height) {
+    w.rect.w = Math.min(width, desk().w);
+    w.rect.h = Math.min(height, desk().h);
+    if (w.rect.x + w.rect.w > desk().w) w.rect.x = Math.max(0, desk().w - w.rect.w);
+    if (w.rect.y + w.rect.h > desk().h) w.rect.y = Math.max(0, desk().h - w.rect.h);
+    applyAny(w);
+  };
+  WM.each = function (fn) { Object.keys(WM.wins).forEach(function (id) { if (id !== 'ie') fn(WM.wins[id]); }); };
   WM.setBodyIcon = function (id, icon) { const w = WM.wins[id]; if (w) { w.icon = icon; w.el.querySelector('.os-tb .ico use').setAttribute('href', '#' + icon); paintTasks(); } };
 
   /* ---------- Geometrie ---------- */
@@ -112,7 +121,7 @@
     el.querySelector('.os-wbtns [data-w=max] i').className = win.state === 'max' ? 'g-res' : 'g-max';
   }
   function minimize(id) { const w = win(id); if (!w) return; w.state = 'min'; frame(w).style.display = 'none'; if (WM.focused === id) focusNext(id); paintTasks(); }
-  function toggleMax(id) { const w = win(id); if (!w || w.resizable === false) return; w.state = w.state === 'max' ? 'normal' : 'max'; applyAny(w); focus(id); }
+  function toggleMax(id) { const w = win(id); if (!w || w.resizable === false) return; w.state = w.state === 'max' ? 'normal' : 'max'; applyAny(w); focus(id); if (w.onResize) setTimeout(function () { w.onResize(w); }, 0); }
   function restore(id) { const w = win(id); if (!w) return; w.state = w.state === 'min' ? (w.lastState || 'normal') : w.state; applyAny(w); }
   WM.min = minimize; WM.max = toggleMax; WM.restore = restore;
 
@@ -159,13 +168,15 @@
     const w = win(id);
     if (!w) return;
     if (w.state === 'min') restore(id);
+    const changed = WM.focused !== id;
     WM.focused = id;
     WM.order = WM.order.filter(function (x) { return x !== id; });
     WM.order.push(id);
-    WM.order.forEach(function (x, i) { frame(win(x)).style.zIndex = 20 + i; });
+    WM.order.forEach(function (x, i) { frame(win(x)).style.zIndex = 20 + Math.min(i, 25); });
     document.querySelectorAll('.oswin.focused, #ie.focused').forEach(function (el) { el.classList.remove('focused'); });
     frame(w).classList.add('focused');
     paintTasks();
+    if (changed && w.onFocus) setTimeout(w.onFocus, 0);
   }
   WM.focus = focus;
   function focusNext(skip) {
@@ -173,11 +184,11 @@
     if (vis.length) focus(vis[vis.length - 1]); else { WM.focused = null; paintTasks(); }
   }
 
-  WM.close = function (id) {
+  WM.close = function (id, force) {
     const w = win(id);
     if (!w) return;
     if (id === 'ie') { if (ieWin.onClose) ieWin.onClose(); ieVisible = false; frame(w).style.display = 'none'; WM.order = WM.order.filter(function (x) { return x !== id; }); if (WM.focused === id) focusNext(id); paintTasks(); return; }
-    if (w.onClose && w.onClose(w) === false) return;
+    if (!force && w.onClose && w.onClose(w) === false) return;
     frame(w).remove();
     delete WM.wins[id];
     WM.order = WM.order.filter(function (x) { return x !== id; });
@@ -265,10 +276,10 @@
   ];
   WM.paintDesktop = function () {
     const box = $('dicons');
-    if (!box) return;
+    if (!box || WM.renaming) return;
     let html = SPECIAL.map(function (s) {
-      const lab = s.d === 'bin' ? 'Recycle Bin' + (FS.binCount() ? ' (' + FS.binCount() + ')' : '') : s.label;
-      return '<div class="dicon" data-d="' + s.d + '" tabindex="0"><svg><use href="#' + (s.d === 'bin' && FS.binCount() ? 'd-recycle' : s.icon) + '"/></svg><span>' + e(lab) + '</span></div>';
+      const lab = s.label;
+      return '<div class="dicon" data-d="' + s.d + '" tabindex="0"><svg><use href="#' + (s.d === 'bin' && FS.binCount() ? 'd-recycle-full' : s.icon) + '"/></svg><span>' + e(lab) + '</span></div>';
     }).join('');
     // Dateien auf dem Desktop
     const dp = FS.specialPaths().desktop;
@@ -278,9 +289,9 @@
     box.innerHTML = html;
   };
   function iconFor(f) {
-    if (f.type === 'dir') return 'i-folder';
+    if (f.type === 'dir') return 'd-folder';
     if (f.icon) return f.icon;
-    return { text: 'i-doc', doc: 'i-doc', xls: 'i-doc', image: 'i-page', url: 'i-globe', html: 'i-page', exe: 'i-go', lnk: 'i-go' }[f.mime] || 'i-doc';
+    return { text: 'd-txt', doc: 'd-doc', xls: 'd-xls', image: 'd-image', url: 'd-htm', html: 'd-htm', exe: 'd-exe', lnk: 'd-exe' }[f.mime] || 'd-txt';
   }
   WM.iconFor = iconFor;
 
@@ -297,6 +308,7 @@
       return;
     }
     if (info.mime === 'image') { WM.open('viewer', { path: info.path }); return; }
+    if (info.mime === 'html' && WM.hooks.navigate) { WM.hooks.navigate('file:///' + FS.join(info.path).replace(/\\/g, '/')); return; }
     WM.open('notepad', { path: info.path });
   };
   function launchApp(app) {
@@ -307,7 +319,7 @@
 
   /* ---------- Startmenü ---------- */
   function startMenu() {
-    const docsRecent = FS.list(FS.specialPaths().documents).filter(function (f) { return f.type === 'file'; }).slice(0, 6)
+    const docsRecent = FS.list(FS.specialPaths().documents).filter(function (f) { return f.type === 'file'; }).sort(function (a, b) { return (b.modified || '') > (a.modified || '') ? 1 : (b.modified || '') < (a.modified || '') ? -1 : 0; }).slice(0, 6)
       .map(function (f) { return { l: f.name, ico: iconFor(f), fn: function () { WM.openPath(f.path); } }; });
     const progs = [
       { l: 'Accessories', ico: 'i-folder', sub: [
@@ -331,7 +343,7 @@
       { l: '~Programs', ico: 'i-folder', big: true, sub: progs },
       { l: '~Documents', ico: 'i-folder', big: true, sub: docsRecent.length ? docsRecent.concat(['-', { l: 'My Documents', ico: 'd-docs', fn: function () { WM.open('explorer', { path: FS.specialPaths().documents }); } }]) : [{ l: 'My Documents', ico: 'd-docs', fn: function () { WM.open('explorer', { path: FS.specialPaths().documents }); } }] },
       { l: '~Settings', ico: 'i-list', big: true, sub: [{ l: '~Control Panel', ico: 'd-control', fn: function () { WM.open('control'); } }, { l: '~Network and Dial-up Connections', dis: true }, { l: '~Printers', dis: true }, { l: '~Taskbar & Start Menu...', dis: true }] },
-      { l: 'S~earch', ico: 'i-search', big: true, sub: [{ l: 'For ~Files or Folders...', fn: function () { WM.open('explorer'); } }, { l: 'On the ~Internet...', fn: function () { launchApp('ie'); if (WM.hooks.navigate) WM.hooks.navigate('http://www.find.ch/'); } } ] },
+      { l: 'S~earch', ico: 'i-search', big: true, sub: [{ l: 'For ~Files or Folders...', fn: function () { WM.open('explorer'); } }, { l: 'On the ~Internet...', fn: function () { launchApp('ie'); if (WM.hooks.navigate) WM.hooks.navigate('http://www.alpensuche.ch/'); } } ] },
       { l: '~Help', ico: 'i-info', big: true, fn: function () { if (WM.hooks.help) WM.hooks.help(); } },
       { l: '~Run...', ico: 'i-go', big: true, fn: runDlg }, '-',
       { l: '~Log Off ' + user + '...', ico: 'i-key', big: true, fn: function () { if (WM.hooks.logoff) WM.hooks.logoff(); } },
@@ -360,7 +372,7 @@
       title: 'Shut Down Windows', width: 400, icon: 'd-comp',
       body: '<div class="dlg-msg"><svg class="ico32"><use href="#d-comp"/></svg><div>What do you want the computer to do?<br><br><select class="inp" id="sd-what" style="width:100%"><option value="logoff">Log off ' + e((PBS.Game.state ? PBS.Game.state.user.id : 'user')) + '</option><option value="shut">Shut down</option><option value="restart">Restart</option></select><div class="small muted" id="sd-desc" style="margin-top:6px">Ends your session so another user can log on.</div></div></div>',
       onOpen: function (ov) { const s = ov.querySelector('#sd-what'), d = ov.querySelector('#sd-desc'); s.onchange = function () { d.textContent = { logoff: 'Ends your session so another user can log on.', shut: 'Saves your work and prepares the computer to be turned off.', restart: 'Closes all programs and restarts the computer.' }[s.value]; }; },
-      buttons: [{ label: 'OK', def: true, fn: function (ov) { const v = ov.querySelector('#sd-what').value; setTimeout(function () { if (v === 'logoff' && WM.hooks.logoff) WM.hooks.logoff(); else if (WM.hooks.shutdown) WM.hooks.shutdown(v); }, 0); } }, { label: 'Cancel' }, { label: 'Help', dis: true }]
+      buttons: [{ label: 'OK', def: true, fn: function (ov) { const v = ov.querySelector('#sd-what').value; setTimeout(function () { if (v === 'logoff' && WM.hooks.logoff) WM.hooks.logoff(true); else if (WM.hooks.shutdown) WM.hooks.shutdown(v); }, 0); } }, { label: 'Cancel' }, { label: 'Help', dis: true }]
     });
   }
   WM.closeAllApps = function () { Object.keys(WM.wins).forEach(function (id) { if (id !== 'ie') { const w = WM.wins[id]; if (w.el) w.el.remove(); delete WM.wins[id]; } }); WM.order = WM.order.filter(function (id) { return id === 'ie'; }); paintTasks(); };
@@ -392,14 +404,7 @@
   });
   document.addEventListener('dblclick', function (ev) {
     const di = ev.target.closest('.dicon');
-    if (!di) return;
-    if (di.dataset.path) { WM.openPath(di.dataset.path); return; }
-    const d = di.dataset.d;
-    if (d === 'comp') WM.open('explorer', { path: ['My Computer'] });
-    else if (d === 'docs') WM.open('explorer', { path: FS.specialPaths().documents });
-    else if (d === 'bin') WM.open('explorer', { path: ['Recycled'] });
-    else if (d === 'net') launchApp('ie');
-    else if (d === 'pbs') launchApp('pbs');
+    if (di && !ev.target.closest('.ex-ren')) openIcon(di);
   });
   document.addEventListener('click', function (ev) {
     const di = ev.target.closest('.dicon');
@@ -407,17 +412,73 @@
     if (di) di.classList.add('sel');
     else if (ev.target.id === 'desktop' || ev.target.id === 'dicons') { /* leerer Desktop */ }
   });
-  // Rechtsklick: einfaches Kontextmenü auf dem Desktop
+  // Rechtsklick auf dem Desktop: Symbole wie im Explorer, leere Fläche mit Neu/Einfügen
+  function openIcon(di) {
+    if (di.dataset.path) { WM.openPath(di.dataset.path); return; }
+    const d = di.dataset.d;
+    if (d === 'comp') WM.open('explorer');
+    else if (d === 'docs') WM.open('explorer', { path: FS.specialPaths().documents });
+    else if (d === 'bin') WM.open('explorer', { path: ['Recycled'] });
+    else if (d === 'net' || d === 'pbs') launchApp(d === 'net' ? 'ie' : 'pbs');
+  }
+  function renameIcon(di) {
+    const f = di.dataset.path && PBS.Apps.item(di.dataset.path);
+    if (!f || f.ro || f.system) return;
+    const span = di.querySelector('span');
+    const inp = document.createElement('input');
+    inp.className = 'ex-ren';
+    inp.value = f.name;
+    span.replaceWith(inp);
+    inp.focus();
+    const dot = f.type === 'file' ? f.name.lastIndexOf('.') : -1;
+    inp.setSelectionRange(0, dot > 0 ? dot : f.name.length);
+    WM.renaming = true;
+    let done = false;
+    const finish = function (commit) {
+      if (done) return;
+      done = true;
+      WM.renaming = false;
+      const nn = inp.value.trim();
+      if (commit && nn && nn !== f.name && !FS.rename(f.path, nn)) PBS.Apps.err('Error Renaming File or Folder', FS.lastError, f.name);
+      WM.paintDesktop();
+    };
+    inp.addEventListener('keydown', function (ev) { ev.stopPropagation(); if (ev.key === 'Enter') finish(true); if (ev.key === 'Escape') finish(false); });
+    inp.addEventListener('blur', function () { finish(true); });
+  }
+  function deleteIcon(di) { if (di.dataset.path) PBS.Apps.deleteItems([PBS.Apps.item(di.dataset.path)]); }
   document.addEventListener('contextmenu', function (ev) {
     if (ev.target.closest('.oswin, #ie, #taskbar, .wmenu, .dlg-ov')) return;
-    if (ev.target.closest('#desktop')) {
-      ev.preventDefault();
-      PBS.menu([
-        { l: 'Refresh', fn: function () { WM.paintDesktop(); } }, '-',
-        { l: 'New', sub: [{ l: 'Folder', ico: 'i-folder', fn: function () { newDesktop('dir'); } }, { l: 'Text Document', ico: 'i-doc', fn: function () { newDesktop('txt'); } }] }, '-',
-        { l: 'Properties', fn: function () { WM.open('control', { tab: 'display' }); } }
-      ], ev.clientX, ev.clientY, 0);
+    if (!ev.target.closest('#desktop')) return;
+    ev.preventDefault();
+    const A = PBS.Apps, di = ev.target.closest('.dicon');
+    document.querySelectorAll('.dicon.sel').forEach(function (x) { x.classList.toggle('sel', x === di); });
+    let items;
+    if (di && di.dataset.path) {
+      const f = A.item(di.dataset.path), ok = f && !f.ro && !f.system;
+      items = [{ l: '~Open', fn: function () { openIcon(di); } }, '-', { l: 'Cu~t', dis: !ok, fn: function () { A.setClip('cut', [f]); } }, { l: '~Copy', dis: !ok, fn: function () { A.setClip('copy', [f]); } }, '-',
+        { l: '~Delete', dis: !ok, fn: function () { deleteIcon(di); } }, { l: 'Rena~me', dis: !ok, fn: function () { renameIcon(di); } }, '-', { l: 'P~roperties', dis: !f, fn: function () { A.props(f); } }];
+    } else if (di) {
+      const d = di.dataset.d;
+      items = [{ l: '~Open', fn: function () { openIcon(di); } }];
+      if (d === 'comp' || d === 'bin') items.push({ l: '~Explore', fn: function () { openIcon(di); } });
+      if (d === 'bin') items.push('-', { l: 'Empty Recycle ~Bin', dis: !FS.binCount(), fn: A.emptyBin });
+      if (d === 'net') items.push('-', { l: 'P~roperties', fn: function () { A.applet('inet'); } });
+      if (d === 'comp') items.push('-', { l: 'P~roperties', fn: function () { WM.open('control'); } });
+    } else {
+      const dp = FS.specialPaths().desktop;
+      items = [{ l: 'Arrange ~Icons', dis: true }, { l: 'R~efresh', fn: function () { WM.paintDesktop(); } }, '-', { l: '~Paste', dis: !A.canPaste(dp), fn: function () { A.paste(dp); } }, '-',
+        { l: 'Ne~w', sub: [{ l: '~Folder', ico: 'i-folder', fn: function () { newDesktop('dir'); } }, '-', { l: 'Text Document', ico: 'i-doc', fn: function () { newDesktop('txt'); } }] }, '-',
+        { l: 'P~roperties', fn: function () { WM.open('control', { tab: 'display' }); } }];
     }
+    PBS.menu(items, ev.clientX, ev.clientY, 0);
+  });
+  // Tastatur auf einem markierten Desktop-Symbol
+  document.addEventListener('keydown', function (ev) {
+    const di = document.activeElement && document.activeElement.closest && document.activeElement.closest('.dicon');
+    if (!di) return;
+    if (ev.key === 'Enter') { ev.preventDefault(); openIcon(di); }
+    else if (ev.key === 'Delete') { ev.preventDefault(); deleteIcon(di); }
+    else if (ev.key === 'F2') { ev.preventDefault(); renameIcon(di); }
   });
   function newDesktop(kind) {
     const dp = FS.specialPaths().desktop;
@@ -425,6 +486,8 @@
     while (FS.exists(dp.concat([name]))) name = (kind === 'dir' ? 'New Folder (' + i + ')' : 'New Text Document (' + i + ').txt'), i++;
     if (kind === 'dir') FS.mkdir(dp.concat([name])); else FS.write(dp.concat([name]), '');
     WM.paintDesktop();
+    const di = document.querySelector('.dicon[data-path="' + FS.join(dp.concat([name])).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"]');
+    if (di) { di.classList.add('sel'); renameIcon(di); }
   }
   function showDesktop() {
     const anyVisible = WM.order.some(function (id) { return win(id).state !== 'min'; });
@@ -438,6 +501,7 @@
   WM.init = function (hooks) {
     WM.hooks = hooks || {};
     FS.init();
+    FS.onChange(function () { WM.paintDesktop(); WM.each(function (w) { if (w.refresh) w.refresh(); }); });
     WM.paintDesktop();
     WM.adoptIE(hooks);
     paintTasks();

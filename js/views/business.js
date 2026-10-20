@@ -38,6 +38,7 @@
     return {
       mod: 'clients', crumbs: [['Clients'], ['Client book']], title: 'Client book',
       html: H.title('Client book (Kundenstamm)', '[KND-0100]', list.length + ' relationship(s) · BL = banklagernd, !A = Form A missing, ST = structure, DECL = declared, DORM = dormant') + filt +
+        '<div class="btnbar left noprint">' + btn(ico('print') + ' Print', 'print', '', 'sm') + btn(ico('doc') + ' Export (Excel)', 'xlsexport', '', 'sm') + '</div>' +
         grid(['Client no.', 'Codename', 'Name', 'Domicile', 'RM', 'Risk', 'Flags', { t: 'AuM CHF', num: true }, { t: 'Fee', num: true }, 'Satisfaction'], rows,
           { foot: ['', '', '<b>Total</b>', '', '', '', '', '<b>' + U.fmt(tot, 0) + '</b>', '', ''] })
     };
@@ -196,7 +197,7 @@
     return {
       mod: 'accounts', crumbs: [['Accounts', '#/accounts'], [a.id]], title: 'Statement ' + a.id,
       html: H.title('Statement of account (Kontoauszug) ' + a.id, '[KTO-0220]') +
-        '<div class="btnbar left noprint">' + btn(ico('print') + ' Print', 'print') + btn('‹ Back to client', 'go', ' data-href="#/client/' + c.id + '/accounts"') + '</div>' +
+        '<div class="btnbar left noprint">' + btn(ico('print') + ' Print', 'print') + btn(ico('doc') + ' Save as…', 'stmtsave', ' data-id="' + a.id + '"') + btn('‹ Back to client', 'go', ' data-href="#/client/' + c.id + '/accounts"') + '</div>' +
         '<div class="doc stmt"><div class="lh"><div class="lhl"><div class="wm">VOGT &amp; CIE</div><div class="wms">PRIVATBANKIERS · ZÜRICH · SEIT 1871</div></div><div class="lhr">' + e(B.street) + '<br>' + e(B.pobox) + ', ' + e(B.zip) + '<br>Telefon ' + e(B.phone) + '<br>SWIFT ' + B.bic + ' · BC ' + B.clearing + '</div></div>' +
         '<div class="addr">' + addr + '</div><h2>Statement of account / Kontoauszug</h2>' +
         kv([['Account', a.id + ' · ' + H.accLabel(a)], ['Account holder', e(G.holderName(a))], ['Currency', H.ccyL(a.ccy)], ['Statement date', U.fmtDate(s.date)]], 'stmtkv') +

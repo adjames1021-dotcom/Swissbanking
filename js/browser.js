@@ -47,6 +47,13 @@
     const qi = h.indexOf('?');
     const path = qi >= 0 ? h.slice(0, qi) : h, query = qi >= 0 ? h.slice(qi + 1) : '';
     if (path === '404') { const m = /(?:^|&)u=([^&]*)/.exec(query); return m ? decodeURIComponent(m[1]) : BASE; }
+    // Fiktives Internet: #/w/<host>/<pfad>
+    if (path.indexOf('w/') === 0) {
+      const rest = path.slice(2), i = rest.indexOf('/');
+      return 'http://' + (i < 0 ? rest : rest.slice(0, i)) + '/' + (i < 0 ? '' : rest.slice(i + 1)) + (query ? '?' + query : '');
+    }
+    // Lokale Dateien: #/f?p=<pfad>
+    if (path === 'f') { const m = /(?:^|&)p=([^&]*)/.exec(query); const fp = m ? decodeURIComponent(m[1]) : 'C:\\'; return 'file:///' + fp.replace(/\\/g, '/'); }
     if (path.indexOf('x/') === 0) return INTRA + (INTRA_PAGES[path.slice(2)] || path.slice(2) + '.htm');
     const segs = path.split('/');
     const i = segs.findIndex(function (x) { return /\d/.test(x); });
@@ -61,8 +68,15 @@
     return BASE + (name || 'overview') + '.do' + (params.length ? '?' + params.join('&') : '');
   };
   B.hashFor = function (url) {
-    let u = String(url || '').trim();
-    if (!u) return null;
+    const raw = String(url || '').trim();
+    if (!raw) return null;
+    // Lokale Dateien: file:///C:/... oder C:\...
+    if (/^file:/i.test(raw) || /^[a-z]:([\\\/]|$)/i.test(raw)) {
+      let fp = raw.replace(/^file:\/*/i, '');
+      try { fp = decodeURIComponent(fp); } catch (x) { /* unverändert */ }
+      return '#/f?p=' + encodeURIComponent(fp.replace(/\//g, '\\'));
+    }
+    let u = raw;
     if (!/^[a-z]+:\/\//i.test(u)) u = 'http://' + u;
     const low = u.toLowerCase();
     if (low.indexOf(INTRA) === 0 || low === INTRA.slice(0, -1)) {
@@ -72,7 +86,15 @@
       return k ? '#/x/' + k : null;
     }
     const host = BASE.replace(/\/pbs\/$/, '/').toLowerCase();
-    if (low.indexOf(host) !== 0 && low !== host.slice(0, -1)) return null;
+    if (low.indexOf(host) !== 0 && low !== host.slice(0, -1)) {
+      // Fiktives Internet (PBS.Web); alles andere ist nicht erreichbar
+      const w = /^https?:\/\/([^\/?#]+)(\/[^?#]*)?(\?[^#]*)?/i.exec(u);
+      if (w && PBS.Web && PBS.Web.has(w[1].toLowerCase())) {
+        const q = w[3] ? w[3].slice(1) : '';
+        return '#/w/' + w[1].toLowerCase() + '/' + (w[2] || '/').replace(/^\//, '') + (q ? '?' + q : '');
+      }
+      return null;
+    }
     let rest = u.slice(host.length);
     if (/^pbs\/?/i.test(rest)) rest = rest.replace(/^pbs\/?/i, '');
     else if (rest) return null;
@@ -96,7 +118,7 @@
   B.navigateUrl = function (url) {
     let u = String(url || '').trim();
     if (!u) return;
-    if (!/^[a-z]+:\/\//i.test(u)) u = 'http://' + u;
+    if (!/^[a-z]+:\/\//i.test(u) && !/^file:|^[a-z]:([\\\/]|$)/i.test(u)) u = 'http://' + u;
     B.typed = [u].concat(B.typed.filter(function (x) { return x !== u; })).slice(0, 12);
     const h = B.hashFor(u);
     B.go(h || '#/404?u=' + encodeURIComponent(u));
@@ -108,7 +130,10 @@
     B.cur = { url: url, title: o.title, hash: o.hash || null };
     $('ie-title').textContent = o.title + ' - ' + APP;
     document.title = o.title + ' - ' + APP;
+    if (PBS.WM) PBS.WM.setTitle('ie', o.title);
     if (document.activeElement !== $('ie-url')) $('ie-url').value = url;
+    const zone = /^file:/i.test(url) ? ['d-comp', 'My Computer'] : /\.intra(\/|$)/i.test(url.replace(/^https?:\/\//i, '').split('/')[0] + '/') ? ['i-intra', 'Local intranet'] : ['i-globe', 'Internet'];
+    document.querySelector('.ie-status .zone').innerHTML = '<svg class="ico"><use href="#' + zone[0] + '"/></svg> ' + zone[1];
     if (o.hash) {
       const top = B.hist[B.idx];
       if (B.travel) B.travel = false;
@@ -121,7 +146,7 @@
       B.visited = [{ hash: o.hash, title: o.title, url: url }].concat(B.visited.filter(function (v) { return v.url !== url; })).slice(0, 40);
     }
     paintNav();
-    paintTask();
+    if (PBS.WM) PBS.WM.paintTasks();
     if (B.xbar === 'hist') paintX();
   };
   B.clearNav = function () { B.hist = []; B.idx = -1; B.travel = false; paintNav(); };
@@ -200,42 +225,12 @@
     $('ie-stext').parentNode.classList.toggle('msg', !B.tmpText && !!B.msgText);
   }
 
-  /* ---------- Fenster ---------- */
-  function setWin(w) {
-    if (w === 'max' || w === 'restored') B.lastWin = w;
-    const ie = $('ie');
-    if (B.win === 'restored' && w !== 'restored') B.pos = { left: ie.style.left, top: ie.style.top };
-    ie.style.left = w === 'restored' && B.pos ? B.pos.left : '';
-    ie.style.top = w === 'restored' && B.pos ? B.pos.top : '';
-    B.win = w;
-    ie.classList.toggle('max', w === 'max');
-    ie.classList.toggle('restored', w === 'restored');
-    ie.classList.toggle('hidden', w === 'min' || w === 'closed');
-    document.querySelector('[data-b=max] i').className = w === 'max' ? 'g-res' : 'g-max';
-    document.querySelector('[data-b=max]').setAttribute('aria-label', w === 'max' ? 'Restore' : 'Maximize');
-    paintTask();
-  }
-  B.setWin = setWin;
-  function closeWin() {
-    closeMenus(0);
-    if (B.hooks.close) B.hooks.close();
-    B.clearNav();
-    closeX();
-    setWin('closed');
-  }
-  function openWin() {
-    if (B.win === 'closed') {
-      setWin('max');
-      if (B.hooks.reopen) B.hooks.reopen();
-    } else setWin(B.lastWin);
-  }
+  /* ---------- Fenster (über die Fensterverwaltung PBS.WM) ---------- */
+  function closeWin() { closeMenus(0); PBS.WM.close('ie'); }
+  function openWin() { PBS.WM.showIE(); }
   B.openWin = openWin;
-  function paintTask() {
-    const t = $('tb-tasks');
-    if (B.win === 'closed') { t.innerHTML = ''; return; }
-    const title = (B.cur.title || 'PBS/Web') + ' - ' + APP;
-    t.innerHTML = '<button type="button" class="task' + (B.win !== 'min' ? ' on' : '') + '" data-b="task" title="' + e(title) + '"><svg class="ico"><use href="#i-page"/></svg><span>' + e(title) + '</span></button>';
-  }
+  // Beim Schliessen des Browserfensters nur sichern; die Sitzung läuft weiter
+  B.onIEClose = function () { closeX(); if (G.state) G.save(); };
 
   /* ---------- Menüs (Windows 2000) ---------- */
   const stack = [];
@@ -261,7 +256,7 @@
     if (top + h > innerHeight - 2) top = Math.max(0, innerHeight - h - 2);
     el.style.left = Math.max(0, left) + 'px';
     el.style.top = Math.max(0, top) + 'px';
-    stack[level] = { el: el, items: items };
+    stack[level] = { el: el, items: items, onClose: o.onClose };
     const sub = function (mi, it) {
       const r = mi.getBoundingClientRect();
       openMenu(it.sub, r.right - 3, r.top - 3, level + 1, { altX: r.left + 3 });
@@ -288,7 +283,7 @@
   }
   function closeMenus(from) {
     clearTimeout(subTimer);
-    for (let i = stack.length - 1; i >= from; i--) if (stack[i]) stack[i].el.remove();
+    for (let i = stack.length - 1; i >= from; i--) if (stack[i]) { if (stack[i].onClose) try { stack[i].onClose(); } catch (x) { /* */ } stack[i].el.remove(); }
     stack.length = Math.min(stack.length, from);
     if (from === 0) {
       barOpen = null;
@@ -298,6 +293,8 @@
     }
   }
   B.closeMenus = closeMenus;
+  PBS.menu = openMenu;
+  PBS.closeMenus = closeMenus;
   function openBar(key) {
     const mb = document.querySelector('.mb[data-m="' + key + '"]');
     closeMenus(0);
@@ -351,21 +348,6 @@
       return [{ l: '~Contents and Index', fn: function () { if (B.hooks.handbook) B.hooks.handbook(); } }, { l: '~Tip of the Day', chk: T && T.enabled(), fn: function () { if (T) T.toggle(); } }, { l: '~Restart Tutorial', fn: function () { if (T) T.restart(); } }, { l: 'For ~Netscape Users', dis: true }, { l: 'Online ~Support', dis: true }, { l: 'Send Feedback', dis: true }, '-', { l: '~About PBS/Web', fn: about }];
     }
   };
-  function startMenu() {
-    const user = G.state && B.hooks.loggedIn && B.hooks.loggedIn() ? G.state.user.id : 'E10001';
-    return [
-      { l: 'Windows Update', ico: 'i-globe', dis: true }, '-',
-      { l: '~Programs', ico: 'i-folder', big: true, sub: [{ l: 'Accessories', ico: 'i-folder', dis: true }, { l: 'Bloomberg', ico: 'i-chart', dis: true }, { l: 'Internet Explorer', ico: 'i-globe', fn: openWin }, { l: 'Lotus Notes', ico: 'i-mail', dis: true }, { l: 'PBS/Web (Intranet)', ico: 'i-page', fn: openWin }, { l: 'Telekurs Investdata', ico: 'i-chart', dis: true }] },
-      { l: '~Documents', ico: 'i-folder', big: true, sub: [{ l: 'Kundenliste_alt.xls', ico: 'i-doc', dis: true }, { l: 'Weisung GwG 1998.doc', ico: 'i-doc', dis: true }, { l: 'Budget_PB.xls', ico: 'i-doc', dis: true }] },
-      { l: '~Settings', ico: 'i-list', big: true, sub: [{ l: '~Control Panel', dis: true }, { l: '~Network and Dial-up Connections', dis: true }, { l: '~Printers', dis: true }, { l: '~Taskbar & Start Menu...', dis: true }] },
-      { l: 'S~earch', ico: 'i-search', big: true, sub: [{ l: 'For ~Clients...', fn: function () { openWin(); showX('search'); } }, { l: 'For ~Files or Folders...', dis: true }] },
-      { l: '~Help', ico: 'i-info', big: true, fn: function () { if (B.hooks.handbook) B.hooks.handbook(); } },
-      { l: '~Run...', ico: 'i-doc', big: true, fn: openDlg }, '-',
-      { l: '~Log Off ' + user + '...', ico: 'i-key', big: true, fn: function () { if (B.hooks.logoff) B.hooks.logoff(); } },
-      { l: 'Sh~ut Down...', ico: 'i-lock', big: true, fn: shutDown }
-    ];
-  }
-
   /* ---------- Dialoge (Windows 2000) ---------- */
   const Dlg = PBS.Dlg = {
     open: function (o) {
@@ -469,19 +451,9 @@
     if (html.length > 60000) html = html.slice(0, 60000) + '\n<!-- … -->';
     const name = (B.cur.url.split('/').pop() || 'default').split('?')[0].replace(/\.\w+$/, '');
     const src = '<!-- PS 14.02.2003: Testmodul Fakturierung liegt noch unter /pbs/fakt.do – vor Go-live entfernen! -->\n<!-- PBS/Web 4.2.1 · generated ' + (G.state ? U.fmtDate(G.state.date) + ' ' + U.fmtTime(G.state.clock) : '') + ' · node PBSPRD01 -->\n<html>\n<head>\n<title>' + e(B.cur.title) + '</title>\n<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">\n<link rel="stylesheet" type="text/css" href="/pbs/css/pbs.css">\n<script language="JavaScript" src="/pbs/js/pbs.js"></' + 'script>\n</head>\n<body>\n' + html + '\n</body>\n</html>\n';
-    Dlg.open({
-      title: name + '[1] - Notepad', width: 760, cls: 'notepad', icon: 'i-doc', buttons: [],
-      body: '<div class="np-menu"><span><u>F</u>ile</span><span><u>E</u>dit</span><span>F<u>o</u>rmat</span><span><u>H</u>elp</span></div><textarea class="np" readonly spellcheck="false">' + e(src) + '</textarea>'
-    });
+    PBS.WM.open('notepad', { text: src, name: name + '[1]' });
   }
   function fullScreen() { document.body.classList.toggle('full'); closeMenus(0); }
-  function shutDown() {
-    Dlg.open({
-      title: 'Shut Down Windows', width: 380,
-      body: '<div class="dlg-msg"><svg class="ico32"><use href="#d-comp"/></svg><div>What do you want the computer to do?<br><br><select class="inp" style="width:100%"><option>Log off</option><option>Shut down</option></select><br><br><span class="small muted">Your work in PBS/Web is saved automatically.</span></div></div>',
-      buttons: [{ label: 'OK', def: true, fn: function () { setTimeout(closeWin, 0); } }, { label: 'Cancel' }, { label: 'Help', dis: true }]
-    });
-  }
 
   /* ---------- Favoriten ---------- */
   function addFav() {
@@ -614,6 +586,7 @@
     p.querySelector('input[type=range]').addEventListener('change', function () { Snd.ding(); });
     p.querySelector('input[type=checkbox]').addEventListener('change', function (ev) { B.st.sound = !ev.target.checked; saveSt(); });
   }
+  B.options = function () { options(); };
   B.toggleSound = function () { B.st.sound = !B.st.sound; saveSt(); };
 
   /* ---------- Uhr ---------- */
@@ -653,18 +626,7 @@
       stack[0].el.style.width = c.width + 'px';
     },
     go: function () { B.navigateUrl($('ie-url').value); },
-    min: function () { setWin('min'); }, max: function () { setWin(B.win === 'max' ? 'restored' : 'max'); }, close: closeWin,
-    task: function () { if (B.win === 'min') setWin(B.lastWin); else setWin('min'); },
-    desk: function () { if (B.win === 'max' || B.win === 'restored') setWin('min'); else if (B.win === 'min') setWin(B.lastWin); },
-    ieql: openWin,
-    vol: volPop,
-    start: function (el) {
-      if (el.classList.contains('on')) { closeMenus(0); return; }
-      closeMenus(0);
-      el.classList.add('on');
-      const r = el.getBoundingClientRect();
-      openMenu(startMenu, r.left, r.top + 1, 0, { up: true, banner: '<b>Vogt &amp; Cie</b> Workstation', cls: 'startm' });
-    }
+    vol: volPop
   };
   document.addEventListener('mousedown', function (ev) {
     if (!ev.target.closest('.wmenu, .mb, .start, #volpop, .tray-b, [data-b=backlist], [data-b=fwdlist], [data-b=typed]')) closeMenus(0);
@@ -674,14 +636,14 @@
     if (b && !b.disabled && BTN[b.dataset.b]) { ev.preventDefault(); BTN[b.dataset.b](b); return; }
     const l = ev.target.closest('.lnk[data-l]');
     if (l) { B.go(l.dataset.l); return; }
-    const mb = ev.target.closest('.mb');
+    const mb = ev.target.closest('.mb[data-m]');
     if (mb) { if (barOpen === mb.dataset.m) closeMenus(0); else openBar(mb.dataset.m); return; }
     const di = ev.target.closest('.dicon');
     document.querySelectorAll('.dicon.sel').forEach(function (x) { if (x !== di) x.classList.remove('sel'); });
     if (di) di.classList.add('sel');
   });
   document.addEventListener('mouseover', function (ev) {
-    const mb = ev.target.closest && ev.target.closest('.mb');
+    const mb = ev.target.closest && ev.target.closest('.mb[data-m]');
     if (mb && barOpen && barOpen !== mb.dataset.m) openBar(mb.dataset.m);
     const a = ev.target.closest && ev.target.closest('#ie-view a[href], #ie-xbar a[href]');
     if (a) { const h = a.getAttribute('href'); B.status(h.charAt(0) === '#' ? B.urlFor(h) : h); }
@@ -690,17 +652,6 @@
     const a = ev.target.closest && ev.target.closest('#ie-view a[href], #ie-xbar a[href]');
     if (a && (!ev.relatedTarget || !a.contains(ev.relatedTarget))) B.status('');
   });
-  document.addEventListener('dblclick', function (ev) {
-    const di = ev.target.closest('.dicon');
-    if (di) {
-      const k = di.dataset.d;
-      if (k === 'pbs' || k === 'net') { openWin(); if (k === 'pbs' && B.hooks.home) B.hooks.home(); return; }
-      if (k === 'bin') { Dlg.msg('Recycle Bin', 'The Recycle Bin is empty.<br><span class="small muted">Emptied every night by IT-Services.</span>'); return; }
-      Dlg.msg(di.textContent, 'Access to this resource has been restricted by your system administrator.<br>Please contact the Helpdesk (ext. 4411).', 'err');
-      return;
-    }
-    if (ev.target.closest('#ie-tb') && !ev.target.closest('.wbtns')) BTN.max();
-  });
   document.addEventListener('keydown', function (ev) {
     if (ev.target.id === 'ie-url') {
       if (ev.key === 'Enter') { ev.preventDefault(); B.navigateUrl(ev.target.value); ev.target.blur(); return; }
@@ -708,6 +659,7 @@
     }
     if (Dlg.any()) return;
     if (ev.key === 'Escape' && stack.length) { closeMenus(0); return; }
+    if (PBS.WM && PBS.WM.focused && PBS.WM.focused !== 'ie') return;
     const k = ev.key;
     if (k === 'F5') { ev.preventDefault(); refresh(); } else if (k === 'F11') { ev.preventDefault(); fullScreen(); } else if (ev.altKey && k === 'ArrowLeft') { ev.preventDefault(); back(); } else if (ev.altKey && k === 'ArrowRight') { ev.preventDefault(); fwd(); } else if (ev.altKey && k === 'Home') { ev.preventDefault(); home(); } else if (ev.altKey && (k === 'd' || k === 'D')) { ev.preventDefault(); $('ie-url').focus(); $('ie-url').select(); } else if (ev.ctrlKey && !ev.shiftKey) {
       const m = { e: 'search', i: 'favs', h: 'hist' }[k.toLowerCase()];
@@ -725,27 +677,10 @@
   $('ie-url').addEventListener('mouseup', function (ev) { if (urlFocus) { ev.preventDefault(); urlFocus = false; } });
   $('ie-url').addEventListener('blur', function () { urlFocus = false; });
 
-  // Fenster verschieben (nur im wiederhergestellten Zustand)
-  $('ie-tb').addEventListener('mousedown', function (ev) {
-    if (B.win !== 'restored' || ev.target.closest('.wbtns') || ev.button !== 0) return;
-    const ie = $('ie');
-    const r = ie.getBoundingClientRect();
-    const dx = ev.clientX - r.left, dy = ev.clientY - r.top;
-    ev.preventDefault();
-    const mv = function (m) {
-      ie.style.left = U.clamp(m.clientX - dx, -r.width + 80, innerWidth - 80) + 'px';
-      ie.style.top = U.clamp(m.clientY - dy, 0, innerHeight - 60) + 'px';
-    };
-    const up = function () { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
-    document.addEventListener('mousemove', mv);
-    document.addEventListener('mouseup', up);
-  });
-
   B.init = function (hooks) {
     B.hooks = hooks || {};
     applySt();
     paintNav();
-    paintTask();
     clock();
     setInterval(clock, 1000);
   };

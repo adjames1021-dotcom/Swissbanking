@@ -223,12 +223,21 @@
         let p = (s.date >= '2009-06-01' ? 0.004 : 0.0015) * (x.integrity === 1 ? 2 : 1) * K.diff().threat;
         if (G.securityLevel() >= 6) p *= 0.5;
         if (s.flags.dataAudit) p *= 0.3;
+        p *= G.workstationExposure().factor;
         if (K.chance(p)) dataTheft(x, log);
       }
       if (x.role === 'rm' && x.integrity === 1 && !x.embezzled && K.chance(0.002)) embezzle(x, log);
     });
   };
 
+  // Kundendaten auf dem Arbeitsplatz (Exporte, gespeicherte Auszüge) erleichtern das Kopieren; der Papierkorb zählt halb
+  G.workstationExposure = function () {
+    const FS = PBS.FS;
+    if (!FS || !FS.root || !FS.root()) return { live: [], bin: [], factor: 1 };
+    const x = FS.clientFiles();
+    x.factor = 1 + Math.min(2, x.live.length * 0.4 + x.bin.length * 0.2);
+    return x;
+  };
   function dataTheft(x, log) {
     const s = S();
     x.status = 'left';
@@ -236,6 +245,7 @@
     const counts = {};
     G.activeClients().forEach(function (c) { const a = K.homeAuth(c); if (a && c.declared < 1) counts[a] = (counts[a] || 0) + G.clientAUM(c.id); });
     const auth = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; })[0] || 'DE';
+    const exp = G.workstationExposure();
     s.flags.dataTheft = { d: s.date, auth: auth, by: x.name };
     K.heat(auth, 20, 'Stolen client data sold abroad');
     K.investigate(auth, 25, 'Stolen client data');
@@ -247,7 +257,9 @@
     });
     K.msg({
       type: 'memo', kind: 'info', from: 'Dr. Iris Wyss, Legal & Compliance', subject: 'DATA THEFT – client data offered to ' + G.authShort(auth),
-      body: 'We have learned that ' + x.name + ' (' + x.title + ') copied client data onto CD-ROMs over several months and has disappeared. According to press reports, a data carrier with client names of our bank has been offered to the ' + G.authName(auth) + '.\n\nWe must assume that all ' + K.cname(D.AUTH[auth].c) + ' relationships are compromised. Criminal complaint filed with the Zurich public prosecutor (Art. 47 BankG, Art. 273 StGB).'
+      body: 'We have learned that ' + x.name + ' (' + x.title + ') copied client data onto CD-ROMs over several months and has disappeared. According to press reports, a data carrier with client names of our bank has been offered to the ' + G.authName(auth) + '.\n\n' +
+        (exp.live.length + exp.bin.length ? 'IT-Services found that the copies include files from the management workstation ZH-BS64-0217 (' + exp.live.concat(exp.bin).slice(0, 3).map(function (f) { return f.split('\\').pop(); }).join(', ') + '). Exports of client data must not be stored on workstations.\n\n' : '') +
+        'We must assume that all ' + K.cname(D.AUTH[auth].c) + ' relationships are compromised. Criminal complaint filed with the Zurich public prosecutor (Art. 47 BankG, Art. 273 StGB).'
     });
     log.push(['EVT', 'DATENDIEBSTAHL ' + auth, 'ALARM']);
   }

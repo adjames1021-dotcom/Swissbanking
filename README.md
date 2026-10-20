@@ -22,8 +22,9 @@ Plain HTML5, CSS and JavaScript: no build step, nothing to install.
   `python3 -m http.server 8000` and go to <http://localhost:8000>.
 - **GitHub Pages:** enable Pages for the `main` branch (root folder) in the repository settings.
 
-The game saves itself in the browser's `localStorage`. To start over, use **New game** in the
-toolbar or **Reset game data** on the sign-on screen.
+The game saves itself in the browser's `localStorage`, and so does the workstation's disk. To
+start over, use **New game** in the toolbar or **Reset game data** on the sign-on screen. Both
+remove the files the game wrote to the disk; your own files stay.
 
 ### Signing on
 
@@ -66,10 +67,60 @@ Everything happens inside an Internet Explorer 6 window on a Windows 2000 deskto
   directives (Weisungen), which follow the game's calendar.
 - Not every page of the intranet is linked from a menu. Developers sometimes leave notes in the
   page source.
-- The **taskbar** shows the game clock. Click the speaker icon for volume and mute. The window can
-  be minimised, restored, moved and closed; double-click *PBS/Web* on the desktop to reopen it.
+- The **taskbar** shows the game clock. Click the speaker icon for volume and mute.
 
 Sounds (phone, fax, printer, navigation click) are synthesised with WebAudio; no audio files.
+
+## The workstation
+
+![Desktop](docs/screenshots/desktop.png)
+
+The bank runs inside a working Windows 2000 desktop. Windows can be moved, resized, minimised,
+maximised and stacked, each with its own taskbar button. Closing Internet Explorer does not end the
+game; open it again from the desktop, the quick-launch bar or the Start menu.
+
+- **Start menu**: Programs › Accessories and Games, Documents (the latest files in My Documents), Settings › Control
+  Panel, Search, Help, Run… (`calc`, `notepad`, `mspaint`, `cmd`, `winmine`, `sol`, `control`,
+  a path or an address), Log Off and Shut Down.
+- **Programs**: Windows Explorer, Notepad, Paint (save pictures, use them as wallpaper),
+  Calculator with a Telekurs currency converter, Command Prompt (`dir`, `cd`, `type`, `copy`,
+  `move`, `del`, `md`, `rd`, `ren`, `tree`, `ping`, `ipconfig`, `format a:` …), Minesweeper and
+  Solitaire.
+- **Control Panel**: display (wallpaper, screen saver, colour schemes), sounds, date and time,
+  mouse, Internet Options, Add/Remove Programs. Some settings need an administrator, as at any bank.
+
+### Files
+
+The computer has a small disk (`C:`) and a floppy drive (`A:`). Files and folders can be created,
+renamed, copied, moved and deleted in Explorer, on the desktop or at the command prompt. Deleted
+files go to the Recycle Bin until it is emptied. Everything is kept in the browser.
+
+The disk is part of the game. **Export (Excel)** in the client book and **Save as…** on an account
+statement put client data on the workstation. That is convenient, but files with client data make
+it easier for a disloyal IT or operations employee to walk off with a CD-ROM, and the external
+auditors may list them in their report. Deleting them helps, and emptying the Recycle Bin helps
+more. Each end-of-day batch also leaves its SYSOUT in `C:\PBS\log`. A new game clears the files
+the game created.
+
+### The internet
+
+Internet Explorer reaches a small, fictional Swiss web of the early 2000s that follows the game's
+calendar and your bank's fortunes:
+
+| Address | What it is |
+|---|---|
+| `www.alpensuche.ch` | Search engine and web directory |
+| `www.finanzblatt.ch` | Financial daily: the game's news, an archive, market data |
+| `www.abendexpress.ch` | Tabloid; watch for your bank in the headlines |
+| `www.vogt-cie.ch` | Your bank's public website |
+| `www.kurse-online.ch` | Quotes for indices, currencies and securities |
+| `www.swissmail.ch` | Webmail for private mail |
+| `www.offshore-direct.com` | Offshore companies "in 24 hours" (while it lasts) |
+| `www.schneebericht.ch` | Snow report |
+
+There are also several rival private banks to find through the search engine. Real addresses are
+not loaded: they give Internet Explorer's "The page cannot be displayed". Local files open as
+`file:///C:/…`.
 
 ## How to play
 
@@ -139,7 +190,13 @@ js/engine/           Game rules: kernel (state, time, saving), market, payments,
                      expansion, authorities, career, agenda, events, end-of-day batch, setup
 js/views/            Screens; they only read the game state
 js/sound.js          Synthesised sounds
-js/browser.js        Browser window, menus, toolbars, explorer bars, taskbar, dialogs
+js/browser.js        Browser window, menus, toolbars, explorer bars, dialogs
+js/fs.js             Virtual disk (C:, A:, Recycle Bin), kept in localStorage
+js/os.js             Window manager, taskbar, Start menu, desktop, Run and Shut Down
+js/apps.js           Explorer, file dialogs, Notepad, picture viewer, Control Panel, screen saver
+js/apps2.js          Calculator, Paint, Command Prompt
+js/games.js          Minesweeper and Solitaire
+js/web.js            The fictional internet
 js/tutorial.js       Balloon tips and the first-day tour
 js/app.js            Sign-on, routing, appointments, forms, actions and the batch console
 ```

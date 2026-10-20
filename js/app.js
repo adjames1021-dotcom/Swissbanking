@@ -101,6 +101,7 @@
         UI.lastName = nm;
         G.reset();
         G.newGame({ scenario: sc ? sc.value : '2003', diff: df ? df.value : 'standard', userId: uid, name: nm });
+        PBS.FS.purgeGame();
         resetUI();
         setTimeout(onDone, 0);
       } }, { label: 'Cancel' }]
@@ -248,6 +249,8 @@
       return;
     }
     if (r.path === '404') { const nf = V.notFound(B.urlFor(location.hash)); standalone(nf.html, nf.title); return; }
+    if (r.path.indexOf('w/') === 0) { const wp = PBS.Web.page(r.path.slice(2), r.q); standalone(wp.html, wp.title); return; }
+    if (r.path === 'f') { const fp = PBS.Apps.filePage(r.q.p || 'C:\\'); standalone(fp.html, fp.title); return; }
     if (!UI.session || !G.state) {
       UI.afterLogin = location.hash;
       if (UI.screen !== 'connecting') showLogin();
@@ -424,7 +427,7 @@
   /* ---------- Termine ---------- */
   function checkAgenda() {
     const s = G.state;
-    if (!UI.session || UI.screen !== 'app' || !s || s.gameOver || Dlg.any() || B.win === 'min' || B.win === 'closed') return;
+    if (!UI.session || UI.screen !== 'app' || !s || s.gameOver || Dlg.any() || ['min', 'closed'].indexOf(PBS.WM.ieState()) >= 0) return;
     const due = G.agendaDue().filter(function (a) { return !UI.snoozed[a.id]; });
     if (due.length) openMeeting(due[0]);
   }
@@ -497,6 +500,16 @@
     Dlg.confirm('End of day', body, function () { setTimeout(doEOD, 30); }, warn.length ? 'bigwarn' : 'ques', 'Start batch', 'Cancel');
   }
 
+  // SYSOUT des Tagesabschlusses auf C:\PBS\log; die letzten 20 Läufe bleiben liegen
+  function saveBatchLog(day, lines) {
+    const FS = PBS.FS;
+    if (!FS || !FS.root()) return;
+    const dir = ['C:', 'PBS', 'log'];
+    FS.write(dir.concat(['PBSEOD01_' + day.replace(/-/g, '') + '.log']), lines.map(function (l) { return l[1]; }).join('\r\n') + '\r\n', { game: true });
+    const logs = FS.list(dir).filter(function (f) { return /^PBSEOD01_\d{8}\.log$/.test(f.name); }).map(function (f) { return f.name; }).sort();
+    logs.slice(0, Math.max(0, logs.length - 20)).forEach(function (n) { FS.destroy(dir.concat([n])); });
+  }
+
   function doEOD() {
     const res = G.endOfDay();
     UI.snoozed = {};
@@ -512,6 +525,7 @@
     });
     if (res.rc === '0012') lines.push(['er', ts() + '  PBSEOD01  *** ABEND U0012 – EXTERNAL EVENT – NOTIFY MANAGEMENT ***']);
     lines.push(['h', ts() + '  PBSEOD01  JOB ENDED  RC=' + res.rc + '  NEW VALUE DATE ' + U.fmtDate(res.date)]);
+    saveBatchLog(res.closing, lines);
 
     const d = Dlg.open({
       title: 'Batch job PBSEOD01 – Mandant 001 Zürich', width: 712, noEsc: true, icon: 'i-print',
@@ -964,6 +978,28 @@
     },
     findcorr: function () { done(G.findCorrespondent(), 'Search completed.', 'USD correspondent'); },
     dd: function (el) { done(G.dueDiligence(el.dataset.id), 'Due diligence completed – see the table.'); },
+    // Kundendaten auf der Festplatte: bequem, aber Futter für Datendiebe und die Revision
+    xlsexport: function () {
+      const FS = PBS.FS, s = G.state;
+      const list = G.activeClients();
+      const path = FS.specialPaths().documents.concat(['Kundenliste_' + s.date.replace(/-/g, '') + '.xls']);
+      const body = 'Bankhaus Vogt & Cie – Kundenstamm per ' + U.fmtDate(s.date) + ' – STRENG VERTRAULICH\r\n\r\nClient no.;Codename;Name;City;Domicile;RM;AuM CHF\r\n' +
+        list.map(function (c) { return [c.id, c.rubrik, c.name, c.city, G.cname(c.dom), G.rmName(c), Math.round(G.clientAUM(c.id))].join(';'); }).join('\r\n') + '\r\n';
+      if (!FS.write(path, body, { mime: 'xls', client: true, game: true })) { Dlg.msg('Export (Excel)', 'The file could not be written: ' + (FS.lastError === 'full' ? 'the disk is full.' : 'access is denied.'), 'err'); return; }
+      Dlg.msg('Export (Excel)', '<b>' + list.length + '</b> relationship(s) exported to<br><b>' + e(FS.join(path)) + '</b><br><br><span class="muted">IT directive 4.2: client data must not be kept on workstations or removable media. Delete the file once you no longer need it.</span>', 'info');
+    },
+    stmtsave: function (el) {
+      const FS = PBS.FS, a = G.account(el.dataset.id), doc = document.querySelector('#content .doc.stmt');
+      if (!a || !doc) return;
+      const dir = FS.specialPaths().documents.concat(['Statements']);
+      FS.mkdir(dir);
+      PBS.Apps.fileDlg({ mode: 'save', title: 'Save Web Page', dir: dir, name: 'Statement ' + a.id + ' ' + G.state.date + '.htm', types: [['Web Page (*.htm;*.html)', 'htm;html'], ['All Files (*.*)', '*']], onOk: function (p) {
+        const css = 'body{font:12px Arial,sans-serif;margin:24px;color:#000}.lh{display:flex;justify-content:space-between;border-bottom:2px solid #0b2a55;padding-bottom:6px;margin-bottom:14px}.wm{font:22px Georgia,serif;letter-spacing:3px;color:#0b2a55}.wms{font-size:9px;letter-spacing:2px;color:#9a7b3a}.lhr{font-size:10px;text-align:right}.addr{margin:10px 0 16px}.stamp{display:inline-block;border:2px solid #a00;color:#a00;padding:1px 6px;font-weight:bold}table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border-bottom:1px solid #ccc;padding:3px 6px;text-align:left;vertical-align:top}th{background:#eef1f6}.num{text-align:right}.small{font-size:10px}.muted{color:#666}';
+        const html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Statement ' + e(a.id) + '</title><style>' + css + '</style></head><body>' + doc.outerHTML + '</body></html>';
+        if (FS.write(p, html, { mime: 'html', client: true, game: true })) setStatus('Saved: ' + FS.join(p));
+        else Dlg.msg('Save Web Page', 'The file could not be written: ' + (FS.lastError === 'full' ? 'the disk is full.' : 'access is denied.'), 'err');
+      } });
+    },
     invprint: function () { window.print(); },
     invreset: function () { UI.inv = V.invoiceDefault('fee', { fmt: 'letter', paper: UI.inv.paper, pw: UI.inv.pw, ph: UI.inv.ph }); route(); setStatus('Invoice reset.'); },
     acquire: function (el) {
@@ -1058,7 +1094,7 @@
 
   document.addEventListener('keydown', function (ev) {
     touch();
-    if (ev.key === 'F9' && UI.screen === 'app' && !Dlg.any()) {
+    if (ev.key === 'F9' && UI.screen === 'app' && !Dlg.any() && (!PBS.WM.focused || PBS.WM.focused === 'ie')) {
       ev.preventDefault();
       runEOD();
     }
@@ -1122,6 +1158,7 @@
     ev.preventDefault();
     Dlg.confirm('Reset game data', 'Delete the saved game in this browser and start with a fresh bank at the next sign-on?', function () {
       G.reset();
+      PBS.FS.purgeGame();
       loginInfo();
       loginError(['Game data deleted. A new bank will be set up at sign-on.'], true);
     }, 'bigwarn', 'Delete', 'Cancel');
@@ -1142,10 +1179,38 @@
       return G.state.clients.filter(function (c) { return (c.id + ' ' + c.rubrik + ' ' + c.name + ' ' + c.city).toLowerCase().indexOf(l) >= 0; })
         .map(function (c) { return { t: c.id + ' ' + c.rubrik + ' – ' + c.name, h: '#/client/' + c.id }; });
     },
-    close: function () { if (G.state) G.save(); Dlg.closeAll(); UI.session = false; show('login'); },
-    reopen: function () { logout(); },
-    logoff: function () { if (UI.session) ACT.logout(); else { B.openWin(); showLogin(); } },
     clock: function () { return UI.session && G.state ? { text: U.fmtTime(G.state.clock), tip: U.longDate(G.state.date) + ' (value date)' } : null; }
+  });
+
+  // Arbeitsplatz: Abmelden beendet auch die PBS/Web-Sitzung
+  function logOffWindows() {
+    PBS.WM.closeAllApps();
+    PBS.WM.showIE();
+    if (UI.session) logout('You have been logged off.', true); else showLogin();
+  }
+  function shutDown(kind) {
+    if (G.state) G.save();
+    PBS.WM.closeAllApps();
+    UI.session = false;
+    Dlg.closeAll();
+    const sd = $('shutdown');
+    sd.classList.remove('hidden');
+    if (kind === 'restart') {
+      sd.innerHTML = '<div class="sd-box"><svg class="ico32"><use href="#i-start"/></svg><div>Windows is restarting…</div></div>';
+      setTimeout(function () { sd.classList.add('hidden'); sd.innerHTML = ''; PBS.WM.showIE(); showLogin(); }, 2200);
+    } else {
+      sd.innerHTML = '<div class="sd-box"><svg class="ico32"><use href="#i-start"/></svg><div>It is now safe to turn off your computer.</div><button type="button" class="btn" id="sd-restart">Restart</button></div>';
+      $('sd-restart').onclick = function () { sd.classList.add('hidden'); sd.innerHTML = ''; PBS.WM.showIE(); showLogin(); };
+    }
+  }
+  PBS.WM.init({
+    onClose: B.onIEClose,
+    navigate: function (u) { PBS.WM.showIE(); if (/^#\//.test(u)) B.go(u); else B.navigateUrl(u); },
+    home: function () { B.go('#/overview'); },
+    help: openHandbook,
+    loggedIn: function () { return UI.session; },
+    logoff: function (now) { if (now) logOffWindows(); else Dlg.confirm('Log Off Windows', 'Are you sure you want to log off?', logOffWindows, 'ques', 'Log Off', 'Cancel'); },
+    shutdown: shutDown
   });
 
   tokenTick();
