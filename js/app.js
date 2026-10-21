@@ -229,6 +229,12 @@
     [/^trade\/orders$/, function () { return V.tradeOrders(); }],
     [/^trade\/portfolio$/, function () { return V.tradePortfolio(); }],
     [/^trade\/news$/, function () { return V.tradeNews(); }],
+    [/^crypto$/, function () { return V.crypto(); }],
+    [/^crypto\/custody$/, function () { return V.cryptoCustody(); }],
+    [/^crypto\/staking$/, function () { return V.cryptoStaking(); }],
+    [/^crypto\/loans$/, function () { return V.cryptoLoans(); }],
+    [/^crypto\/cps$/, function () { return V.cryptoCps(); }],
+    [/^crypto\/screening$/, function () { return V.cryptoScreening(); }],
     [/^inbox$/, function () { return V.inbox(); }],
     [/^inbox\/(M\d+)$/, function (m) { G.markRead(m[1]); return V.message(m[1]); }]
   ];
@@ -320,6 +326,7 @@
     { key: 'payments', label: 'Payments', href: '#/pay/queue', badge: function () { const s = G.state; return G.pendingPayments().length + s.counter.length + s.couriers.filter(function (k) { return k.status === 'requested'; }).length; } },
     { key: 'invest', label: 'Investments', href: '#/invest' },
     { key: 'trade', label: 'Trading', href: '#/trade', badge: function () { return V.tradeOpenOrders(); } },
+    { key: 'crypto', label: 'Crypto', href: '#/crypto', modern: true, badge: function () { return V.cryptoBadge(); } },
     { key: 'compliance', label: 'Compliance', href: '#/compliance', badge: function () { return G.openAlerts().length; } },
     { key: 'structures', label: 'Structures', href: '#/structures' },
     { key: 'org', label: 'Organisation', href: '#/org/staff' },
@@ -348,6 +355,7 @@
       case 'org': return [['org/staff', 'Staff', 'user'], ['org/recruit', 'Recruitment', 'plus', false, s.candidates.length], ['org/branches', 'Branches & offices', 'building'], ['org/corr', 'Correspondent banks', 'net'], ['org/acquisitions', 'Acquisitions', 'scale', false, s.targets.length], ['org/pricing', 'Products & pricing', 'cash']];
       case 'reports': return [['reports/pl', 'Profit & loss', 'chart'], ['reports/aum', 'AuM by domicile', 'chart'], ['reports/journal', 'Booking journal', 'list']];
       case 'inbox': return [['inbox', 'Inbox', 'mail', false, G.unread()]];
+      case 'crypto': return V.cryptoNav();
       case 'trade': return [['trade', 'Market', 'chart'], ['trade/orders', 'Orders', 'list', false, V.tradeOpenOrders()], ['trade/portfolio', 'Portfolios', 'folder'], ['trade/news', 'Market news', 'doc']];
       default: return [['overview', 'Dashboard', 'home'], ['agenda', 'Diary', 'clock', false, G.agendaDue().length], ['career', 'Targets & career', 'flag'], ['market', 'Market data', 'chart'], ['trip', 'Acquisition trip', 'plane']];
     }
@@ -361,7 +369,7 @@
       'Value date <b>' + U.weekday(s.date) + ' ' + U.fmtDate(s.date) + '</b> · <b' + (ot ? ' class="ot"' : '') + '>' + U.fmtTime(s.clock) + '</b>' + (ot ? ' <span class="ot">overtime</span>' : '') + '<br>' +
       (last ? 'Last sign-on ' + U.fmtDate(last.d) + ' ' + U.fmtTime(last.t) + ' from ' + e(last.ws) : '');
 
-    $('menubar').innerHTML = MODS.map(function (m) {
+    $('menubar').innerHTML = MODS.filter(function (m) { return !m.modern || s.meta.era === 'modern'; }).map(function (m) {
       const b = m.badge ? m.badge() : 0;
       return '<a href="' + m.href + '" class="' + (m.key === view.mod ? 'on' : '') + '">' + m.label + (b ? '<span class="badge">' + b + '</span>' : '') + '</a>';
     }).join('');

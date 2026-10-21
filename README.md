@@ -62,6 +62,30 @@ done it. You can go back, skip, collapse or close it at any time, and restart it
 **Handbook**, from **Help › Beginner's Guide**, or from the *Beginner's Guide* page on the bank's
 intranet, which also has the game in five sentences, a normal day step by step and a glossary.
 
+## The modern bank (2018–2025)
+
+![Modern bank](docs/screenshots/modern.png)
+
+A second game picks up where secrecy ended. Double-click **Move to 2018 (new workstation)** on the
+Windows 2000 desktop, or open the game with **`?era=modern`**
+(<https://swissbanking.lilbeans.workers.dev/?era=modern>; `?era=classic` goes back). Each era has
+its own saved game and its own computer, so switching never loses anything.
+
+- **The computer:** a Windows 10/11 desktop, an Edge-style browser, sign-in with a code from the
+  "Vogt Secure" phone app, and the bank's new web platform, *Vogt Private*.
+- **Two starts:** 2018, *After secrecy* (the first year of automatic exchange of tax data), and
+  2021, *Crypto mania*. Both run to 30 June 2025, with new clients, staff and structures.
+- **Real history:** markets follow actual prices to mid-2025, from the Covid crash to the rate
+  hikes, the end of negative rates and gold's surge. 73 real events, from the first AEOI exchange
+  through the Russia sanctions, Credit Suisse's rescue and the bitcoin ETFs, arrive as news and
+  memos.
+- **Crypto:** 24 coins at their real historical prices (bitcoin, ether, XRP, Solana, the Terra
+  collapse, FTX's token, stablecoins and more) can be traded on the Trading desk. The **Crypto**
+  area runs a crypto bank: client custody with fees, staking from the dates each network
+  allowed it, crypto-backed loans with margin calls through every crash, placements with yield
+  platforms that collapsed on their real dates (Celsius, FTX, BlockFi, Genesis), and
+  chain-analysis screening of incoming coins.
+
 ## The browser window
 
 Everything happens inside an Internet Explorer 6 window on a Windows 2000 desktop:
@@ -222,10 +246,12 @@ index.html           Desktop, browser window, sign-on screen, application frame,
 css/pbs.css          Windows 2000 / IE6 chrome, intranet look, balloon tips, print styles
 js/util.js           Number and date formatting (Swiss or English), regional settings, IBAN
 js/locale.js         Regional Options dialog and the US-dollar display
+js/data/modern.js    2018–2025 markets, coins, timeline, scenarios, clients and staff
+js/modern-ui.js      Modern desktop, browser and banking-platform look (with css/modern.css)
 js/data/             Bank and laws, staff and names, clients, markets, timeline, start scenarios
 js/engine/           Game rules: kernel (state, time, saving), market, payments, clients, staff,
                      expansion, authorities, career, agenda, events, end-of-day batch, setup,
-                     trading (stock market)
+                     trading (stock market), crypto (coin prices), cryptobank, modern (2018–2025)
 js/views/            Screens; they only read the game state
 js/sound.js          Synthesised sounds
 js/browser.js        Browser window, menus, toolbars, explorer bars, dialogs

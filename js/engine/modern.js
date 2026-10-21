@@ -74,5 +74,5 @@
   };
 
   // Freigabe der modernen Epoche (Desktop-Symbol, Direktlink ?era=modern)
-  D.MODERN_READY = false; // wird nach Einbau der Krypto-Ansichten und der modernen Oberfläche eingeschaltet
+  D.MODERN_READY = true;
 })(window.PBS);
