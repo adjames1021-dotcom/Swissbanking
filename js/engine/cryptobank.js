@@ -81,7 +81,7 @@
       desc: 'Fast-growing derivatives exchange founded by Sam Bankman-Fried. Margin lending on the platform pays interest; sister firm Alameda Research is the biggest market maker.',
       news: [['2022-11-02', 'CoinDesk: much of Alameda Research\'s balance sheet consists of FTX\'s own token FTT'], ['2022-11-06', 'Binance says it will sell its FTT holdings; withdrawals from FTX rise sharply'],
         ['2022-11-08', 'FTX halts customer withdrawals; Binance signs non-binding deal to take over the exchange'], ['2022-11-09', 'Binance walks away from FTX rescue after due diligence'], ['2022-11-11', 'FTX files for Chapter 11 bankruptcy; Bankman-Fried resigns as chief executive']] },
-    { id: 'ANC', name: 'Anchor Protocol (Terra)', city: t('dezentral (Terra-Blockchain)', 'decentralised (Terra blockchain)'), kind: t('DeFi-Sparprotokoll', 'DeFi savings protocol'), re: /Terra|UST|Anchor/i, from: '2021-03-17', freeze: '2022-05-09', bk: '2022-05-12', recovery: 0.05, y: { USD: 19.5 },
+    { id: 'ANC', name: 'Anchor Protocol (Terra)', city: t('dezentral (Terra-Blockchain)', 'decentralised (Terra blockchain)'), kind: t('DeFi-Sparprotokoll', 'DeFi savings protocol'), re: /Terra|UST|Anchor/i, only: ['USD', 'USTC'], from: '2021-03-17', freeze: '2022-05-09', bk: '2022-05-12', recovery: 0.05, y: { USD: 19.5 },
       desc: 'Pays close to 20% a year on deposits of the algorithmic stablecoin UST. The yield is subsidised by the Terra ecosystem.',
       news: [['2022-05-09', 'Terra\'s UST stablecoin loses its dollar peg; deposits flee Anchor Protocol'], ['2022-05-12', 'Terra blockchain halted; UST and LUNA in free fall']] },
     { id: 'NEX', name: 'Nexo', city: 'London', kind: t('Krypto-Lending-Plattform', 'Crypto lending platform'), from: '2020-01-02', y: { BTC: 5.0, ETH: 5.0, USD: 10.0, other: 4.0 },
@@ -97,6 +97,7 @@
     return 'open';
   };
   CB.cpYield = function (cp, coin) {
+    if (cp.only && cp.only.indexOf(coin) < 0) return 0;
     const c = coin === 'USD' ? { stable: true } : CB.coin(coin);
     if (!c) return 0;
     if (c.stable || coin === 'USD') return cp.y.USD || 0;
@@ -690,29 +691,31 @@
   function flows(log) {
     const s = S();
     const cc = CB.clients();
-    const pIn = Math.min(0.5, 0.1 + 0.03 * cc.length);
+    const pIn = Math.min(0.22, 0.06 + 0.012 * cc.length);
     if (K.chance(pIn)) {
       let c = cc.length && K.chance(0.75) ? K.pick(cc) : K.pick(G.activeClients().filter(function (x) { return x.funded !== false && !x.dormant; }));
       if (c) {
         const held = G.clientAccounts(c.id).filter(function (a) { return CB.isCoinAcc(a) && a.bal > 0 && CR().status(CB.coin(a.ccy)) === 'open'; });
         const coin = held.length && K.chance(0.7) ? K.pick(held).ccy : (pickCoin() || {}).id;
         if (coin) {
-          const chf = U.clamp((c.wealth || 1e6) * K.between(0.004, 0.04), 15000, 6e6);
+          const chf = U.clamp((c.wealth || 1e6) * K.between(0.002, 0.02), 10000, 2.5e6);
           const q = qr(chf / CB.px(coin));
           const acc = K.ensureAccount(c, coin, null);
           const tx = K.book(acc, q, 'Incoming transfer ' + coin + ' (blockchain)', { kind: 'crypto-in', ext: true });
           const rec = screen(c, acc, q, 'in', tx);
+          jr('in', c.rubrik + ': received ' + coin + ' ' + U.fmt(q, 4) + ' from ' + rec.det + ', score ' + rec.score + (rec.alert ? ', alert ' + rec.alert : ''), rec.chf);
           log.push(['EVT', t('KRYPTO-EINGANG ', 'CRYPTO RECEIPT ') + coin + ' ' + c.rubrik, t('SCORE ', 'SCORE ') + rec.score + (rec.alert ? ' ' + rec.alert : '')]);
         }
       }
     }
-    if (K.chance(0.07)) {
+    if (K.chance(Math.min(0.3, 0.05 + 0.012 * cc.length))) {
       const accs = CB.accounts().filter(function (a) { return CB.avail(a) * CB.px(a.ccy) > 5000; });
       if (accs.length) {
         const a = K.pick(accs), c = G.client(a.client);
         const q = qr(CB.avail(a) * K.between(0.1, 0.6));
         const tx = K.book(a, -q, 'Outgoing transfer ' + a.ccy + ' (blockchain)', { kind: 'crypto-out', ext: true });
         const rec = screen(c, a, -q, 'out', tx);
+        jr('out', c.rubrik + ': sent ' + a.ccy + ' ' + U.fmt(q, 4) + ' to ' + rec.det + ', score ' + rec.score + (rec.alert ? ', alert ' + rec.alert : ''), rec.chf);
         log.push(['EVT', t('KRYPTO-AUSGANG ', 'CRYPTO PAYOUT ') + a.ccy + ' ' + c.rubrik, t('SCORE ', 'SCORE ') + rec.score + (rec.alert ? ' ' + rec.alert : '')]);
       }
     }
@@ -861,7 +864,7 @@
       const cp = CB.cp(p.cp);
       const px = CB.px(p.coin);
       // Zusammenbruch
-      if (cp.freeze && next > cp.freeze) {
+      if (cp.freeze && closing >= cp.freeze) {
         const rec = cp.recovery || 0;
         const val = p.q * px * (1 - rec);
         p.status = 'lost';
