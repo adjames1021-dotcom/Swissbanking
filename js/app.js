@@ -1235,7 +1235,7 @@
   });
 
   // Neuer Arbeitsplatz verlangt, aber noch keine modernen Szenarien vorhanden: zurück zum alten
-  if (PBS.modern() && !Object.keys(D.SCENARIOS).some(function (k) { return D.SCENARIOS[k].era === 'modern'; })) {
+  if (PBS.modern() && D.MODERN_READY !== true) {
     try { localStorage.setItem('pbs-vogt-era', 'classic'); } catch (x) { /* */ }
     location.reload();
     return;

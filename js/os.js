@@ -274,7 +274,7 @@
     { d: 'bin', icon: 'd-recycle', label: 'Recycle Bin' },
     { d: 'pbs', icon: 'd-pbs', label: 'PBS/Web (Intranet)' },
     { d: 'era', icon: 'd-era', label: PBS.modern() ? 'Back to 2003 (old workstation)' : 'Move to 2018 (new workstation)' }
-  ].filter(function (x) { return x.d !== 'era' || PBS.modern() || Object.keys(PBS.DATA.SCENARIOS).some(function (k) { return PBS.DATA.SCENARIOS[k].era === 'modern'; }); });
+  ].filter(function (x) { return x.d !== 'era' || PBS.modern() || PBS.DATA.MODERN_READY === true; });
   // Zwischen den beiden Arbeitsplätzen wechseln: jede Epoche hat ihren eigenen Spielstand und ihre eigene Festplatte
   WM.switchEra = function () {
     const to = PBS.modern() ? 'classic' : 'modern';
