@@ -18,6 +18,12 @@ window.PBS = window.PBS || {};
   try { Object.assign(L, JSON.parse(localStorage.getItem(LKEY) || '{}')); } catch (x) { /* Standard */ }
   L.save = function () { try { localStorage.setItem(LKEY, JSON.stringify({ lang: L.lang, num: L.num, date: L.date, time: L.time, ccy: L.ccy })); } catch (x) { /* nicht verfügbar */ } };
   // Epoche des Arbeitsplatzes: 'classic' (Windows 2000, 1998–2017) oder 'modern' (2018–2025); eigener Spielstand je Epoche
+  // Direktlink: ?era=modern (oder ?modern) öffnet den neuen Arbeitsplatz, ?era=classic den alten
+  try {
+    const q = location.search || '';
+    const m = /[?&]era=(modern|classic)\b/.exec(q) || (/[?&]modern\b/.test(q) ? [0, 'modern'] : /[?&]classic\b/.test(q) ? [0, 'classic'] : null);
+    if (m) { localStorage.setItem('pbs-vogt-era', m[1]); history.replaceState(null, '', location.pathname + location.hash); }
+  } catch (x) { /* ohne Browser (Tests) */ }
   try { PBS.ERA = localStorage.getItem('pbs-vogt-era') === 'modern' ? 'modern' : 'classic'; } catch (x) { PBS.ERA = 'classic'; }
   PBS.modern = function () { return PBS.ERA === 'modern'; };
   // Text in der gewählten Sprache: t('Kontoauszug', 'Account statement')

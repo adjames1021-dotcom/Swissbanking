@@ -1234,6 +1234,12 @@
     shutdown: shutDown
   });
 
+  // Neuer Arbeitsplatz verlangt, aber noch keine modernen Szenarien vorhanden: zurück zum alten
+  if (PBS.modern() && !Object.keys(D.SCENARIOS).some(function (k) { return D.SCENARIOS[k].era === 'modern'; })) {
+    try { localStorage.setItem('pbs-vogt-era', 'classic'); } catch (x) { /* */ }
+    location.reload();
+    return;
+  }
   document.body.classList.toggle('modern', PBS.modern());
   // Ländereinstellungen: Anzeige neu aufbauen; Dollarumrechnung beobachtet das Dokument
   PBS.L.hooks = { refresh: function () { if (UI.screen === 'app' || UI.screen === 'intra') route(true); else if (UI.screen === 'login') showLogin(); PBS.L.apply(); } };
