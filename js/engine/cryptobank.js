@@ -25,8 +25,8 @@
     DOT: { ltv: 0.25, stake: { from: '2020-08-18', unbond: 20, slash: true, apy: [['2020-08-18', 13.0], ['2025-06-30', 14.0]] } },
     XTZ: { ltv: 0.2, stake: { from: '2018-09-17', unbond: 1, slash: false, apy: [['2018-09-17', 6.0], ['2025-06-30', 9.0]] } },
     ATOM: { ltv: 0.2, stake: { from: '2019-04-18', unbond: 15, slash: true, apy: [['2019-04-18', 9.0], ['2021-06-30', 12.0], ['2025-06-30', 15.0]] } },
-    XRP: { ltv: 0.25 }, LTC: { ltv: 0.3 }, BCH: { ltv: 0.25 }, LINK: { ltv: 0.2 }, DOGE: { ltv: 0.1 },
-    USDT: { ltv: 0.5 }, USDC: { ltv: 0.7 }, DAI: { ltv: 0.5 }, UST: { ltv: 0.5 }, BUSD: { ltv: 0.5 },
+    AVAX: { ltv: 0.2 }, XRP: { ltv: 0.25 }, LTC: { ltv: 0.3 }, BCH: { ltv: 0.25 }, LINK: { ltv: 0.2 }, DOGE: { ltv: 0.1 },
+    USDT: { ltv: 0.5 }, USDC: { ltv: 0.7 }, DAI: { ltv: 0.5 }, USTC: { ltv: 0.5 }, BUSD: { ltv: 0.5 },
     // Börsen- und Plattform-Token, illiquide Coins: kaum belehnbar
     LUNA: { ltv: 0.1 }, FTT: { ltv: 0 }, CEL: { ltv: 0 }, BNB: { ltv: 0.15 }, CRO: { ltv: 0 }, NEXO: { ltv: 0 }
   };
@@ -81,7 +81,7 @@
       desc: 'Fast-growing derivatives exchange founded by Sam Bankman-Fried. Margin lending on the platform pays interest; sister firm Alameda Research is the biggest market maker.',
       news: [['2022-11-02', 'CoinDesk: much of Alameda Research\'s balance sheet consists of FTX\'s own token FTT'], ['2022-11-06', 'Binance says it will sell its FTT holdings; withdrawals from FTX rise sharply'],
         ['2022-11-08', 'FTX halts customer withdrawals; Binance signs non-binding deal to take over the exchange'], ['2022-11-09', 'Binance walks away from FTX rescue after due diligence'], ['2022-11-11', 'FTX files for Chapter 11 bankruptcy; Bankman-Fried resigns as chief executive']] },
-    { id: 'ANC', name: 'Anchor Protocol (Terra)', city: t('dezentral (Terra-Blockchain)', 'decentralised (Terra blockchain)'), kind: t('DeFi-Sparprotokoll', 'DeFi savings protocol'), from: '2021-03-17', freeze: '2022-05-09', bk: '2022-05-12', recovery: 0.05, y: { USD: 19.5 },
+    { id: 'ANC', name: 'Anchor Protocol (Terra)', city: t('dezentral (Terra-Blockchain)', 'decentralised (Terra blockchain)'), kind: t('DeFi-Sparprotokoll', 'DeFi savings protocol'), re: /Terra|UST|Anchor/i, from: '2021-03-17', freeze: '2022-05-09', bk: '2022-05-12', recovery: 0.05, y: { USD: 19.5 },
       desc: 'Pays close to 20% a year on deposits of the algorithmic stablecoin UST. The yield is subsidised by the Terra ecosystem.',
       news: [['2022-05-09', 'Terra\'s UST stablecoin loses its dollar peg; deposits flee Anchor Protocol'], ['2022-05-12', 'Terra blockchain halted; UST and LUNA in free fall']] },
     { id: 'NEX', name: 'Nexo', city: 'London', kind: t('Krypto-Lending-Plattform', 'Crypto lending platform'), from: '2020-01-02', y: { BTC: 5.0, ETH: 5.0, USD: 10.0, other: 4.0 },
@@ -160,12 +160,27 @@
     b.jr.unshift({ d: S().date, k: k, text: text, chf: chf || 0 });
     if (b.jr.length > 160) b.jr.length = 160;
   }
-  function desk() { return t('Digital-Assets-Desk (L. Brunner)', 'Digital Assets desk (L. Brunner)'); }
-  function compl() {
-    const c = G.activeStaff('comp')[0];
-    return (c ? c.name + ', ' : '') + 'Legal & Compliance';
+  // Absender: echte Mitarbeitende des Szenarios, falls vorhanden
+  function who(id, role, fb) {
+    const x = G.staff(id);
+    if (x && x.status === 'active') return x;
+    return G.activeStaff(role)[0] || { name: fb };
   }
-  function tlHas(d, re) { return (D.TIMELINE || []).some(function (x) { return x.d === d && re.test((x.news || '') + ' ' + (x.memo ? x.memo.subject : '')); }); }
+  function deskP() { return who('M15', 'pm', 'Digital assets desk'); }
+  function desk() { const x = deskP(); return x.name + (x.name === 'Digital assets desk' ? '' : ', digital assets desk'); }
+  function sig() { const n = deskP().name.replace(/^Dr\. /, '').split(' '); return n.length > 1 ? n[0].charAt(0) + '. ' + n.slice(1).join(' ') : n[0]; }
+  function compl() { const x = who('M07', 'comp', 'Legal & Compliance'); return x.name + (x.name === 'Legal & Compliance' ? '' : ', Compliance'); }
+  CB.desk = desk;
+  // Steht das Ereignis schon in der Zeitleiste (±4 Tage)? memo: nur Einträge mit Memo zählen
+  function tlHas(d, re, memo) {
+    const ts = U.toDate(d).getTime();
+    return (D.TIMELINE || []).some(function (x) {
+      if (Math.abs(U.toDate(x.d).getTime() - ts) > 4 * 864e5) return false;
+      if (memo) return !!x.memo && re.test(x.memo.subject + ' ' + x.memo.body);
+      if (Math.abs(U.toDate(x.d).getTime() - ts) > 1.5 * 864e5) return false;
+      return re.test((x.news || '') + ' ' + (x.memo ? x.memo.subject : ''));
+    });
+  }
   function news(d, text, re) {
     const s = S();
     if (re && tlHas(d, re)) return;
@@ -373,7 +388,7 @@
     jr('stake', coin + ' staking launched; ' + n + ' client account(s) opted in (' + coin + ' ' + U.fmt(q, 2) + ')');
     K.msg({ type: 'email', kind: 'info', from: desk(), subject: coin + ' staking is live',
       body: 'Hi,\n\nWe sent the client letters for ' + CB.name(coin) + ' staking this morning. ' + n + ' client(s) opted in straight away, ' + coin + ' ' + U.fmt(q, 2) + ' in total. Current network yield is about ' + U.fmt(si.apy, 1) + '% gross; we keep ' + U.fmt(b.comm * 100, 0) + '% as commission and pay the rest out in coins at month end.\n\n' +
-        (si.locked ? 'Reminder: staked ETH cannot be withdrawn from the Beacon Chain until the Shapella upgrade. Clients have signed that.\n\n' : '') + (si.slash ? 'Slashing risk sits with us if our validator operator makes a mistake. I would not promise clients anything else.\n\n' : '') + 'L. Brunner' });
+        (si.locked ? 'Reminder: staked ETH cannot be withdrawn from the Beacon Chain until the Shapella upgrade. Clients have signed that.\n\n' : '') + (si.slash ? 'Slashing risk sits with us if our validator operator makes a mistake. I would not promise clients anything else.\n\n' : '') + sig() });
     G.save();
     return { ok: true, text: n + ' client account(s) opted in.' };
   };
@@ -760,7 +775,7 @@
       jr('slash', coin + ' validators slashed: ' + U.fmt(frac * 100, 1) + '% of the stake, bank compensates clients', loss);
       log.push(['EVT', t('SLASHING ', 'SLASHING ') + coin, 'CHF ' + U.fmt(loss, 0)]);
       K.msg({ type: 'email', kind: 'info', from: desk(), subject: 'Slashing incident on our ' + coin + ' validators',
-        body: 'Our validator operator ran a backup node with the same keys after a failover. Both signed, and the network slashed the validators for double signing. ' + U.fmt(frac * 100, 1) + '% of the staked ' + coin + ' is gone, CHF ' + U.fmt(loss, 0) + ' at today\'s price.\n\nWe will make the clients whole; the loss goes through our P&L. The operator says it will not happen again. I have asked for that in writing.\n\nL. Brunner' });
+        body: 'Our validator operator ran a backup node with the same keys after a failover. Both signed, and the network slashed the validators for double signing. ' + U.fmt(frac * 100, 1) + '% of the staked ' + coin + ' is gone, CHF ' + U.fmt(loss, 0) + ' at today\'s price.\n\nWe will make the clients whole; the loss goes through our P&L. The operator says it will not happen again. I have asked for that in writing.\n\n' + sig() });
     });
   }
 
@@ -784,6 +799,7 @@
       }
       if (l.call) {
         if (v < l.callAt - 0.05) { l.call = null; log.push(['EVT', t('NACHSCHUSS ERLEDIGT ', 'MARGIN CALL CLEARED ') + l.id, t('KURSERHOLUNG', 'PRICE RECOVERY')]); return; }
+        if (next >= l.call.due && v < l.callAt) { l.call = null; log.push(['EVT', t('NACHSCHUSS ERLEDIGT ', 'MARGIN CALL CLEARED ') + l.id, 'LTV ' + U.fmt(v * 100, 0) + '%']); return; }
         if (next >= l.call.due) {
           const p = 0.5 + (c.loyalty >= 60 ? 0.15 : 0) - (c.loyalty < 40 ? 0.2 : 0) + (c.traits.indexOf('nervous') >= 0 ? -0.1 : 0);
           const a = G.account(l.acc);
@@ -861,7 +877,7 @@
           log.push(['EVT', t('KUNDEN-COINS BLOCKIERT ', 'CLIENT COINS FROZEN ') + cp.name.toUpperCase(), p.coin + ' ' + U.fmt(p.q, 4)]);
           jr('loss', p.id + ': client ' + p.coin + ' ' + U.fmt(p.q, 4) + ' stuck at ' + cp.name, p.q * px);
           K.msg({ type: 'email', kind: 'cbloss', from: desk(), subject: 'URGENT: client ' + p.coin + ' stuck at ' + cp.name,
-            body: cp.name + ' has stopped all withdrawals. We have ' + p.coin + ' ' + U.fmt(p.q, 4) + ' of CLIENT coins there (CHF ' + U.fmt(p.q * px, 0) + ' at today\'s price), placed on ' + U.fmtDate(p.d) + '. The clients do not know.\n\nOur books still show their full balances. We either buy the coins in the market now and carry the loss, or we write the clients\' balances down pro rata. Legal says the second option will not survive contact with FINMA or the press. I need a decision today.\n\nL. Brunner',
+            body: cp.name + ' has stopped all withdrawals. We have ' + p.coin + ' ' + U.fmt(p.q, 4) + ' of CLIENT coins there (CHF ' + U.fmt(p.q * px, 0) + ' at today\'s price), placed on ' + U.fmtDate(p.d) + '. The clients do not know.\n\nOur books still show their full balances. We either buy the coins in the market now and carry the loss, or we write the clients\' balances down pro rata. Legal says the second option will not survive contact with FINMA or the press. I need a decision today.\n\n' + sig(),
             actions: [['whole', 'Bank buys the coins and makes the clients whole'], ['pass', 'Write the client balances down pro rata']], data: { pl: p.id } });
         }
         return;
@@ -894,10 +910,9 @@
     const s = S(), b = st();
     CB.CPS.forEach(function (cp) {
       (cp.news || []).forEach(function (n) {
-        if (n[0] > closing && n[0] <= next || (n[0] <= next && !b.flags['n' + cp.id + n[0]] && n[0] >= s.meta.started && n[0] > closing)) {
-          if (b.flags['n' + cp.id + n[0]]) return;
+        if (n[0] <= next && n[0] >= s.meta.started && !b.flags['n' + cp.id + n[0]]) {
           b.flags['n' + cp.id + n[0]] = 1;
-          news(n[0], n[1], new RegExp(cp.name.split(' ')[0], 'i'));
+          news(n[0], n[1], cp.re || new RegExp(cp.name.split(' ')[0], 'i'));
           jr('news', n[1]);
         }
       });
@@ -923,17 +938,17 @@
 
   // Regulatorische Meilensteine (als Memo, falls nicht schon in der Zeitleiste)
   const MEMOS = [
-    { d: '2019-08-26', re: /02\/2019|blockchain/i, from: compl, subject: 'FINMA Guidance 02/2019: payments on the blockchain',
+    { d: '2019-08-26', re: /02\/2019|travel rule/i, from: compl, subject: 'FINMA Guidance 02/2019: payments on the blockchain',
       body: 'FINMA published its guidance on payments on the blockchain today. In short: the anti-money-laundering rules apply to coin transfers exactly as to wire transfers, including the travel rule. Switzerland applies it more strictly than FATF.\n\nFor us: coins from or to an external wallet that does not belong to a regulated institution are only allowed if we have verified that the wallet belongs to our own client. Rule CA-04 flags such receipts of CHF 100,000 or more. Please do not clear them without proof of ownership.' },
-    { d: '2021-08-01', re: /DLT/i, from: compl, subject: 'DLT Act fully in force',
+    { d: '2021-08-01', re: /segregat/i, from: compl, subject: 'DLT Act fully in force',
       body: 'The remaining provisions of the DLT Act are in force as of today. Crypto-based assets we hold for clients can be segregated in our bankruptcy, but only if they are kept for the client at all times. Coins lent out to third parties do not meet that test.\n\nAnything we have placed with platforms on behalf of clients should be reviewed.' },
     { d: '2022-08-08', re: /Tornado/i, from: compl, subject: 'OFAC designates Tornado Cash',
       body: 'OFAC has put the Ethereum mixer Tornado Cash on the SDN list today, including its smart-contract addresses. From now on our chain-analysis tool treats exposure to Tornado Cash as sanctions exposure (rule CA-03), not just as a mixer. Please do not clear such alerts on the client\'s word.' },
-    { d: '2022-09-15', re: /Merge/i, from: desk, subject: 'Ethereum Merge completed: ETH staking possible',
+    { d: '2022-09-15', re: /staking/i, from: desk, subject: 'Ethereum Merge completed: ETH staking possible',
       body: 'The Merge went through this morning; Ethereum now runs on proof of stake. We can offer institutional ETH staking through our validator operator from today (Crypto › Staking). Staked ETH cannot be withdrawn until the next upgrade, Shapella, which has no date yet. Clients must sign that.' },
-    { d: '2023-04-12', re: /Shapella/i, from: desk, subject: 'Shapella upgrade live: staked ETH can be withdrawn',
+    { d: '2023-04-12', re: /Shapella|unstak/i, from: desk, subject: 'Shapella upgrade live: staked ETH can be withdrawn',
       body: 'The Shapella upgrade activated tonight. Staked ETH can now be unstaked; the exit queue takes a few days. Expect some clients to ask.' },
-    { d: '2023-12-20', re: /staking/i, from: compl, subject: 'FINMA Guidance 08/2023 on staking',
+    { d: '2023-12-20', re: /08\/2023|staking/i, from: compl, subject: 'FINMA Guidance 08/2023 on staking',
       body: 'FINMA has published its guidance on staking. Staked client coins can stay off our balance sheet if they remain segregable in a bankruptcy, which requires among other things that we have clear instructions from the client and that the coins are held for each client individually. FINMA also lists the risks we have to disclose: slashing, lock-up periods and counterparty risk.\n\nOur staking terms will need another look.' }
   ];
   function milestones(closing, next, log) {
@@ -941,7 +956,7 @@
     MEMOS.forEach(function (m) {
       if (m.d > next || b.flags['m' + m.d] || m.d < s.meta.started) return;
       b.flags['m' + m.d] = 1;
-      if (tlHas(m.d, m.re)) return;
+      if (tlHas(m.d, m.re, true)) return;
       K.msg({ type: m.from === desk ? 'email' : 'memo', kind: 'info', from: m.from(), subject: m.subject, body: m.body });
     });
     Object.keys(CFG).forEach(function (id) {
@@ -951,7 +966,7 @@
       if (si.from < s.meta.started && s.dayNo > 3) return;
       if (!CB.accounts(id).length && si.from < s.meta.started) return;
       K.msg({ type: 'email', kind: 'info', from: desk(), subject: CB.name(id) + ' staking',
-        body: CB.name(id) + ' can be staked' + (si.from < s.meta.started ? '' : ' from today') + '. Network yield about ' + U.fmt(si.apy, 1) + '% gross a year, unbonding ' + si.unbond + ' business day(s)' + (si.slash ? ', slashing possible' : ', no slashing') + '. We could offer it to clients under Crypto › Staking.\n\nL. Brunner' });
+        body: CB.name(id) + ' can be staked' + (si.from < s.meta.started ? '' : ' from today') + '. Network yield about ' + U.fmt(si.apy, 1) + '% gross a year, unbonding ' + si.unbond + ' business day(s)' + (si.slash ? ', slashing possible' : ', no slashing') + '. We could offer it to clients under Crypto › Staking.\n\n' + sig() });
     });
   }
 
@@ -1045,6 +1060,33 @@
     G.checkGameOver();
     G.save();
   };
+
+  // Zeitleisten-Memos, die "kein Engagement" behaupten, an die tatsächlichen Platzierungen anpassen
+  const tlDay = K.timelineDay;
+  if (tlDay) {
+    K.timelineDay = function () {
+      const s = S();
+      const saved = [];
+      try {
+        if (on() && s.cbank) {
+          (D.TIMELINE || []).forEach(function (x) {
+            if (x.d > s.date || !x.memo || s.flags['tl' + x.d]) return;
+            CB.CPS.forEach(function (cp) {
+              const hit = s.cbank.pl.filter(function (p) { return p.cp === cp.id && (p.status === 'lost' || p.status === 'active' || p.status === 'recall'); });
+              const re = new RegExp('(the bank|we) had no (account|exposure|assets?)( at| with| to)? ' + cp.name.split(' ')[0] + '[^.]*\\.', 'i');
+              if (!hit.length || !re.test(x.memo.body)) return;
+              const v = hit.reduce(function (a, p) { return a + (p.lossChf || p.q * CB.px(p.coin)); }, 0);
+              saved.push([x, x.memo.body]);
+              x.memo = Object.assign({}, x.memo, { body: x.memo.body.replace(re, 'the bank itself has about CHF ' + U.fmt(v, 0) + ' at ' + cp.name + ' (placements of the digital assets desk), which we must assume is lost.') });
+            });
+          });
+        }
+      } catch (err) { /* Text bleibt */ }
+      const r = tlDay.apply(this, arguments);
+      saved.forEach(function (p) { p[0].memo = Object.assign({}, p[0].memo, { body: p[1] }); });
+      return r;
+    };
+  }
 
   const eod = G.endOfDay;
   G.endOfDay = function () {
