@@ -14,7 +14,7 @@
     const start = sc.start;
     const s = G.state = {
       v: 2, seed: 19980302 + (+scKey), meta: { scenario: scKey, diff: diffKey, name: o.name || 'Managing Partner', started: start, era: sc.era || 'classic', end: sc.end || D.END_DATE },
-      user: { id: o.userId || 'E10001', last: { d: U.addBusinessDays(start, -1), t: 17 * 60 + 42, ws: 'ZH-BS64-0217' } },
+      user: { id: o.userId || 'E10001', last: { d: U.addBusinessDays(start, -1), t: 17 * 60 + 42, ws: sc.era === 'modern' ? 'ZH-NB-1147' : 'ZH-BS64-0217' } },
       date: start, clock: 8 * 60 + 4, dayNo: 1, overtime: 0, today: { ops: 0 },
       market: {}, prevMarket: {}, mhist: [], idio: {}, classRet: {},
       bank: { capital: sc.capital * D.DIFFICULTY[diffKey].capital, ytd: K.ytdZero() },

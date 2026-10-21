@@ -287,7 +287,7 @@
     UI.mod = view.mod;
     UI.path = r.path;
     renderChrome(view);
-    B.page({ hash: location.hash || '#/overview', title: 'PBS/Web – ' + view.title });
+    B.page({ hash: location.hash || '#/overview', title: (PBS.modern() ? 'Vogt Private – ' : 'PBS/Web – ') + view.title });
     afterRender();
   }
   // Seitenaufruf mit Ladeanimation des Browsers
@@ -390,7 +390,7 @@
       '<div class="row"><span>Until building locks</span><b>' + Math.floor(left / 60) + 'h ' + U.pad(left % 60, 2) + '</b></div><div class="row"><span>Business day no.</span><b>' + s.dayNo + '</b></div>' +
       (next ? '<div class="next">' + H.ico('clock') + ' <a href="#/agenda">' + U.fmtTime(next.t) + ' ' + e(next.title.length > 26 ? next.title.slice(0, 25) + '…' : next.title) + '</a></div>' : '') +
       '<button class="btn eod" type="button" data-act="eod" title="F9">' + H.ico('clock') + ' End of day ▸</button></div></div>' +
-      '<div class="navsec"><h3>Telekurs</h3><div class="navbox">' + q + '</div></div>';
+      '<div class="navsec"><h3>' + (PBS.modern() ? 'Markets' : 'Telekurs') + '</h3><div class="navbox">' + q + '</div></div>';
 
     $('statusbar').innerHTML =
       '<div class="cell grow">' + H.ico('net') + ' ' + D.BANK.host + ' · DB2 · ' + e(D.SCENARIOS[s.meta.scenario].label.split(' – ')[0]) + ' · ' + e(D.DIFFICULTY[s.meta.diff].label) + '</div>' +

@@ -8,6 +8,8 @@
   function modern() { const s = S(); return !!(s && s.meta && s.meta.era === 'modern'); }
   const SENIOR = function () { return D.PARTNERS.senior + ', Senior Partner'; };
   const COMP = 'Dr. Katharina Imhof, Head Legal & Compliance';
+  // Die neue Plattform läuft unter eigener Adresse
+  if (PBS.modern()) D.BANK.intranet = 'https://private.vogt.intra/app/';
 
   /* ---------- Erster Arbeitstag ---------- */
   K.modernOpening = function (start, sc) {
